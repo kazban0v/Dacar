@@ -41,9 +41,9 @@ class Product(models.Model):
     ]
 
     name = models.CharField(max_length=255, verbose_name="Наименование товара")
-    sku = models.CharField(max_length=50, unique=True, db_index=True, verbose_name="Артикул")
-    barcode = models.CharField(max_length=50, unique=True, db_index=True, verbose_name="Штрихкод")
-    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='products', verbose_name="Категория")
+    sku = models.CharField(max_length=50, unique=True, blank=True, db_index=True, verbose_name="Артикул")
+    barcode = models.CharField(max_length=50, unique=True, blank=True, db_index=True, verbose_name="Штрихкод")
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products', verbose_name="Категория")
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True, related_name='products', verbose_name="Бренд")
     
     # Financial fields using DecimalField
@@ -62,6 +62,24 @@ class Product(models.Model):
         verbose_name = "Товар"
         verbose_name_plural = "Товары"
         ordering = ['name']
+
+    def save(self, *args, **kwargs):
+        import random
+        if not self.barcode:
+            self.barcode = f"200{random.randint(100000000, 999999999)}"
+        if not self.sku:
+            base_code = self.barcode[-6:] if len(self.barcode) >= 6 else str(random.randint(100000, 999999))
+            self.sku = f"DAC-{base_code}"
+            counter = 1
+            while Product.objects.filter(sku=self.sku).exclude(pk=self.pk).exists():
+                self.sku = f"DAC-{base_code}-{counter}"
+                counter += 1
+        if not self.category_id:
+            cat = Category.objects.first()
+            if not cat:
+                cat = Category.objects.create(name="Автохимия и Аксессуары", slug="autochem")
+            self.category = cat
+        super().save(*args, **kwargs)
 
     @property
     def is_low_stock(self):

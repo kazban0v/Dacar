@@ -83,11 +83,12 @@
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
                         <i class="fa-solid fa-tags"></i> Категория
                     </label>
-                    <select name="category" class="form-control">
+                    <select name="category" id="productCategorySelect" class="form-control" onchange="handleCategoryChange(this)">
                         <option value="">Общая / Автохимия</option>
                         {% for cat in categories %}
                         <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
                         {% endfor %}
+                        <option value="__NEW__" style="color: var(--accent-cyan); font-weight: 700; background: #F0F9FF;">➕ Создать новую категорию...</option>
                     </select>
                 </div>
 
@@ -131,7 +132,48 @@
 
 {% block extra_scripts %}
 <script>
-    // Hardware barcode scanner support (USB / Bluetooth / 2D reader)
+    // 1. Quick Category Creation right from dropdown
+    let prevCatVal = document.getElementById('productCategorySelect')?.value || '';
+
+    async function handleCategoryChange(select) {
+        if (select.value === '__NEW__') {
+            const catName = prompt('Введите название новой категории:');
+            if (catName && catName.trim()) {
+                try {
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                    const res = await fetch('/catalog/api/categories/create/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: new URLSearchParams({ name: catName.trim() })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const newOption = document.createElement('option');
+                        newOption.value = data.id;
+                        newOption.textContent = data.name;
+                        const triggerOpt = select.querySelector('option[value="__NEW__"]');
+                        select.insertBefore(newOption, triggerOpt);
+                        select.value = data.id;
+                        prevCatVal = data.id;
+                        return;
+                    } else {
+                        alert(data.error || 'Ошибка при создании категории');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert('Не удалось создать категорию');
+                }
+            }
+            select.value = prevCatVal;
+        } else {
+            prevCatVal = select.value;
+        }
+    }
+
+    // 2. Hardware barcode scanner support (USB / Bluetooth / 2D reader)
     let formBarcodeBuffer = '';
     let formLastKeyTime = 0;
 

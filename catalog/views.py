@@ -299,3 +299,34 @@ class ProductSearchAPIView(APIView):
 
         serializer = ProductSerializer(products, many=True)
         return Response({'found': True, 'products': serializer.data})
+
+
+@login_required
+def create_category_api(request):
+    if not request.user.is_admin_user:
+        return JsonResponse({'success': False, 'error': 'Доступ разрешен только администраторам.'}, status=403)
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        if not name:
+            import json
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+                name = data.get('name', '').strip()
+            except Exception:
+                pass
+
+        if name:
+            from django.utils.text import slugify
+            import random
+            slug = slugify(name) or f"cat-{random.randint(1000, 9999)}"
+            counter = 1
+            orig_slug = slug
+            while Category.objects.filter(slug=slug).exists():
+                slug = f"{orig_slug}-{counter}"
+                counter += 1
+            category, _ = Category.objects.get_or_create(name=name, defaults={'slug': slug})
+            return JsonResponse({'success': True, 'id': category.id, 'name': category.name})
+
+    return JsonResponse({'success': False, 'error': 'Название категории обязательно.'}, status=400)
+

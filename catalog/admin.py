@@ -1,6 +1,10 @@
 from django.contrib import admin
 from catalog.models import Category, Brand, Product, StockMovement
 
+admin.site.site_header = "DACAR Детейлинг Маркет — Управление"
+admin.site.site_title = "DACAR Admin"
+admin.site.index_title = "Панель управления и Аудит"
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'icon', 'get_products_count')
@@ -35,6 +39,22 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ('retail_price', 'purchase_price', 'stock_qty', 'is_active')
     ordering = ('name',)
     date_hierarchy = 'created_at'
+
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('name', 'category', 'brand', 'is_active')
+        }),
+        ('Штрихкод и Артикул', {
+            'fields': ('barcode', 'sku'),
+            'description': 'Штрихкод и Артикул можно оставить пустыми — они сгенерируются автоматически.'
+        }),
+        ('Цены и Единицы', {
+            'fields': ('retail_price', 'purchase_price', 'unit')
+        }),
+        ('Складской учет', {
+            'fields': ('stock_qty', 'min_stock_alert')
+        }),
+    )
 
 
 @admin.register(StockMovement)
