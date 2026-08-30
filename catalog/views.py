@@ -66,7 +66,7 @@ def product_create_view(request):
         sku = request.POST.get('sku', '').strip()
         barcode = request.POST.get('barcode', '').strip()
         category_id = request.POST.get('category')
-        brand_id = request.POST.get('brand')
+        brand_input = request.POST.get('brand', '').strip()
         purchase_price = request.POST.get('purchase_price', '').strip() or '0'
         retail_price = request.POST.get('retail_price', '').strip() or '0'
         unit = request.POST.get('unit', 'шт')
@@ -89,12 +89,27 @@ def product_create_view(request):
         elif Product.objects.filter(sku=sku).exists():
             messages.error(request, f'Товар с артикулом {sku} уже существует.')
         else:
+            # Handle category (optional fallback to default)
             if category_id:
-                category = get_object_or_404(Category, id=category_id)
+                category = Category.objects.filter(id=category_id).first()
             else:
-                category = Category.objects.first() or Category.objects.create(name='Автохимия и Аксессуары', slug='autochem')
-            
-            brand = Brand.objects.filter(id=brand_id).first() if brand_id else None
+                category = None
+            if not category:
+                category = Category.objects.first() or Category.objects.create(name='Общая', slug='general')
+
+            # Handle brand (manual text input or get_or_create)
+            brand = None
+            if brand_input:
+                brand = Brand.objects.filter(name__iexact=brand_input).first()
+                if not brand:
+                    from django.utils.text import slugify
+                    b_slug = slugify(brand_input) or f"brand-{random.randint(1000, 9999)}"
+                    counter = 1
+                    orig_slug = b_slug
+                    while Brand.objects.filter(slug=b_slug).exists():
+                        b_slug = f"{orig_slug}-{counter}"
+                        counter += 1
+                    brand = Brand.objects.create(name=brand_input, slug=b_slug)
 
             product = Product.objects.create(
                 name=name,
@@ -150,17 +165,38 @@ def product_edit_view(request, pk):
 
     if request.method == 'POST':
         product.name = request.POST.get('name', '').strip()
-        product.sku = request.POST.get('sku', '').strip()
+        sku_input = request.POST.get('sku', '').strip()
+        if sku_input:
+            product.sku = sku_input
         product.barcode = request.POST.get('barcode', '').strip()
         category_id = request.POST.get('category')
-        brand_id = request.POST.get('brand')
-        product.category = get_object_or_404(Category, id=category_id)
-        product.brand = Brand.objects.filter(id=brand_id).first() if brand_id else None
+        brand_input = request.POST.get('brand', '').strip()
+
+        if category_id:
+            cat = Category.objects.filter(id=category_id).first()
+            if cat:
+                product.category = cat
         
-        product.purchase_price = Decimal(request.POST.get('purchase_price', '0'))
-        product.retail_price = Decimal(request.POST.get('retail_price', '0'))
+        # Handle brand
+        if brand_input:
+            brand = Brand.objects.filter(name__iexact=brand_input).first()
+            if not brand:
+                from django.utils.text import slugify
+                b_slug = slugify(brand_input) or f"brand-{random.randint(1000, 9999)}"
+                counter = 1
+                orig_slug = b_slug
+                while Brand.objects.filter(slug=b_slug).exists():
+                    b_slug = f"{orig_slug}-{counter}"
+                    counter += 1
+                brand = Brand.objects.create(name=brand_input, slug=b_slug)
+            product.brand = brand
+        else:
+            product.brand = None
+        
+        product.purchase_price = Decimal(request.POST.get('purchase_price', '0') or '0')
+        product.retail_price = Decimal(request.POST.get('retail_price', '0') or '0')
         product.unit = request.POST.get('unit', 'шт')
-        product.min_stock_alert = Decimal(request.POST.get('min_stock_alert', '5'))
+        product.min_stock_alert = Decimal(request.POST.get('min_stock_alert', '5') or '5')
         product.save()
 
         AuditLog.log(

@@ -29,37 +29,6 @@
         padding-top: 1rem;
         flex-wrap: wrap;
     }
-    /* Camera Modal */
-    .camera-modal-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.88);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        z-index: 9999;
-        justify-content: center;
-        align-items: flex-end;
-        padding: 0;
-        padding-bottom: var(--safe-bottom, 0px);
-    }
-    .camera-modal-content {
-        width: 100%;
-        max-width: 520px;
-        margin: 0 auto;
-        padding: 1.25rem;
-        background: #111827;
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 20px 20px 0 0;
-        box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
-        max-height: calc(100dvh - var(--safe-top, 0px));
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    @media (min-width: 600px) {
-        .camera-modal-overlay { align-items: center; padding: 1.5rem; }
-        .camera-modal-content { border-radius: 16px; max-height: calc(100dvh - 3rem); }
-    }
     @media (max-width: 640px) {
         .product-form-grid { grid-template-columns: 1fr; }
         .product-form-grid .full-width { grid-column: 1; }
@@ -68,7 +37,7 @@
 {% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 0 auto;">
+<div style="max-width: 760px; margin: 0 auto;">
     <div class="form-page-header">
         <h1>
             {% if product %}<i class="fa-solid fa-pen-to-square" style="color: var(--accent-cyan);"></i> Редактировать товар{% else %}<i class="fa-solid fa-plus-circle" style="color: var(--accent-orange);"></i> Новый товар{% endif %}
@@ -77,59 +46,58 @@
     </div>
 
     <div class="dacar-card">
-        <form method="POST">
+        <form method="POST" id="productForm">
             {% csrf_token %}
             <div class="product-form-grid">
+                <!-- Штрихкод -->
                 <div class="full-width">
                     <label style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem; flex-wrap: wrap; gap: 0.35rem;">
-                        <span><i class="fa-solid fa-barcode"></i> Штрихкод *</span>
+                        <span><i class="fa-solid fa-barcode"></i> Штрихкод</span>
                         <span id="barcodeScannerBadge" class="badge badge-cyan"><i class="fa-solid fa-barcode"></i> Сканер готов</span>
                     </label>
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <input type="text" name="barcode" id="productBarcode" class="form-control" style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan); flex: 1;" value="{% if initial_barcode %}{{ initial_barcode }}{% elif product %}{{ product.barcode }}{% endif %}" placeholder="Отсканируйте штрихкод..." inputmode="text" autocomplete="off">
-                        <button type="button" id="btnStartCameraScan" class="btn btn-secondary" style="white-space: nowrap; flex-shrink: 0;" aria-label="Сканировать штрихкод камерой">
-                            <i class="fa-solid fa-camera" style="color: var(--accent-cyan);"></i> <span>Камера</span>
-                        </button>
-                    </div>
+                    <input type="text" name="barcode" id="productBarcode" class="form-control" style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan);" value="{% if initial_barcode %}{{ initial_barcode }}{% elif product %}{{ product.barcode }}{% endif %}" placeholder="Отсканируйте или введите штрихкод..." inputmode="text" autocomplete="off" {% if not product and not initial_barcode %}autofocus{% endif %}>
+                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 3px; display: block;">Если оставить пустым, штрихкод сгенерируется автоматически</small>
                 </div>
 
+                <!-- Наименование -->
                 <div class="full-width">
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Наименование товара *</label>
-                    <input type="text" name="name" id="productName" class="form-control" required value="{{ product.name|default:'' }}" placeholder="Например: Шампунь Detail Nano 1 л" autocomplete="off">
+                    <input type="text" name="name" id="productName" class="form-control" required value="{{ product.name|default:'' }}" placeholder="Например: Шампунь Detail Nano 1 л" autocomplete="off" {% if initial_barcode %}autofocus{% endif %}>
                 </div>
 
+                <!-- Бренд (ручной ввод) -->
                 <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Артикул <span style="font-size: 0.72rem;">(авто)</span></label>
-                    <input type="text" name="sku" id="productSku" class="form-control" value="{{ product.sku|default:'' }}" placeholder="Авто">
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+                        <i class="fa-solid fa-copyright"></i> Бренд (вручную)
+                    </label>
+                    <input type="text" name="brand" id="productBrand" list="brandsList" class="form-control" placeholder="Например: Detail, Grass, Koch, Soft99..." value="{% if product and product.brand %}{{ product.brand.name }}{% endif %}" autocomplete="off">
+                    <datalist id="brandsList">
+                        {% for b in brands %}
+                        <option value="{{ b.name }}">
+                        {% endfor %}
+                    </datalist>
                 </div>
-            </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <!-- Категория (необязательно) -->
                 <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Категория *</label>
-                    <select name="category" class="form-control" required>
-                        <option value="">Выберите категорию</option>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+                        <i class="fa-solid fa-tags"></i> Категория
+                    </label>
+                    <select name="category" class="form-control">
+                        <option value="">Общая / Автохимия</option>
                         {% for cat in categories %}
                         <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Бренд</label>
-                    <select name="brand" class="form-control">
-                        <option value="">Без бренда</option>
-                        {% for b in brands %}
-                        <option value="{{ b.id }}" {% if product and product.brand_id == b.id %}selected{% endif %}>{{ b.name }} ({{ b.country }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
+                <!-- Цена продажи -->
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: var(--accent-cyan); font-weight: 700; margin-bottom: 0.35rem;">Цена продажи (₸) *</label>
                     <input type="number" step="1" name="retail_price" inputmode="numeric" class="form-control" style="font-weight: 800; font-size: 1.05rem;" required value="{% if product %}{{ product.retail_price|floatformat:0 }}{% endif %}" placeholder="например: 4500">
                 </div>
 
+                <!-- Закупочная цена -->
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Закупочная цена (₸)</label>
                     <input type="number" step="1" name="purchase_price" inputmode="numeric" class="form-control" value="{% if product %}{{ product.purchase_price|floatformat:0 }}{% else %}0{% endif %}" placeholder="0">
@@ -137,6 +105,7 @@
 
                 <input type="hidden" name="unit" value="шт">
 
+                <!-- Количество на складе -->
                 {% if not product %}
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Начальное количество (шт)</label>
@@ -144,9 +113,10 @@
                 </div>
                 {% endif %}
 
+                <!-- Мин. порог остатка -->
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Мин. порог (сигнал)</label>
-                    <input type="number" step="1" name="min_stock_alert" inputmode="numeric" class="form-control" value="5" placeholder="5">
+                    <input type="number" step="1" name="min_stock_alert" inputmode="numeric" class="form-control" value="{% if product %}{{ product.min_stock_alert|floatformat:0 }}{% else %}5{% endif %}" placeholder="5">
                 </div>
             </div>
 
@@ -157,39 +127,11 @@
         </form>
     </div>
 </div>
-
-<!-- Mobile Camera Barcode Scanner Modal (iPhone/Android safe) -->
-<div class="camera-modal-overlay" id="cameraScanModal">
-    <div class="camera-modal-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.875rem;">
-            <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; color: #F9FAFB; display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fa-solid fa-camera" style="color: var(--accent-cyan);"></i> Сканер штрих-кода
-            </h3>
-            <button type="button" id="btnCloseCameraScan" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #F9FAFB; font-size: 1rem;" aria-label="Закрыть сканер">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        <div id="cameraScanStatus" style="font-size: 0.85rem; color: #9CA3AF; margin-bottom: 0.75rem; text-align: center; min-height: 2rem; background: rgba(255,255,255,0.05); padding: 0.5rem 0.75rem; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-            <i class="fa-solid fa-spinner fa-spin" style="margin-right: 0.4rem;"></i> Подготовка...
-        </div>
-
-        <div id="cameraScannerViewport" style="width: 100%; aspect-ratio: 16/10; background: #000; border-radius: 12px; overflow: hidden; border: 2px solid rgba(2,132,199,0.4); position: relative;"></div>
-
-        <div style="display: flex; gap: 0.75rem; justify-content: space-between; align-items: center; margin-top: 1rem;">
-            <span style="font-size: 0.72rem; color: #6B7280;"><i class="fa-solid fa-shield-halved"></i> EAN-13, EAN-8, UPC, Code 128, QR</span>
-            <button type="button" id="btnStopCameraScan" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #F9FAFB; padding: 9px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; font-family: inherit;" aria-label="Закрыть сканер"><i class="fa-solid fa-xmark"></i> Закрыть</button>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_scripts %}
-<!-- Load html5-qrcode scanner library -->
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
 <script>
-    // 1. Hardware scanner SVC SP9010 listener for Product Creation Form
+    // Hardware barcode scanner support (USB / Bluetooth / 2D reader)
     let formBarcodeBuffer = '';
     let formLastKeyTime = 0;
 
@@ -197,27 +139,16 @@
     const productName = document.getElementById('productName');
     const barcodeBadge = document.getElementById('barcodeScannerBadge');
 
-    // Camera Scanner DOM elements
-    const btnStartCameraScan = document.getElementById('btnStartCameraScan');
-    const cameraScanModal = document.getElementById('cameraScanModal');
-    const btnCloseCameraScan = document.getElementById('btnCloseCameraScan');
-    const btnStopCameraScan = document.getElementById('btnStopCameraScan');
-    const cameraScanStatus = document.getElementById('cameraScanStatus');
-
-    // Auto-focus logic
-    window.addEventListener('DOMContentLoaded', () => {
-        if (productBarcode.value) {
-            productName.focus();
-        } else {
-            productBarcode.focus();
+    document.addEventListener('keydown', function(e) {
+        // If focus is in name or price inputs, ignore global scan intercept
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        const activeId = document.activeElement ? document.activeElement.id : '';
+        
+        if (activeTag === 'textarea' || (activeTag === 'input' && activeId !== 'productBarcode')) {
+            return;
         }
-    });
 
-    document.addEventListener('keydown', (e) => {
-        // Do not intercept input if camera modal is open
-        if (isScanning) return;
-
-        const currentTime = Date.now();
+        const currentTime = new Date().getTime();
         if (currentTime - formLastKeyTime > 100) {
             formBarcodeBuffer = '';
         }
@@ -225,790 +156,22 @@
 
         if (e.key === 'Enter') {
             if (formBarcodeBuffer.length >= 3) {
-                e.preventDefault(); // Prevent form submit
-                productBarcode.value = formBarcodeBuffer.trim();
-                
-                // Visual feedback
-                if (barcodeBadge) {
-                    barcodeBadge.className = 'badge badge-green';
-                    barcodeBadge.innerHTML = '<i class="fa-solid fa-check"></i> Записан: ' + formBarcodeBuffer;
+                e.preventDefault();
+                if (productBarcode) {
+                    productBarcode.value = formBarcodeBuffer.trim();
+                    if (barcodeBadge) {
+                        barcodeBadge.className = 'badge badge-green';
+                        barcodeBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + formBarcodeBuffer;
+                    }
+                    if (productName) {
+                        productName.focus();
+                    }
                 }
-
                 formBarcodeBuffer = '';
-
-                // Move focus to Product Name
-                setTimeout(() => {
-                    productName.focus();
-                    productName.select();
-                }, 50);
             }
-        } else if (e.key.length === 1 && document.activeElement !== productName && document.activeElement !== document.getElementById('productSku')) {
+        } else if (e.key.length === 1) {
             formBarcodeBuffer += e.key;
         }
     });
-
-    // ============================================================
-    // DACAR — MOBILE BARCODE CAMERA SCANNER
-    // Optimized for iPhone Safari + Android Chrome
-    // EAN-13 / EAN-8 / UPC / CODE-128 / CODE-39
-    // ============================================================
-
-    let html5QrCode = null;
-    let isScanning = false;
-    let scanStarting = false;
-    let scanSuccessHandled = false;
-
-    const cameraViewport = document.getElementById('cameraScannerViewport');
-
-    // ------------------------------------------------------------
-    // Start camera scanner
-    // ------------------------------------------------------------
-
-    async function startCameraScanner() {
-
-        // Prevent double-click / double initialization
-        if (scanStarting || isScanning) {
-            return;
-        }
-
-        if (typeof Html5Qrcode === 'undefined') {
-            alert('Библиотека сканера не загрузилась. Проверьте подключение к Интернету.');
-            return;
-        }
-
-        scanStarting = true;
-        scanSuccessHandled = false;
-
-        cameraScanModal.style.display = 'flex';
-
-        cameraScanStatus.style.color = '#9CA3AF';
-        cameraScanStatus.innerHTML =
-            '<i class="fa-solid fa-spinner fa-spin"></i> Открытие камеры...';
-
-        try {
-
-            // ----------------------------------------------------
-            // Create scanner only once
-            // ----------------------------------------------------
-
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode(
-                    "cameraScannerViewport",
-                    {
-                        verbose: false
-                    }
-                );
-            }
-
-            // ----------------------------------------------------
-            // Calculate adaptive scanning area
-            // ----------------------------------------------------
-
-            const viewportWidth =
-                cameraViewport.clientWidth ||
-                window.innerWidth ||
-                360;
-
-            const viewportHeight =
-                cameraViewport.clientHeight ||
-                400;
-
-            /*
-             * Long barcodes need a wide scanning area.
-             *
-             * 94% gives enough horizontal space while keeping
-             * a small amount of margin around the video.
-             */
-
-            let scanWidth = Math.floor(viewportWidth * 0.94);
-
-            /*
-             * Barcode does not need a huge vertical area.
-             *
-             * Smaller height = less image data to process.
-             */
-
-            let scanHeight;
-
-            if (viewportWidth <= 380) {
-                scanHeight = 110;
-            } else if (viewportWidth <= 480) {
-                scanHeight = 125;
-            } else {
-                scanHeight = 140;
-            }
-
-            /*
-             * Safety limits.
-             */
-
-            scanWidth = Math.max(
-                240,
-                Math.min(scanWidth, viewportWidth - 10)
-            );
-
-            scanHeight = Math.max(
-                100,
-                Math.min(scanHeight, viewportHeight - 20)
-            );
-
-            console.log('Scanner viewport:', {
-                width: viewportWidth,
-                height: viewportHeight,
-                qrboxWidth: scanWidth,
-                qrboxHeight: scanHeight
-            });
-
-            // ----------------------------------------------------
-            // Scanner configuration
-            // ----------------------------------------------------
-
-            const scannerConfig = {
-
-                /*
-                 * 10-12 FPS is enough for barcode scanning.
-                 * Higher FPS causes unnecessary CPU usage.
-                 */
-                fps: 12,
-
-                /*
-                 * Wide horizontal scanning window.
-                 * Designed for EAN-13 / CODE-128.
-                 */
-                qrbox: {
-                    width: scanWidth,
-                    height: scanHeight
-                },
-
-                /*
-                 * Only barcode formats that are actually needed.
-                 *
-                 * QR is intentionally removed because this is
-                 * a product barcode scanner.
-                 */
-                formatsToSupport: [
-                    Html5QrcodeSupportedFormats.EAN_13,
-                    Html5QrcodeSupportedFormats.EAN_8,
-                    Html5QrcodeSupportedFormats.UPC_A,
-                    Html5QrcodeSupportedFormats.UPC_E,
-                    Html5QrcodeSupportedFormats.CODE_128,
-                    Html5QrcodeSupportedFormats.CODE_39
-                ],
-
-                /*
-                 * Use native BarcodeDetector where supported.
-                 */
-                experimentalFeatures: {
-                    useBarCodeDetectorIfSupported: true
-                },
-
-                /*
-                 * Small delay between decode attempts.
-                 * Helps prevent excessive CPU usage.
-                 */
-                disableFlip: false
-            };
-
-            // ----------------------------------------------------
-            // Camera configurations
-            // ----------------------------------------------------
-
-            let cameras = [];
-            try {
-                cameras = await Html5Qrcode.getCameras();
-            } catch (err) {
-                console.warn("Failed to get cameras, will fallback to environment mode", err);
-            }
-
-            const cameraConfigurations = [];
-            if (cameras && cameras.length > 0) {
-                const backCameras = cameras.filter(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('задн') || c.label.toLowerCase().includes('rear'));
-                if (backCameras.length > 0) {
-                    let mainBackCamera = backCameras.find(c => !c.label.toLowerCase().includes('ultra') && !c.label.toLowerCase().includes('telephoto'));
-                    if (mainBackCamera) {
-                        cameraConfigurations.push(mainBackCamera.id);
-                    } else {
-                        cameraConfigurations.push(backCameras[0].id);
-                    }
-                }
-                cameraConfigurations.push(cameras[cameras.length - 1].id);
-            }
-
-            cameraConfigurations.push(
-                { facingMode: { ideal: "environment" } },
-                { facingMode: "environment" },
-                true
-            );
-
-            let started = false;
-            let lastError = null;
-
-            // ----------------------------------------------------
-            // Try camera configurations safely
-            // ----------------------------------------------------
-
-            for (let i = 0; i < cameraConfigurations.length; i++) {
-
-                try {
-                    console.log(
-                        `Starting camera configuration ${i + 1}/${cameraConfigurations.length}`,
-                        cameraConfigurations[i]
-                    );
-
-                    // Re-instantiate Html5Qrcode to ensure clean state machine
-                    if (html5QrCode) {
-                        try {
-                            await html5QrCode.clear();
-                        } catch (e) {}
-                    }
-                    html5QrCode = new Html5Qrcode("cameraScannerViewport", { verbose: false });
-
-                    await html5QrCode.start(
-                        cameraConfigurations[i],
-                        scannerConfig,
-                        onBarcodeScanSuccess,
-                        onBarcodeScanError
-                    );
-
-                    started = true;
-
-                    console.log(
-                        'Camera started successfully:',
-                        cameraConfigurations[i]
-                    );
-
-                    break;
-
-                } catch (error) {
-
-                    lastError = error;
-
-                    console.warn(
-                        `Camera configuration ${i + 1} failed:`,
-                        error
-                    );
-                }
-            }
-
-            if (!started) {
-                throw lastError || new Error('Camera could not be started');
-            }
-
-            isScanning = true;
-            scanStarting = false;
-
-            // ----------------------------------------------------
-            // Camera autofocus optimization
-            // ----------------------------------------------------
-
-            await optimizeCameraFocus();
-
-            // ----------------------------------------------------
-            // Status
-            // ----------------------------------------------------
-
-            cameraScanStatus.style.color = '#6EE7B7';
-
-            cameraScanStatus.innerHTML =
-                '<i class="fa-solid fa-video"></i> ' +
-                'Камера активна. Наведите на штрих-код';
-
-        } catch (err) {
-
-            console.error(
-                'Camera Scanner Error:',
-                err
-            );
-
-            isScanning = false;
-            scanStarting = false;
-
-            showCameraError(err);
-        }
-    }
-
-
-    // ============================================================
-    // Camera focus optimization
-    // ============================================================
-
-    async function optimizeCameraFocus() {
-
-        try {
-
-            const video =
-                cameraViewport.querySelector('video');
-
-            if (!video || !video.srcObject) {
-                console.warn(
-                    'Video element not available for autofocus'
-                );
-                return;
-            }
-
-            const tracks =
-                video.srcObject.getVideoTracks();
-
-            if (!tracks || tracks.length === 0) {
-                return;
-            }
-
-            const track = tracks[0];
-
-            /*
-             * Some browsers expose camera capabilities.
-             */
-
-            if (!track.getCapabilities) {
-                return;
-            }
-
-            const capabilities =
-                track.getCapabilities();
-
-            console.log(
-                'Camera capabilities:',
-                capabilities
-            );
-
-            /*
-             * Prefer continuous autofocus.
-             */
-
-            if (
-                capabilities.focusMode &&
-                Array.isArray(capabilities.focusMode) &&
-                capabilities.focusMode.includes('continuous')
-            ) {
-
-                try {
-
-                    await track.applyConstraints({
-                        advanced: [
-                            {
-                                focusMode: 'continuous'
-                            }
-                        ]
-                    });
-
-                    console.log(
-                        'Continuous autofocus enabled'
-                    );
-
-                } catch (error) {
-
-                    console.warn(
-                        'Continuous autofocus failed:',
-                        error
-                    );
-                }
-            }
-
-        } catch (error) {
-
-            /*
-             * Autofocus is optional.
-             * Scanner must continue working even if the browser
-             * does not expose focus controls.
-             */
-
-            console.warn(
-                'Autofocus optimization unavailable:',
-                error
-            );
-        }
-    }
-
-
-    // ============================================================
-    // Stop scanner
-    // ============================================================
-
-    async function stopCameraScanner() {
-
-        if (scanStarting) {
-            return;
-        }
-
-        try {
-
-            if (html5QrCode && isScanning) {
-
-                try {
-
-                    await html5QrCode.stop();
-
-                    console.log(
-                        'Camera scanner stopped'
-                    );
-
-                } catch (error) {
-
-                    console.warn(
-                        'Scanner stop error:',
-                        error
-                    );
-                }
-            }
-
-        } finally {
-
-            isScanning = false;
-            scanStarting = false;
-
-            /*
-             * Remove any remaining video stream tracks.
-             *
-             * This is especially useful on iOS Safari.
-             */
-
-            try {
-
-                const video =
-                    cameraViewport.querySelector('video');
-
-                if (video && video.srcObject) {
-
-                    const tracks =
-                        video.srcObject.getTracks();
-
-                    tracks.forEach(track => {
-                        try {
-                            track.stop();
-                        } catch (e) {
-                            console.warn(
-                                'Track stop error:',
-                                e
-                            );
-                        }
-                    });
-
-                    video.srcObject = null;
-                }
-
-            } catch (error) {
-
-                console.warn(
-                    'Video cleanup error:',
-                    error
-                );
-            }
-
-            /*
-             * Clear scanner viewport.
-             */
-
-            try {
-                cameraViewport.innerHTML = '';
-            } catch (error) {
-                console.warn(
-                    'Viewport cleanup error:',
-                    error
-                );
-            }
-
-            /*
-             * Important:
-             *
-             * Create a new Html5Qrcode instance next time.
-             * This avoids stale iOS camera state.
-             */
-
-            html5QrCode = null;
-
-            cameraScanModal.style.display = 'none';
-        }
-    }
-
-
-    // ============================================================
-    // Successful barcode
-    // ============================================================
-
-    function onBarcodeScanSuccess(
-        decodedText,
-        decodedResult
-    ) {
-
-        /*
-         * Prevent duplicate callbacks.
-         *
-         * BarcodeDetector / html5-qrcode can call success
-         * more than once before stop() finishes.
-         */
-
-        if (scanSuccessHandled) {
-            return;
-        }
-
-        const cleanedBarcode =
-            String(decodedText || '').trim();
-
-        if (!cleanedBarcode) {
-            return;
-        }
-
-        scanSuccessHandled = true;
-
-        console.log(
-            'Barcode detected:',
-            cleanedBarcode
-        );
-
-        // --------------------------------------------------------
-        // Put barcode into form
-        // --------------------------------------------------------
-
-        productBarcode.value =
-            cleanedBarcode;
-
-        // Trigger input event for any listeners
-        productBarcode.dispatchEvent(
-            new Event('input', {
-                bubbles: true
-            })
-        );
-
-        // --------------------------------------------------------
-        // Visual feedback
-        // --------------------------------------------------------
-
-        if (barcodeBadge) {
-
-            barcodeBadge.className =
-                'badge badge-green';
-
-            barcodeBadge.innerHTML =
-                '<i class="fa-solid fa-check"></i> Камера: ' +
-                cleanedBarcode;
-        }
-
-        cameraScanStatus.style.color =
-            '#34D399';
-
-        cameraScanStatus.innerHTML =
-            '<i class="fa-solid fa-circle-check"></i> ' +
-            'Штрихкод распознан: ' +
-            cleanedBarcode;
-
-        // --------------------------------------------------------
-        // Stop camera shortly after successful detection
-        // --------------------------------------------------------
-
-        setTimeout(async () => {
-
-            await stopCameraScanner();
-
-            /*
-             * Move user to product name field.
-             */
-
-            if (productName) {
-
-                productName.focus();
-
-                /*
-                 * Do not select on mobile unnecessarily.
-                 */
-
-                if (
-                    window.matchMedia &&
-                    !window.matchMedia(
-                        '(pointer: coarse)'
-                    ).matches
-                ) {
-                    productName.select();
-                }
-            }
-
-        }, 250);
-    }
-
-
-    // ============================================================
-    // Decode errors
-    // ============================================================
-
-    function onBarcodeScanError(errorMessage) {
-
-        /*
-         * IMPORTANT:
-         *
-         * Do not update the UI on every failed frame.
-         *
-         * html5-qrcode generates many decode errors while
-         * continuously scanning.
-         *
-         * Logging every error makes debugging slower and
-         * creates unnecessary console output.
-         */
-
-        return;
-    }
-
-
-    // ============================================================
-    // Camera error handling
-    // ============================================================
-
-    function showCameraError(err) {
-
-        const errorName =
-            err && err.name
-                ? err.name
-                : '';
-
-        const errorText =
-            err
-                ? String(err)
-                : '';
-
-        let errorMessage =
-            '<i class="fa-solid fa-triangle-exclamation" ' +
-            'style="color:#F87171;"></i> ' +
-            'Не удалось открыть камеру.';
-
-
-        // Permission denied
-
-        if (
-            errorName === 'NotAllowedError' ||
-            errorText.includes('Permission denied') ||
-            errorText.includes('NotAllowedError')
-        ) {
-
-            errorMessage =
-                '<i class="fa-solid fa-lock" ' +
-                'style="color:#F87171;"></i> ' +
-                'Доступ к камере запрещён. ' +
-                'Разрешите доступ к камере в настройках браузера.';
-
-        }
-
-        // Camera not found
-
-        else if (
-            errorName === 'NotFoundError' ||
-            errorText.includes('DevicesNotFoundError')
-        ) {
-
-            errorMessage =
-                '<i class="fa-solid fa-camera-slash" ' +
-                'style="color:#F87171;"></i> ' +
-                'Камера не найдена на устройстве.';
-
-        }
-
-        // Camera currently used
-
-        else if (
-            errorName === 'NotReadableError'
-        ) {
-
-            errorMessage =
-                '<i class="fa-solid fa-triangle-exclamation" ' +
-                'style="color:#F87171;"></i> ' +
-                'Камера уже используется другим приложением.';
-
-        }
-
-        // iOS / unsupported constraints
-
-        else if (
-            errorName === 'OverconstrainedError' ||
-            errorText.includes('OverconstrainedError')
-        ) {
-
-            errorMessage =
-                '<i class="fa-solid fa-mobile-screen" ' +
-                'style="color:#FBBF24;"></i> ' +
-                'Телефон не поддерживает выбранный режим камеры. ' +
-                'Попробуйте ещё раз.';
-
-        }
-
-        // HTTPS requirement
-
-        else if (
-            window.location.protocol !== 'https:' &&
-            window.location.hostname !== 'localhost' &&
-            window.location.hostname !== '127.0.0.1'
-        ) {
-
-            errorMessage =
-                '<i class="fa-solid fa-shield-halved" ' +
-                'style="color:#FBBF24;"></i> ' +
-                'Для работы камеры требуется HTTPS.';
-        }
-
-        cameraScanStatus.style.color =
-            '#F87171';
-
-        cameraScanStatus.innerHTML =
-            errorMessage;
-    }
-
-
-    // ============================================================
-    // Event listeners
-    // ============================================================
-
-    if (btnStartCameraScan) {
-
-        btnStartCameraScan.addEventListener(
-            'click',
-            startCameraScanner
-        );
-    }
-
-    if (btnCloseCameraScan) {
-
-        btnCloseCameraScan.addEventListener(
-            'click',
-            stopCameraScanner
-        );
-    }
-
-    if (btnStopCameraScan) {
-
-        btnStopCameraScan.addEventListener(
-            'click',
-            stopCameraScanner
-        );
-    }
-
-
-    // ============================================================
-    // Close scanner when page becomes hidden
-    // Useful for iPhone Safari
-    // ============================================================
-
-    document.addEventListener(
-        'visibilitychange',
-        async () => {
-
-            if (
-                document.hidden &&
-                isScanning
-            ) {
-                await stopCameraScanner();
-            }
-        }
-    );
-
-
-    // ============================================================
-    // Cleanup before leaving page
-    // ============================================================
-
-    window.addEventListener(
-        'pagehide',
-        async () => {
-
-            if (isScanning) {
-                await stopCameraScanner();
-            }
-        }
-    );
 </script>
 {% endblock %}
