@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="dacarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#0369A1" />
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F97316" />
+      <stop offset="100%" stop-color="#EA580C" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background rounded squircle -->
+  <rect width="64" height="64" rx="16" fill="url(#dacarGrad)"/>
+  
+  <!-- Orange speed accent line -->
+  <path d="M 12 50 C 26 44 40 44 54 50" stroke="url(#orangeGrad)" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.95" />
+  
+  <!-- Bold Stylized Letter 'D' -->
+  <path d="M 18 15 L 33 15 C 43.5 15 50 21.5 50 31.5 C 50 41.5 43.5 48 33 48 L 18 48 Z M 27.5 23.5 L 27.5 39.5 L 32.5 39.5 C 38 39.5 41 36.5 41 31.5 C 41 26.5 38 23.5 32.5 23.5 Z" fill="#FFFFFF"/>
+  
+  <!-- Orange accent dot -->
+  <circle cx="49" cy="16" r="4" fill="url(#orangeGrad)"/>
+</svg>
