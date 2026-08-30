@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Вход в систему — DACAR Детейлинг Маркет{% endblock %}
+
+{% block content %}
+<div style="min-height: calc(100dvh - 120px); display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem;">
+    <div class="dacar-card" style="width: 100%; max-width: 420px; padding: 2rem 1.5rem; box-shadow: var(--shadow-lg);">
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan)); border-radius: 1rem; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; box-shadow: 0 8px 24px rgba(0, 242, 254, 0.3);">
+                <i class="fa-solid fa-spray-can-sparkles" style="font-size: 2rem; color: #000;"></i>
+            </div>
+            <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--text-main);">DACAR POS & Учет</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">Авторизация сотрудников магазина</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Логин сотрудника</label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-user" style="position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="text" name="username" class="form-control" required style="padding-left: 2.5rem;" placeholder="например: admin или cashier1" autofocus>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Пароль</label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-lock" style="position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="password" name="password" class="form-control" required style="padding-left: 2.5rem;" placeholder="••••••••">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem; font-weight: 700;">
+                <i class="fa-solid fa-right-to-bracket"></i> Войти в систему
+            </button>
+        </form>
+
+
+    </div>
+</div>
+{% endblock %}

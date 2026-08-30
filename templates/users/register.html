@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация сотрудника — DACAR{% endblock %}
+
+{% block content %}
+<div style="min-height: calc(100dvh - 120px); display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem;">
+    <div class="dacar-card" style="width: 100%; max-width: 480px; padding: 2rem 1.5rem; box-shadow: var(--shadow-lg);">
+        
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--text-main);">Регистрация профиля</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Создание аккаунта сотрудника DACAR Market</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Логин (Имя пользователя) *</label>
+                <input type="text" name="username" class="form-control" required placeholder="cashier_alex">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Имя</label>
+                    <input type="text" name="first_name" class="form-control" placeholder="Александр">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Фамилия</label>
+                    <input type="text" name="last_name" class="form-control" placeholder="Иванов">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Телефон</label>
+                <input type="text" name="phone" class="form-control" placeholder="+7 (707) 123-45-67">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Роль сотрудника</label>
+                <select name="role" class="form-control">
+                    {% for r_val, r_lbl in roles %}
+                    <option value="{{ r_val }}">{{ r_lbl }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Пароль *</label>
+                <input type="password" name="password" class="form-control" required placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem; font-size: 1rem;">
+                <i class="fa-solid fa-user-plus"></i> Создать профиль
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.25rem;">
+            <a href="{% url 'login' %}" style="color: var(--accent-cyan); font-size: 0.85rem; text-decoration: none;">&larr; Назад ко входу</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

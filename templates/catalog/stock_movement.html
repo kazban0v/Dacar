@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% block title %}Движение товаров и Склад — DACAR{% endblock %}
+
+{% block extra_head %}
+<style>
+    .stock-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .stock-grid-layout {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 1.25rem;
+        align-items: start;
+    }
+
+    .mobile-add-btn {
+        display: none;
+    }
+
+    /* Desktop Table vs Mobile Cards */
+    .movements-table-wrapper {
+        display: block;
+    }
+
+    .movements-cards-mobile {
+        display: none;
+    }
+
+    .movement-mobile-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-lg);
+        padding: 0.85rem 1rem;
+        margin-bottom: 0.65rem;
+        box-shadow: var(--shadow-xs);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .movement-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .movement-card-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 960px) {
+        .stock-grid-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .mobile-add-btn {
+            display: inline-flex;
+        }
+
+        .movement-form-card {
+            display: none;
+        }
+
+        .movement-form-card.open {
+            display: block;
+            animation: fadeInDown 0.22s ease;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .movements-table-wrapper {
+            display: none;
+        }
+
+        .movements-cards-mobile {
+            display: block;
+        }
+
+        .stock-page-header h1 { font-size: 1.25rem !important; }
+    }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="stock-page-header">
+    <div>
+        <h1 style="font-size: 1.4rem; font-weight: 800; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-boxes-packing" style="color: var(--accent-cyan);"></i> Движение товаров
+        </h1>
+        <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 3px;">Приход, списание, продажи и журнал остатков</p>
+    </div>
+    <button type="button" class="btn btn-primary mobile-add-btn" id="toggleMovementFormBtn" onclick="toggleMovementForm()">
+        <i class="fa-solid fa-plus"></i> <span id="toggleMovementBtnText">Новая операция</span>
+    </button>
+</div>
+
+<div class="stock-grid-layout">
+    <!-- FORM SIDEBAR -->
+    <div class="dacar-card movement-form-card" id="movementFormCard">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.45rem;">
+                <i class="fa-solid fa-file-pen" style="color: var(--accent-orange);"></i> Провести операцию
+            </h3>
+            <button type="button" class="btn btn-secondary mobile-add-btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="toggleMovementForm()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Выбор товара <span style="color: var(--accent-red);">*</span></label>
+                <select name="product_id" class="form-control" required style="font-size: 0.85rem;">
+                    <option value="">-- Выберите товар --</option>
+                    {% for p in products %}
+                    <option value="{{ p.id }}">{{ p.name }} (Остаток: {{ p.stock_qty }} {{ p.unit }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Тип операции <span style="color: var(--accent-red);">*</span></label>
+                <select name="movement_type" class="form-control" required style="font-size: 0.85rem;">
+                    {% for m_val, m_lbl in movement_types %}
+                    <option value="{{ m_val }}">{{ m_lbl }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Количество <span style="color: var(--accent-red);">*</span></label>
+                <input type="number" step="0.001" name="quantity" class="form-control" required placeholder="0.000">
+            </div>
+
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Себестоимость / Закупка (₸)</label>
+                <input type="number" step="0.01" name="cost_price" class="form-control" placeholder="Оставьте пустым для текущей">
+            </div>
+
+            <div style="margin-bottom: 1.15rem;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Комментарий к накладной</label>
+                <input type="text" name="comment" class="form-control" placeholder="например: Поставка от Koch Chemie №42">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; font-weight: 700; min-height: 42px;">
+                <i class="fa-solid fa-check"></i> Провести запись
+            </button>
+        </form>
+    </div>
+
+    <!-- MOVEMENTS LOG TABLE -->
+    <div class="dacar-card">
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">
+            Журнал складских операций <span class="badge badge-cyan" style="font-size: 0.75rem; margin-left: 0.25rem;">{{ movements.count }}</span>
+        </h3>
+
+        <!-- DESKTOP TABLE VIEW (>= 768px) -->
+        <div class="table-responsive movements-table-wrapper">
+            <table class="dacar-table">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Товар</th>
+                        <th>Операция</th>
+                        <th>Кол-во</th>
+                        <th>Себестоимость</th>
+                        <th>Сотрудник</th>
+                        <th>Комментарий</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in movements %}
+                    <tr>
+                        <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">{{ m.created_at|date:"d.m.Y H:i" }}</td>
+                        <td style="font-weight: 600; color: var(--text-main); font-size: 0.9rem;">{{ m.product.name }}</td>
+                        <td>
+                            {% if m.movement_type == 'IN' %}
+                            <span class="badge badge-green"><i class="fa-solid fa-arrow-down"></i> Приход</span>
+                            {% elif m.movement_type == 'OUT' %}
+                            <span class="badge badge-red"><i class="fa-solid fa-arrow-up"></i> Списание</span>
+                            {% elif m.movement_type == 'SALE' %}
+                            <span class="badge badge-cyan"><i class="fa-solid fa-cart-shopping"></i> Продажа</span>
+                            {% elif m.movement_type == 'RETURN' %}
+                            <span class="badge badge-orange"><i class="fa-solid fa-rotate-left"></i> Возврат</span>
+                            {% else %}
+                            <span class="badge badge-cyan">{{ m.get_movement_type_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-weight: 800; color: var(--text-main);">{{ m.quantity }} {{ m.product.unit }}</td>
+                        <td>{{ m.cost_price|default:"—" }} ₸</td>
+                        <td>{{ m.created_by.username|default:"Система" }}</td>
+                        <td style="color: var(--text-muted); font-size: 0.8rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ m.comment|default:'' }}">{{ m.comment|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                            Записи движения товаров отсутствуют.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MOBILE CARDS VIEW (< 768px) -->
+        <div class="movements-cards-mobile">
+            {% for m in movements %}
+            <div class="movement-mobile-card">
+                <div class="movement-card-header">
+                    <div style="font-weight: 700; font-size: 0.92rem; color: var(--text-main);">{{ m.product.name }}</div>
+                    <div>
+                        {% if m.movement_type == 'IN' %}
+                        <span class="badge badge-green" style="font-size: 0.72rem;"><i class="fa-solid fa-arrow-down"></i> Приход</span>
+                        {% elif m.movement_type == 'OUT' %}
+                        <span class="badge badge-red" style="font-size: 0.72rem;"><i class="fa-solid fa-arrow-up"></i> Списание</span>
+                        {% elif m.movement_type == 'SALE' %}
+                        <span class="badge badge-cyan" style="font-size: 0.72rem;"><i class="fa-solid fa-cart-shopping"></i> Продажа</span>
+                        {% elif m.movement_type == 'RETURN' %}
+                        <span class="badge badge-orange" style="font-size: 0.72rem;"><i class="fa-solid fa-rotate-left"></i> Возврат</span>
+                        {% else %}
+                        <span class="badge badge-cyan" style="font-size: 0.72rem;">{{ m.get_movement_type_display }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="movement-card-details">
+                    <div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Количество:</span>
+                        <div style="font-weight: 800; font-size: 0.95rem; color: var(--accent-cyan);">{{ m.quantity }} {{ m.product.unit }}</div>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Себестоимость:</span>
+                        <div style="font-weight: 600;">{{ m.cost_price|default:"—" }} ₸</div>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Сотрудник:</span>
+                        <div>{{ m.created_by.username|default:"Система" }}</div>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Дата:</span>
+                        <div style="color: var(--text-muted);">{{ m.created_at|date:"d.m.Y H:i" }}</div>
+                    </div>
+                </div>
+
+                {% if m.comment %}
+                <div style="background: #F9FAFB; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--card-border); font-size: 0.78rem; color: var(--text-muted);">
+                    <i class="fa-regular fa-comment-dots" style="margin-right: 4px;"></i> {{ m.comment }}
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                Записи движения товаров отсутствуют.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+    function toggleMovementForm() {
+        const formCard = document.getElementById('movementFormCard');
+        const btnText = document.getElementById('toggleMovementBtnText');
+        if (!formCard) return;
+
+        formCard.classList.toggle('open');
+        const isOpen = formCard.classList.contains('open');
+        if (btnText) {
+            btnText.textContent = isOpen ? 'Скрыть форму' : 'Новая операция';
+        }
+        if (isOpen) {
+            formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+</script>
+{% endblock %}
+{% endblock %}
