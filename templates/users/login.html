@@ -16,34 +16,55 @@
         }
     }
 
-    @keyframes iconEnterExit {
+    @keyframes carDriveIn {
         0% {
-            transform: translateX(-160%);
+            transform: translateX(-220%) scaleX(-1);
             opacity: 0;
         }
 
-        14% {
-            transform: translateX(0);
+        70% {
+            transform: translateX(6%) scaleX(-1);
             opacity: 1;
-        }
-
-        62% {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        80% {
-            transform: translateX(160%);
-            opacity: 0;
-        }
-
-        81% {
-            transform: translateX(-160%);
-            opacity: 0;
         }
 
         100% {
-            transform: translateX(-160%);
+            transform: translateX(0) scaleX(-1);
+            opacity: 1;
+        }
+    }
+
+    @keyframes carDriveOut {
+        0% {
+            transform: translateX(0) scaleX(-1);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translateX(220%) scaleX(-1);
+            opacity: 0;
+        }
+    }
+
+    @keyframes carBounce {
+
+        0%,
+        100% {
+            transform: translateY(0) scaleX(-1);
+        }
+
+        50% {
+            transform: translateY(-3px) scaleX(-1);
+        }
+    }
+
+    @keyframes roadLine {
+        0% {
+            transform: translateX(0);
+            opacity: 0.6;
+        }
+
+        100% {
+            transform: translateX(-140%);
             opacity: 0;
         }
     }
@@ -76,62 +97,58 @@
 
     .dacar-login-icon-wrap {
         position: relative;
-        width: 64px;
+        width: 96px;
         height: 64px;
         margin: 0 auto 1rem;
+        overflow: hidden;
+    }
+
+    .dacar-road-line {
+        position: absolute;
+        bottom: 10px;
+        height: 2px;
+        width: 22px;
+        border-radius: 2px;
+        background: var(--text-muted);
+        opacity: 0;
+        animation: roadLine 0.9s linear infinite;
+    }
+
+    .dacar-road-line:nth-child(1) {
+        right: -10%;
+        animation-delay: 0.9s;
+    }
+
+    .dacar-road-line:nth-child(2) {
+        right: -30%;
+        animation-delay: 1.2s;
+    }
+
+    .dacar-road-line:nth-child(3) {
+        right: -50%;
+        animation-delay: 1.5s;
     }
 
     .dacar-login-icon {
         width: 64px;
         height: 64px;
+        margin: 0 auto;
         background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan));
         border-radius: 1rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        animation: iconPulse 2.6s ease-in-out infinite;
+        animation: carDriveIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+            carBounce 1.6s ease-in-out 0.9s infinite;
+    }
+
+    .dacar-login-icon.driving-away {
+        animation: carDriveOut 0.6s cubic-bezier(0.55, 0, 1, 0.45) forwards !important;
     }
 
     .dacar-login-icon i {
         font-size: 2rem;
         color: #000;
-    }
-
-    .spark {
-        position: absolute;
-        top: 8px;
-        left: 32px;
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: var(--accent-cyan);
-        animation: sparkFloat 1.8s ease-out infinite;
-    }
-
-    .spark:nth-child(2) {
-        --dx: 26px;
-        --dy: -18px;
-        background: var(--accent-orange);
-        animation-delay: 0.2s;
-    }
-
-    .spark:nth-child(3) {
-        --dx: -22px;
-        --dy: -14px;
-        animation-delay: 0.6s;
-    }
-
-    .spark:nth-child(4) {
-        --dx: 10px;
-        --dy: -28px;
-        background: var(--accent-orange);
-        animation-delay: 1s;
-    }
-
-    .spark:nth-child(5) {
-        --dx: -12px;
-        --dy: -24px;
-        animation-delay: 1.4s;
     }
 
     .dacar-field {
@@ -191,6 +208,11 @@
         background-size: 200% 100%;
         animation: shimmer 2.8s linear infinite;
     }
+
+    .dacar-login-btn.is-loading {
+        pointer-events: none;
+        opacity: 0.75;
+    }
 </style>
 
 <div
@@ -199,13 +221,11 @@
         style="width: 100%; max-width: 420px; padding: 2rem 1.5rem; box-shadow: var(--shadow-lg);">
         <div style="text-align: center; margin-bottom: 2rem;">
             <div class="dacar-login-icon-wrap">
-                <span class="spark"></span>
-                <span class="spark"></span>
-                <span class="spark"></span>
-                <span class="spark"></span>
-                <span class="spark"></span>
-                <div class="dacar-login-icon">
-                    <i class="fa-solid fa-spray-can-sparkles"></i>
+                <span class="dacar-road-line"></span>
+                <span class="dacar-road-line"></span>
+                <span class="dacar-road-line"></span>
+                <div class="dacar-login-icon" id="dacarLoginIcon">
+                    <i class="fa-solid fa-car-side"></i>
                 </div>
             </div>
             <h2
@@ -215,7 +235,7 @@
                 магазина</p>
         </div>
 
-        <form method="POST">
+        <form method="POST" id="dacarLoginForm">
             {% csrf_token %}
             <div class="dacar-field">
                 <label
@@ -240,7 +260,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary dacar-login-btn"
+            <button type="submit" class="btn btn-primary dacar-login-btn" id="dacarLoginBtn"
                 style="width: 100%; padding: 0.85rem; font-size: 1rem; font-weight: 700;">
                 <i class="fa-solid fa-right-to-bracket"></i> Войти в систему
             </button>
@@ -248,4 +268,27 @@
 
     </div>
 </div>
+
+<script>
+    (function () {
+        var form = document.getElementById('dacarLoginForm');
+        var icon = document.getElementById('dacarLoginIcon');
+        var btn = document.getElementById('dacarLoginBtn');
+        var isLeaving = false;
+
+        form.addEventListener('submit', function (e) {
+            if (isLeaving) return;
+            if (typeof form.reportValidity === 'function' && !form.reportValidity()) return;
+
+            e.preventDefault();
+            isLeaving = true;
+            icon.classList.add('driving-away');
+            btn.classList.add('is-loading');
+
+            setTimeout(function () {
+                form.submit();
+            }, 550);
+        });
+    })();
+</script>
 {% endblock %}
