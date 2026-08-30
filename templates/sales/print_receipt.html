@@ -250,7 +250,7 @@
             </tr>
             <tr>
                 <td>Кассир</td>
-                <td>{{ order.cashier.get_full_name|default:order.cashier.username }}</td>
+                <td>{% if order.cashier %}{{ order.cashier.get_full_name|default:order.cashier.username }}{% else %}Удален{% endif %}</td>
             </tr>
             <tr>
                 <td>Оплата</td>

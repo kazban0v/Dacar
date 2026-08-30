@@ -214,7 +214,7 @@
                 <tr>
                     <td style="font-weight: 800; color: var(--accent-cyan); font-family: monospace; font-size: 0.9rem;">{{ order.order_number }}</td>
                     <td style="color: var(--text-muted); font-size: 0.8rem;">{{ order.created_at|date:"d.m.Y H:i" }}</td>
-                    <td style="font-weight: 600;">{{ order.cashier.get_full_name|default:order.cashier.username }}</td>
+                    <td style="font-weight: 600;">{% if order.cashier %}{{ order.cashier.get_full_name|default:order.cashier.username }}{% else %}Удален{% endif %}</td>
                     <td><span class="badge badge-cyan">{{ order.get_payment_method_display }}</span></td>
                     <td style="text-align: center;">{{ order.items.count }}</td>
                     <td style="font-weight: 800; color: var(--text-main); font-size: 1rem;">{{ order.total_amount|floatformat:0 }} ₸</td>
@@ -230,7 +230,7 @@
                         {% elif order.status == 'REFUNDED' %}
                         <div style="display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
                             <span class="badge badge-red"><i class="fa-solid fa-rotate-left"></i> Возвращен</span>
-                            <button type="button" class="btn btn-secondary" style="padding: 0.15rem 0.45rem; font-size: 0.7rem; border-color: var(--accent-orange); color: var(--accent-orange);" onclick="showRefundReasonModal('{{ order.order_number }}', '{{ order.refund_reason|default:"Причина не указана"|escapejs }}', '{{ order.refunded_by.get_full_name|default:order.refunded_by.username|default:"Кассир"|escapejs }}', '{{ order.refunded_at|date:"d.m.Y H:i" }}', '{{ order.total_amount|floatformat:0 }}')">
+                            <button type="button" class="btn btn-secondary" style="padding: 0.15rem 0.45rem; font-size: 0.7rem; border-color: var(--accent-orange); color: var(--accent-orange);" onclick="showRefundReasonModal('{{ order.order_number }}', '{{ order.refund_reason|default:"Причина не указана"|escapejs }}', '{% if order.refunded_by %}{{ order.refunded_by.get_full_name|default:order.refunded_by.username|escapejs }}{% else %}Удален{% endif %}', '{{ order.refunded_at|date:"d.m.Y H:i" }}', '{{ order.total_amount|floatformat:0 }}')">
                                 <i class="fa-solid fa-circle-info"></i> Причина
                             </button>
                         </div>
@@ -300,7 +300,7 @@
             <div class="order-card-details">
                 <div>
                     <div class="order-detail-label">Кассир:</div>
-                    <div style="font-weight: 600; color: var(--text-main);">{{ order.cashier.get_full_name|default:order.cashier.username }}</div>
+                    <div style="font-weight: 600; color: var(--text-main);">{% if order.cashier %}{{ order.cashier.get_full_name|default:order.cashier.username }}{% else %}Удален{% endif %}</div>
                 </div>
                 <div>
                     <div class="order-detail-label">Оплата:</div>
@@ -330,7 +330,7 @@
                     <i class="fa-solid fa-rotate-left"></i> Возврат
                 </button>
                 {% elif order.status == 'REFUNDED' %}
-                <button type="button" class="btn btn-secondary" style="border-color: var(--accent-orange); color: var(--accent-orange);" onclick="showRefundReasonModal('{{ order.order_number }}', '{{ order.refund_reason|default:"Причина не указана"|escapejs }}', '{{ order.refunded_by.get_full_name|default:order.refunded_by.username|default:"Кассир"|escapejs }}', '{{ order.refunded_at|date:"d.m.Y H:i" }}', '{{ order.total_amount|floatformat:0 }}')">
+                <button type="button" class="btn btn-secondary" style="border-color: var(--accent-orange); color: var(--accent-orange);" onclick="showRefundReasonModal('{{ order.order_number }}', '{{ order.refund_reason|default:"Причина не указана"|escapejs }}', '{% if order.refunded_by %}{{ order.refunded_by.get_full_name|default:order.refunded_by.username|escapejs }}{% else %}Удален{% endif %}', '{{ order.refunded_at|date:"d.m.Y H:i" }}', '{{ order.total_amount|floatformat:0 }}')">
                     <i class="fa-solid fa-circle-info"></i> Причина
                 </button>
                 {% endif %}

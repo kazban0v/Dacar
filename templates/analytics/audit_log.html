@@ -88,7 +88,9 @@
                         {{ log.created_at|date:"d.m.Y H:i" }}
                     </td>
                     <td class="col-user">
-                        <strong style="color: var(--text-main);">{{ log.user.get_full_name|default:log.user.username|default:"Система" }}</strong>
+                        <strong style="color: var(--text-main);">
+                            {% if log.user %}{{ log.user.get_full_name|default:log.user.username }}{% else %}Удаленный пользователь{% endif %}
+                        </strong>
                         {% if log.user %}
                         <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">{{ log.user.get_role_display }}</span>
                         {% endif %}

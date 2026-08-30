@@ -172,7 +172,7 @@
                 <tr>
                     <td style="font-weight: 700; color: var(--text-main);">
                         <i class="fa-solid fa-user-tie" style="color: var(--accent-cyan); margin-right: 0.35rem;"></i>
-                        {{ cs.user.get_full_name|default:cs.user.username }}
+                        {% if cs.user %}{{ cs.user.get_full_name|default:cs.user.username }}{% else %}Удален{% endif %}
                     </td>
                     <td><span class="badge {% if cs.user.is_admin_user %}badge-orange{% else %}badge-green{% endif %}">{{ cs.user.get_role_display }}</span></td>
                     <td style="font-weight: 700; color: var(--accent-cyan);">{{ cs.count }} шт</td>
@@ -218,7 +218,7 @@
                 <tr>
                     <td style="font-weight: 700; color: var(--accent-cyan);">{{ order.order_number }}</td>
                     <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
-                    <td>{{ order.cashier.get_full_name|default:order.cashier.username }}</td>
+                    <td>{% if order.cashier %}{{ order.cashier.get_full_name|default:order.cashier.username }}{% else %}Удален{% endif %}</td>
                     <td><span class="badge badge-cyan">{{ order.get_payment_method_display }}</span></td>
                     <td style="font-weight: 800; color: var(--text-main);">{{ order.total_amount }} ₸</td>
                     <td style="color: var(--accent-green); font-weight: 700;">+{{ order.gross_profit|floatformat:0 }} ₸</td>
