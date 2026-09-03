@@ -186,20 +186,23 @@
     /* 2. 3-COLUMN COMPACT KPI GRID */
     .hub-mini-kpi-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.65rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: clamp(0.45rem, 1.5vw, 0.85rem);
     }
 
     .hub-mini-kpi-card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
         border-radius: 16px;
-        padding: 0.95rem 0.85rem;
+        padding: clamp(0.75rem, 1.5vw, 1rem) clamp(0.6rem, 1.2vw, 0.85rem);
         display: flex;
         flex-direction: column;
         gap: 0.45rem;
         box-shadow: var(--shadow-sm);
         transition: transform 0.15s ease;
+        box-sizing: border-box;
+        min-width: 0;
+        overflow: hidden;
     }
 
     .hub-mini-kpi-card:hover {
@@ -214,6 +217,7 @@
         align-items: center;
         justify-content: center;
         font-size: 0.88rem;
+        flex-shrink: 0;
     }
 
     .hub-kpi-icon-box.blue   { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
@@ -222,16 +226,22 @@
 
     .hub-kpi-value {
         font-family: 'Outfit', sans-serif;
-        font-size: 1.25rem;
+        font-size: clamp(0.95rem, 2.5vw, 1.35rem);
         font-weight: 800;
         color: var(--text-primary);
         line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .hub-kpi-label {
-        font-size: 0.72rem;
+        font-size: clamp(0.68rem, 1.5vw, 0.78rem);
         color: var(--text-secondary);
         font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     /* 3. LOW STOCK WARNING BANNER */
@@ -391,21 +401,26 @@
         font-size: 0.82rem;
     }
 
-    /* ===== TABLET COCKPIT GRID (>= 768px) ===== */
+    /* ===== TABLET / DESKTOP COCKPIT GRID (>= 960px) ===== */
     .hub-tablet-grid {
         display: flex;
         flex-direction: column;
-        gap: 0.85rem;
+        gap: 1rem;
+        width: 100%;
+        box-sizing: border-box;
     }
     .hub-tablet-col {
         display: flex;
         flex-direction: column;
-        gap: 0.85rem;
+        gap: 1rem;
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
     }
 
-    @media (min-width: 768px) {
+    @media (min-width: 960px) {
         .hub-dashboard-container {
-            max-width: 1040px;
+            max-width: 1100px;
             margin: 0 auto;
         }
         .hub-tablet-grid {
@@ -414,17 +429,11 @@
             gap: 1.25rem;
             align-items: start;
         }
-        .hub-tablet-col {
-            gap: 1.25rem;
-        }
         .hub-hero-card, .hub-chart-card, .hub-payment-card, .hub-warning-banner {
             margin-bottom: 0;
         }
         .hub-chart-card canvas {
             min-height: 190px !important;
-        }
-        .hub-hero-amount {
-            font-size: 2.25rem;
         }
     }
 

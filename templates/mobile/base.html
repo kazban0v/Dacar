@@ -3,7 +3,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
     <meta name="format-detection" content="telephone=no">
     <meta name="theme-color" content="#0284C7">
     <meta name="mobile-web-app-capable" content="yes">
@@ -897,15 +897,17 @@
             }
         }
 
-        /* ===== TABLET SPECIALIZED ADAPTATION (768px - 1200px) ===== */
-        @media (min-width: 768px) and (max-width: 1200px) {
+        /* ===== TABLET SPECIALIZED ADAPTATION (560px - 1200px) ===== */
+        @media (min-width: 560px) and (max-width: 1200px) {
             .main-container {
                 max-width: 1040px !important;
                 margin: 0 auto !important;
-                padding-left: 1.5rem !important;
-                padding-right: 1.5rem !important;
-                padding-top: 1.25rem !important;
-                padding-bottom: calc(90px + var(--safe-bottom)) !important;
+                padding-left: clamp(0.75rem, 2vw, 1.5rem) !important;
+                padding-right: clamp(0.75rem, 2vw, 1.5rem) !important;
+                padding-top: 1rem !important;
+                padding-bottom: calc(88px + var(--safe-bottom)) !important;
+                box-sizing: border-box !important;
+                width: 100% !important;
             }
 
             /* Floating Tablet Dock for Bottom Nav */
@@ -913,13 +915,13 @@
                 left: 50% !important;
                 right: auto !important;
                 transform: translateX(-50%) !important;
-                width: 90% !important;
-                max-width: 540px !important;
+                width: 92% !important;
+                max-width: 520px !important;
                 border-radius: 24px !important;
-                bottom: 14px !important;
+                bottom: 12px !important;
                 border: 1px solid var(--card-border) !important;
                 box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35) !important;
-                padding: 6px 16px calc(6px + var(--safe-bottom)) !important;
+                padding: 6px 14px calc(6px + var(--safe-bottom)) !important;
                 background: var(--bottom-nav-bg) !important;
             }
 

@@ -245,15 +245,16 @@
         }
     }
 
-    @media (min-width: 600px) and (max-width: 1200px) {
+    @media (min-width: 560px) and (max-width: 1200px) {
         .staff-cards-mobile {
             display: grid !important;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important;
-            gap: 1rem !important;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)) !important;
+            gap: 0.85rem !important;
         }
         .staff-card-item {
             margin-bottom: 0 !important;
-            height: 100% !important;
+            box-sizing: border-box !important;
+            min-width: 0 !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;

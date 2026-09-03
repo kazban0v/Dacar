@@ -68,8 +68,10 @@ public class MainActivity extends AppCompatActivity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setLoadsImagesAutomatically(true);
-        settings.setUseWideViewPort(true);
-        settings.setLoadWithOverviewMode(true);
+        // Disable wide viewport zooming so responsive layout doesn't get minified/squeezed on tablets
+        settings.setUseWideViewPort(false);
+        settings.setLoadWithOverviewMode(false);
+        settings.setTextZoom(100);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
@@ -151,15 +153,23 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            // Handle Camera Permission for Barcode Scanner
+            // Handle Camera Permission for Barcode Scanner (Huawei EMUI / Android 10+ compatible)
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
-                pendingPermissionRequest = request;
-                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                    request.grant(request.getResources());
-                } else {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CODE);
-                }
+                MainActivity.this.runOnUiThread(() -> {
+                    pendingPermissionRequest = request;
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                        try {
+                            request.grant(request.getResources());
+                        } catch (Exception e) {
+                            try {
+                                request.grant(new String[]{PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+                            } catch (Exception ignored) {}
+                        }
+                    } else {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CODE);
+                    }
+                });
             }
 
             // Handle File Upload & Print Receipt Download
@@ -226,9 +236,20 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (pendingPermissionRequest != null) {
-                    pendingPermissionRequest.grant(pendingPermissionRequest.getResources());
-                }
+                runOnUiThread(() -> {
+                    if (pendingPermissionRequest != null) {
+                        try {
+                            pendingPermissionRequest.grant(pendingPermissionRequest.getResources());
+                        } catch (Exception e) {
+                            try {
+                                pendingPermissionRequest.grant(new String[]{PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+                            } catch (Exception ignored) {}
+                        }
+                        pendingPermissionRequest = null;
+                    }
+                });
+            } else {
+                Toast.makeText(this, "Для сканирования требуется доступ к камере", Toast.LENGTH_SHORT).show();
             }
         }
     }

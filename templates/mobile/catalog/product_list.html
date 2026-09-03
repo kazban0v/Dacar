@@ -193,26 +193,27 @@
         .catalog-cards-mobile { display: block !important; }
     }
 
-    @media (min-width: 600px) and (max-width: 1200px) {
+    @media (min-width: 560px) and (max-width: 1200px) {
         .catalog-cards-mobile {
             display: grid !important;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
-            gap: 1rem !important;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+            gap: 0.85rem !important;
         }
         .product-list-card {
             margin-bottom: 0 !important;
-            height: 100% !important;
+            box-sizing: border-box !important;
+            min-width: 0 !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
         }
         .filter-bar-form {
             display: flex !important;
-            flex-wrap: nowrap !important;
-            gap: 0.75rem !important;
+            flex-wrap: wrap !important;
+            gap: 0.65rem !important;
         }
-        .filter-search { flex: 2 !important; min-width: 240px !important; }
-        .filter-select { flex: 1 !important; min-width: 160px !important; }
+        .filter-search { flex: 2 !important; min-width: 200px !important; }
+        .filter-select { flex: 1 !important; min-width: 140px !important; }
     }
 
     @media (max-width: 599px) {
@@ -752,7 +753,7 @@
         }
     }
 
-    // Camera Scanner logic
+    // Camera Scanner logic with Huawei EMUI compatibility
     let warehouseQrCode = null;
 
     function openWarehouseScanner() {
@@ -761,9 +762,16 @@
 
         if (typeof Html5Qrcode === 'undefined') {
             const script = document.createElement('script');
-            script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+            script.src = "{% static 'js/html5-qrcode.min.js' %}";
             script.onload = () => startWarehouseScanner();
-            script.onerror = () => { if (window.showToast) window.showToast('Не удалось загрузить камеру', 'error'); };
+            script.onerror = () => {
+                // Fallback to CDN if static fails
+                const cdnScript = document.createElement('script');
+                cdnScript.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+                cdnScript.onload = () => startWarehouseScanner();
+                cdnScript.onerror = () => { if (window.showToast) window.showToast('Не удалось загрузить библиотеку камеры', 'error'); };
+                document.head.appendChild(cdnScript);
+            };
             document.head.appendChild(script);
         } else {
             startWarehouseScanner();
@@ -777,17 +785,24 @@
             } else {
                 initWarehouseScanner();
             }
-        } catch(e) {}
+        } catch(e) {
+            initWarehouseScanner();
+        }
     }
 
     function initWarehouseScanner() {
-        warehouseQrCode = new Html5Qrcode("warehouse-qr-reader");
-        const config = { fps: 15, qrbox: (w, h) => ({ width: Math.floor(Math.min(w,h)*0.8), height: Math.floor(Math.min(w,h)*0.6) }) };
+        const readerEl = document.getElementById('warehouse-qr-reader');
+        if (!readerEl) return;
 
-        warehouseQrCode.start(
-            { facingMode: "environment" },
-            config,
-            (decodedText) => {
+        try {
+            warehouseQrCode = new Html5Qrcode("warehouse-qr-reader");
+            const config = { 
+                fps: 15, 
+                qrbox: (w, h) => ({ width: Math.floor(Math.min(w,h)*0.8), height: Math.floor(Math.min(w,h)*0.6) }),
+                aspectRatio: 1.0
+            };
+
+            const onScanSuccess = (decodedText) => {
                 if ('vibrate' in navigator) navigator.vibrate([50, 40, 50]);
                 closeWarehouseScanner();
                 const searchInput = document.querySelector('input[name="q"]');
@@ -795,11 +810,45 @@
                     searchInput.value = decodedText.trim();
                     document.getElementById('catalogFilterForm').submit();
                 }
-            },
-            () => {}
-        ).catch(err => {
-            if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
-        });
+            };
+
+            // Huawei EMUI deviceId camera discovery
+            Html5Qrcode.getCameras().then(devices => {
+                if (devices && devices.length) {
+                    let chosenCameraId = devices[0].id;
+                    // Prefer back camera if found
+                    for (let d of devices) {
+                        const lbl = (d.label || '').toLowerCase();
+                        if (lbl.includes('back') || lbl.includes('rear') || lbl.includes('environment')) {
+                            chosenCameraId = d.id;
+                            break;
+                        }
+                    }
+                    warehouseQrCode.start(chosenCameraId, config, onScanSuccess, () => {}).catch(err => {
+                        warehouseQrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(e2 => {
+                            warehouseQrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e3 => {
+                                if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
+                            });
+                        });
+                    });
+                } else {
+                    warehouseQrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(e1 => {
+                        warehouseQrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e2 => {
+                            if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
+                        });
+                    });
+                }
+            }).catch(err => {
+                warehouseQrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(e1 => {
+                    warehouseQrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e2 => {
+                        if (window.showToast) window.showToast('Камера недоступна: ' + (e2.message || err.message), 'warning');
+                    });
+                });
+            });
+        } catch(e) {
+            console.error('Camera init error:', e);
+            if (window.showToast) window.showToast('Ошибка запуска камеры', 'error');
+        }
     }
 
     function closeWarehouseScanner() {
