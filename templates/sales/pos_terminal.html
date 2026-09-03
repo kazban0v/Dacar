@@ -30,7 +30,7 @@
     }
 
     .scanner-badge {
-        background: rgba(2,132,199,0.08);
+        background: rgba(2, 132, 199, 0.08);
         border: 1px solid var(--accent-cyan);
         color: var(--accent-cyan);
         padding: 10px 12px;
@@ -54,9 +54,18 @@
         -webkit-overflow-scrolling: touch;
     }
 
-    .category-pills::-webkit-scrollbar { height: 3px; }
-    .category-pills::-webkit-scrollbar-track { background: transparent; }
-    .category-pills::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 99px; }
+    .category-pills::-webkit-scrollbar {
+        height: 3px;
+    }
+
+    .category-pills::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .category-pills::-webkit-scrollbar-thumb {
+        background: var(--card-border);
+        border-radius: 99px;
+    }
 
     .cat-pill {
         background: #F3F4F6;
@@ -74,7 +83,8 @@
         font-family: inherit;
     }
 
-    .cat-pill:hover, .cat-pill.active {
+    .cat-pill:hover,
+    .cat-pill.active {
         background: var(--accent-orange);
         color: #FFF;
         border-color: var(--accent-orange);
@@ -91,9 +101,18 @@
         align-content: start;
     }
 
-    .products-grid::-webkit-scrollbar { width: 4px; }
-    .products-grid::-webkit-scrollbar-track { background: transparent; }
-    .products-grid::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 99px; }
+    .products-grid::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .products-grid::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .products-grid::-webkit-scrollbar-thumb {
+        background: var(--card-border);
+        border-radius: 99px;
+    }
 
     /* Product Card (Grid Mode) */
     .product-card {
@@ -189,7 +208,9 @@
         line-height: 1.2;
     }
 
-    .product-stock.low { color: var(--accent-red); }
+    .product-stock.low {
+        color: var(--accent-red);
+    }
 
     .product-add-btn {
         display: none;
@@ -206,7 +227,7 @@
         font-weight: 800;
         padding: 3px 7px;
         border-radius: var(--radius-full);
-        box-shadow: 0 2px 6px rgba(234,88,12,0.35);
+        box-shadow: 0 2px 6px rgba(234, 88, 12, 0.35);
         display: none;
         align-items: center;
         gap: 3px;
@@ -286,7 +307,7 @@
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: rgba(2,132,199,0.1);
+        background: rgba(2, 132, 199, 0.1);
         color: var(--accent-cyan);
         display: flex;
         align-items: center;
@@ -359,7 +380,7 @@
         color: #FFF;
         border-radius: var(--radius-xl);
         padding: 10px 14px;
-        box-shadow: 0 10px 30px rgba(2,132,199,0.5), 0 2px 8px rgba(0,0,0,0.15);
+        box-shadow: 0 10px 30px rgba(2, 132, 199, 0.5), 0 2px 8px rgba(0, 0, 0, 0.15);
         z-index: 150;
         cursor: pointer;
         align-items: center;
@@ -369,8 +390,15 @@
     }
 
     @keyframes floatSlideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to   { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .floating-cart-left {
@@ -384,7 +412,7 @@
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: rgba(255,255,255,0.2);
+        background: rgba(255, 255, 255, 0.2);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -406,7 +434,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
     }
 
     .floating-cart-checkout-btn {
@@ -421,7 +449,7 @@
         align-items: center;
         gap: 6px;
         cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         font-family: inherit;
         -webkit-tap-highlight-color: transparent;
     }
@@ -456,9 +484,18 @@
         -webkit-overflow-scrolling: touch;
     }
 
-    .cart-items-container::-webkit-scrollbar { width: 4px; }
-    .cart-items-container::-webkit-scrollbar-track { background: transparent; }
-    .cart-items-container::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 99px; }
+    .cart-items-container::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .cart-items-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .cart-items-container::-webkit-scrollbar-thumb {
+        background: var(--card-border);
+        border-radius: 99px;
+    }
 
     .cart-item {
         background: #FAFAFA;
@@ -501,7 +538,10 @@
         -webkit-tap-highlight-color: transparent;
     }
 
-    .cart-item-remove:hover { color: var(--accent-red); background: rgba(220,38,38,0.08); }
+    .cart-item-remove:hover {
+        color: var(--accent-red);
+        background: rgba(220, 38, 38, 0.08);
+    }
 
     .cart-item-controls {
         display: flex;
@@ -538,8 +578,13 @@
         font-family: inherit;
     }
 
-    .qty-btn:hover { background: #F3F4F6; }
-    .qty-btn:active { background: #E5E7EB; }
+    .qty-btn:hover {
+        background: #F3F4F6;
+    }
+
+    .qty-btn:active {
+        background: #E5E7EB;
+    }
 
     .qty-input {
         width: 42px;
@@ -559,7 +604,9 @@
     }
 
     .qty-input::-webkit-inner-spin-button,
-    .qty-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .qty-input::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+    }
 
     .cart-item-total {
         font-weight: 800;
@@ -681,19 +728,24 @@
         display: none;
     }
 
-    .pos-tab-badge.visible { display: inline-block; }
+    .pos-tab-badge.visible {
+        display: inline-block;
+    }
 
     /* ===== RECEIPT MODAL ===== */
     .modal-overlay {
         position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         background: rgba(0, 0, 0, 0.75);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 300;
+        z-index: 2000;
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.22s ease;
@@ -702,8 +754,11 @@
     }
 
     .modal-overlay.active {
-        opacity: 1;
-        pointer-events: auto;
+        display: flex !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        visibility: visible !important;
+        z-index: 99999 !important;
     }
 
     .receipt-modal-box {
@@ -724,8 +779,15 @@
     }
 
     @keyframes receiptSlideIn {
-        from { opacity: 0; transform: translateY(16px) scale(0.97); }
-        to   { opacity: 1; transform: translateY(0)  scale(1); }
+        from {
+            opacity: 0;
+            transform: translateY(16px) scale(0.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
     }
 
     /* Receipt internal styling */
@@ -752,13 +814,29 @@
         font-weight: 500;
     }
 
-    .receipt-modal-box table { width: 100%; border-collapse: collapse; }
+    .receipt-modal-box table {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
-    .receipt-meta-table { margin-bottom: 0.75rem; border-bottom: 1px solid #e5e5e5; }
-    .receipt-meta-table td { padding: 0.2rem 0; font-size: 0.78rem; color: #333; }
+    .receipt-meta-table {
+        margin-bottom: 0.75rem;
+        border-bottom: 1px solid #e5e5e5;
+    }
 
-    .receipt-items-table { margin-bottom: 0.75rem; }
-    .receipt-items-table thead tr { border-bottom: 2px solid #333; }
+    .receipt-meta-table td {
+        padding: 0.2rem 0;
+        font-size: 0.78rem;
+        color: #333;
+    }
+
+    .receipt-items-table {
+        margin-bottom: 0.75rem;
+    }
+
+    .receipt-items-table thead tr {
+        border-bottom: 2px solid #333;
+    }
 
     .receipt-items-table th {
         font-size: 0.68rem;
@@ -777,7 +855,9 @@
         border-bottom: 1px solid #f0f0f0;
     }
 
-    .receipt-items-table tbody tr:last-child td { border-bottom: none; }
+    .receipt-items-table tbody tr:last-child td {
+        border-bottom: none;
+    }
 
     .receipt-totals-table {
         border-top: 2px dashed #c0c0c0;
@@ -785,7 +865,12 @@
         padding-top: 0.5rem;
     }
 
-    .receipt-totals-table td { padding: 0.25rem 0; font-size: 0.82rem; color: #333; font-weight: 500; }
+    .receipt-totals-table td {
+        padding: 0.25rem 0;
+        font-size: 0.82rem;
+        color: #333;
+        font-weight: 500;
+    }
 
     .receipt-totals-table tr.receipt-grand-total-row td {
         font-size: 1.1rem;
@@ -803,8 +888,18 @@
         border-top: 2px dashed #c0c0c0;
     }
 
-    .receipt-modal-box .receipt-footer p { font-size: 0.7rem; color: #777; margin: 0.15rem 0; font-weight: 500; }
-    .receipt-modal-box .receipt-footer p:first-child { font-weight: 700; font-size: 0.78rem; color: #333; }
+    .receipt-modal-box .receipt-footer p {
+        font-size: 0.7rem;
+        color: #777;
+        margin: 0.15rem 0;
+        font-weight: 500;
+    }
+
+    .receipt-modal-box .receipt-footer p:first-child {
+        font-weight: 700;
+        font-size: 0.78rem;
+        color: #333;
+    }
 
     .receipt-modal-box .receipt-actions {
         display: flex;
@@ -841,9 +936,13 @@
 
     /* ===== PRINT STYLES ===== */
     @media print {
-        @page { size: auto; margin: 0 !important; }
+        @page {
+            size: auto;
+            margin: 0 !important;
+        }
 
-        html, body {
+        html,
+        body {
             background: #FFF !important;
             color: #000 !important;
             margin: 0 !important;
@@ -858,12 +957,22 @@
             print-color-adjust: exact !important;
         }
 
-        header, nav, .header-nav, .sidebar, .pos-grid, .pos-mobile-tabs,
-        .messages-container, .no-print, .receipt-actions, #posToastContainer {
+        header,
+        nav,
+        .header-nav,
+        .sidebar,
+        .pos-grid,
+        .pos-mobile-tabs,
+        .messages-container,
+        .no-print,
+        .receipt-actions,
+        #posToastContainer {
             display: none !important;
         }
 
-        main, .main-container, .content-container {
+        main,
+        .main-container,
+        .content-container {
             display: block !important;
             margin: 0 !important;
             padding: 0 !important;
@@ -900,17 +1009,52 @@
             max-height: none !important;
         }
 
-        .receipt-modal-box .receipt-header { border-bottom: 1px dashed #000 !important; padding-bottom: 6px !important; margin-bottom: 6px !important; }
-        .receipt-modal-box .receipt-header h3 { font-size: 16px !important; font-weight: 900 !important; color: #000 !important; }
-        .receipt-modal-box .receipt-header p { color: #000 !important; font-size: 11px !important; font-weight: 700 !important; }
+        .receipt-modal-box .receipt-header {
+            border-bottom: 1px dashed #000 !important;
+            padding-bottom: 6px !important;
+            margin-bottom: 6px !important;
+        }
 
-        .receipt-modal-box table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; margin-bottom: 6px !important; }
+        .receipt-modal-box .receipt-header h3 {
+            font-size: 16px !important;
+            font-weight: 900 !important;
+            color: #000 !important;
+        }
 
-        .receipt-modal-box .receipt-items-table th:first-child, .receipt-modal-box .receipt-items-table td:first-child { width: 65% !important; text-align: left !important; }
-        .receipt-modal-box .receipt-items-table th:nth-child(2), .receipt-modal-box .receipt-items-table td:nth-child(2) { width: 10% !important; text-align: center !important; }
-        .receipt-modal-box .receipt-items-table th:last-child, .receipt-modal-box .receipt-items-table td:last-child { width: 25% !important; text-align: right !important; }
+        .receipt-modal-box .receipt-header p {
+            color: #000 !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+        }
 
-        .receipt-modal-box tr, .receipt-modal-box td, .receipt-modal-box th {
+        .receipt-modal-box table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            table-layout: fixed !important;
+            margin-bottom: 6px !important;
+        }
+
+        .receipt-modal-box .receipt-items-table th:first-child,
+        .receipt-modal-box .receipt-items-table td:first-child {
+            width: 65% !important;
+            text-align: left !important;
+        }
+
+        .receipt-modal-box .receipt-items-table th:nth-child(2),
+        .receipt-modal-box .receipt-items-table td:nth-child(2) {
+            width: 10% !important;
+            text-align: center !important;
+        }
+
+        .receipt-modal-box .receipt-items-table th:last-child,
+        .receipt-modal-box .receipt-items-table td:last-child {
+            width: 25% !important;
+            text-align: right !important;
+        }
+
+        .receipt-modal-box tr,
+        .receipt-modal-box td,
+        .receipt-modal-box th {
             word-break: break-word !important;
             padding: 3px 1px !important;
             font-size: 12px !important;
@@ -918,25 +1062,62 @@
             color: #000 !important;
         }
 
-        .receipt-modal-box .receipt-totals-table { border-top: 1px dashed #000 !important; margin-top: 4px !important; padding-top: 4px !important; }
-        .receipt-modal-box .receipt-totals-table td { padding: 2px 0 !important; font-size: 12px !important; font-weight: 700 !important; }
-        .receipt-modal-box .receipt-totals-table tr.receipt-grand-total-row td { font-size: 16px !important; font-weight: 900 !important; border-top: 1px solid #000 !important; border-bottom: 1px solid #000 !important; padding: 5px 0 !important; }
-        .receipt-modal-box .receipt-footer { border-top: 1px dashed #000 !important; margin-top: 8px !important; padding-top: 6px !important; }
-        .receipt-modal-box .receipt-footer p { color: #000 !important; font-size: 10px !important; font-weight: 700 !important; }
-        .receipt-modal-box .receipt-footer p:first-child { font-size: 11px !important; font-weight: 900 !important; }
+        .receipt-modal-box .receipt-totals-table {
+            border-top: 1px dashed #000 !important;
+            margin-top: 4px !important;
+            padding-top: 4px !important;
+        }
+
+        .receipt-modal-box .receipt-totals-table td {
+            padding: 2px 0 !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+        }
+
+        .receipt-modal-box .receipt-totals-table tr.receipt-grand-total-row td {
+            font-size: 16px !important;
+            font-weight: 900 !important;
+            border-top: 1px solid #000 !important;
+            border-bottom: 1px solid #000 !important;
+            padding: 5px 0 !important;
+        }
+
+        .receipt-modal-box .receipt-footer {
+            border-top: 1px dashed #000 !important;
+            margin-top: 8px !important;
+            padding-top: 6px !important;
+        }
+
+        .receipt-modal-box .receipt-footer p {
+            color: #000 !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
+        }
+
+        .receipt-modal-box .receipt-footer p:first-child {
+            font-size: 11px !important;
+            font-weight: 900 !important;
+        }
     }
 
     /* ===== RESPONSIVE POS ===== */
 
     /* Large desktop: wider cart */
     @media (min-width: 1440px) {
-        .pos-grid { grid-template-columns: 1fr 460px; }
+        .pos-grid {
+            grid-template-columns: 1fr 460px;
+        }
     }
 
     /* Laptop */
     @media (max-width: 1200px) {
-        .pos-grid { grid-template-columns: 1fr 380px; }
-        .products-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+        .pos-grid {
+            grid-template-columns: 1fr 380px;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        }
     }
 
     /* iPad / tablet / mobile - switch to tab layout */
@@ -1188,35 +1369,179 @@
         }
 
         /* JS toggles display via .pos-panel-hidden */
-        .pos-panel-hidden { display: none !important; }
+        .pos-panel-hidden {
+            display: none !important;
+        }
     }
 
     /* Mobile */
     @media (max-width: 600px) {
-        .scanner-badge span { display: none; }
-        .scanner-badge { padding: 8px 10px; }
-        #posSearchInput { font-size: 0.88rem !important; height: 42px !important; padding-left: 2.3rem !important; }
-        .search-bar-container i.fa-magnifying-glass { left: 0.75rem !important; }
+        .scanner-badge span {
+            display: none;
+        }
+
+        .scanner-badge {
+            padding: 8px 10px;
+        }
+
+        #posSearchInput {
+            font-size: 0.88rem !important;
+            height: 42px !important;
+            padding-left: 2.3rem !important;
+        }
+
+        .search-bar-container i.fa-magnifying-glass {
+            left: 0.75rem !important;
+        }
     }
 
     @media (max-width: 480px) {
-        .pos-grid { gap: 0; }
-        .products-grid { gap: 0.4rem !important; }
-        .product-card { padding: 0.55rem 0.5rem !important; min-height: 102px !important; }
-        #posToastContainer { right: 8px; right: calc(8px + var(--safe-right)); }
+        .pos-grid {
+            gap: 0;
+        }
+
+        .products-grid {
+            gap: 0.4rem !important;
+        }
+
+        .product-card {
+            padding: 0.55rem 0.5rem !important;
+            min-height: 102px !important;
+        }
+
+        #posToastContainer {
+            right: 8px;
+            right: calc(8px + var(--safe-right));
+        }
     }
 
-    /* Small mobile */
-    @media (max-width: 380px) {
-        .products-grid { gap: 0.35rem !important; }
-        #quickCashContainer { grid-template-columns: repeat(3, 1fr) !important; }
+    /* POS Help (?) Button */
+    .pos-help-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: var(--radius-md);
+        background: rgba(2, 132, 199, 0.08);
+        border: 1px solid var(--accent-cyan);
+        color: var(--accent-cyan);
+        font-weight: 800;
+        font-size: 0.95rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .pos-help-btn:hover {
+        background: var(--accent-cyan);
+        color: #FFF;
+        transform: scale(1.06);
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    }
+
+    /* POS Help Modal Box */
+    .pos-help-modal-box {
+        background: var(--card-bg, #ffffff);
+        color: var(--text-main, #0f172a);
+        width: 100%;
+        max-width: 520px;
+        max-height: calc(100dvh - 2.5rem - var(--safe-bottom));
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 1.75rem;
+        border-radius: var(--radius-xl);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+        border: 1px solid var(--card-border);
+        animation: receiptSlideIn 0.25s ease;
+    }
+
+    /* Fly to Cart Particle */
+    .flying-cart-particle {
+        position: fixed;
+        width: 22px;
+        height: 22px;
+        background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan));
+        border-radius: 50%;
+        color: #FFF;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 9999;
+        box-shadow: 0 4px 15px rgba(2, 132, 199, 0.6);
+        transition: transform 0.48s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.48s ease;
+    }
+
+    /* Mobile Camera Scanner Modal */
+    .pos-camera-modal-box {
+        background: #0F172A;
+        color: #F8FAFC;
+        width: 100%;
+        max-width: 440px;
+        border-radius: var(--radius-xl);
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1.25rem;
+        position: relative;
+        overflow: hidden;
+        animation: receiptSlideIn 0.25s ease;
+    }
+
+    .camera-viewfinder-container {
+        width: 100%;
+        min-height: 260px;
+        background: #000;
+        border-radius: var(--radius-lg);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid rgba(2, 132, 199, 0.4);
+    }
+
+    .camera-laser-line {
+        position: absolute;
+        top: 15%;
+        left: 5%;
+        right: 5%;
+        height: 2px;
+        background: #EF4444;
+        box-shadow: 0 0 12px #EF4444, 0 0 20px #EF4444;
+        animation: laserScan 2s ease-in-out infinite alternate;
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    @keyframes laserScan {
+        0% { top: 15%; }
+        100% { top: 85%; }
+    }
+
+    @keyframes badgeBounce {
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.35);
+        }
+    }
+
+    .badge-bouncing {
+        animation: badgeBounce 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 </style>
 {% endblock %}
 {% block content %}
 <!-- Mobile Tab Switcher (visible on tablet/mobile) -->
 <div class="pos-mobile-tabs" id="posMobileTabs">
-    <button class="pos-tab-btn active" id="tabBtnCatalog" onclick="switchPosTab('catalog')" aria-label="Показать каталог">
+    <button class="pos-tab-btn active" id="tabBtnCatalog" onclick="switchPosTab('catalog')"
+        aria-label="Показать каталог">
         <i class="fa-solid fa-boxes-stacked"></i> Каталог
     </button>
     <button class="pos-tab-btn" id="tabBtnCart" onclick="switchPosTab('cart')" aria-label="Показать корзину">
@@ -1236,12 +1561,23 @@
                 <input type="text" id="posSearchInput" class="form-control"
                     placeholder="Поиск по названию, арт или ШК..."
                     style="padding-left: 2.75rem; padding-right: 2.5rem; height: 46px; font-size: 0.92rem;">
-                <i class="fa-solid fa-circle-xmark" id="posSearchClearBtn" style="position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; display: none; font-size: 1.1rem;" onclick="clearPosSearch()" title="Очистить поиск"></i>
+                <i class="fa-solid fa-circle-xmark" id="posSearchClearBtn"
+                    style="position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; display: none; font-size: 1.1rem;"
+                    onclick="clearPosSearch()" title="Очистить поиск"></i>
             </div>
-            <div class="scanner-badge" id="scannerIndicator">
+            <div class="scanner-badge" id="scannerIndicator" title="Сканер штрихкодов активен">
                 <i class="fa-solid fa-barcode"></i>
                 <span>Сканер готов</span>
             </div>
+            <button type="button" class="btn btn-secondary pos-camera-btn" id="btnOpenMobileScanner"
+                style="padding: 0 12px; height: 46px; border-radius: var(--radius-md); font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid var(--accent-cyan); color: var(--accent-cyan); background: rgba(2, 132, 199, 0.06);"
+                onclick="openCameraScannerModal()" title="Сканировать штрихкод камерой смартфона">
+                <i class="fa-solid fa-camera"></i> <span style="font-size: 0.82rem;">Камера</span>
+            </button>
+            <button type="button" class="pos-help-btn" id="posHelpBtn" title="Справка кассира (F1 или ?)"
+                onclick="openPosHelpModal()">
+                <i class="fa-solid fa-question"></i>
+            </button>
         </div>
 
         <div class="category-pills">
@@ -1257,10 +1593,12 @@
                 Всего товаров: {{ products|length }}
             </span>
             <div class="pos-view-mode-toggle">
-                <button type="button" class="pos-view-btn active" id="viewBtnGrid" onclick="setPosViewMode('grid')" title="Сетка 2 колонки">
+                <button type="button" class="pos-view-btn active" id="viewBtnGrid" onclick="setPosViewMode('grid')"
+                    title="Сетка 2 колонки">
                     <i class="fa-solid fa-grip"></i>
                 </button>
-                <button type="button" class="pos-view-btn" id="viewBtnList" onclick="setPosViewMode('list')" title="Список в 1 строку">
+                <button type="button" class="pos-view-btn" id="viewBtnList" onclick="setPosViewMode('list')"
+                    title="Список в 1 строку">
                     <i class="fa-solid fa-list-ul"></i>
                 </button>
             </div>
@@ -1283,7 +1621,8 @@
                     <div class="product-price">{{ p.retail_price|floatformat:0 }} ₸</div>
                     <div class="product-stock {% if p.is_low_stock %}low{% endif %}">
                         <span>Остаток: {{ p.stock_qty|floatformat:0 }} {{ p.unit }}</span>
-                        {% if p.is_low_stock %}<span class="badge badge-red" style="padding: 1px 4px; font-size: 0.65rem;">Мало</span>{% endif %}
+                        {% if p.is_low_stock %}<span class="badge badge-red"
+                            style="padding: 1px 4px; font-size: 0.65rem;">Мало</span>{% endif %}
                     </div>
                     <div class="product-add-btn"><i class="fa-solid fa-plus"></i></div>
                 </div>
@@ -1314,9 +1653,12 @@
             <div style="text-align: center; color: var(--text-muted); padding: 1.25rem 1rem;" id="emptyCartMessage">
                 <i class="fa-solid fa-basket-shopping"
                     style="font-size: 2rem; margin-bottom: 0.35rem; opacity: 0.35;"></i>
-                <p style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); margin-bottom: 2px;">Корзина пуста</p>
+                <p style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); margin-bottom: 2px;">Корзина
+                    пуста</p>
                 <p style="font-size: 0.78rem;">Добавьте товары из каталога</p>
-                <button type="button" class="btn btn-secondary" style="margin-top: 0.6rem; padding: 6px 14px; font-size: 0.8rem; font-weight: 600;" onclick="switchPosTab('catalog')">
+                <button type="button" class="btn btn-secondary"
+                    style="margin-top: 0.6rem; padding: 6px 14px; font-size: 0.8rem; font-weight: 600;"
+                    onclick="switchPosTab('catalog')">
                     <i class="fa-solid fa-boxes-stacked"></i> Перейти в каталог
                 </button>
             </div>
@@ -1403,7 +1745,8 @@
             <span class="floating-cart-count" id="floatingCartBadge">0</span>
         </div>
         <div>
-            <div style="font-size: 0.72rem; opacity: 0.9;">В корзине: <strong id="floatingCartItemsCount">0 шт</strong></div>
+            <div style="font-size: 0.72rem; opacity: 0.9;">В корзине: <strong id="floatingCartItemsCount">0 шт</strong>
+            </div>
             <div style="font-size: 1.05rem; font-weight: 900;" id="floatingCartTotal">0 ₸</div>
         </div>
     </div>
@@ -1501,6 +1844,124 @@
         </div>
     </div>
 </div>
+
+<!-- POS CASHIER HELP MODAL -->
+<div class="modal-overlay" id="posHelpModal" role="dialog" aria-modal="true">
+    <div class="pos-help-modal-box">
+        <div
+            style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border);">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <div
+                    style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan)); display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.05rem; font-weight: 900; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
+                    <i class="fa-solid fa-cash-register"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Справка по
+                        кассе DACAR POS</h3>
+                    <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Инструкция и горячие клавиши
+                        кассира</p>
+                </div>
+            </div>
+            <button type="button"
+                style="background: rgba(0, 0, 0, 0.05); border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"
+                onclick="closePosHelpModal()" title="Закрыть">&times;</button>
+        </div>
+
+        <div
+            style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.85rem; color: var(--text-main); line-height: 1.5;">
+            <!-- Hotkeys -->
+            <div
+                style="background: #F8FAFC; border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 0.85rem 1rem;">
+                <strong
+                    style="display: flex; align-items: center; gap: 0.4rem; color: var(--accent-cyan); font-size: 0.88rem; margin-bottom: 0.5rem;">
+                    <i class="fa-solid fa-keyboard"></i> Горячие клавиши (Hotkeys):
+                </strong>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; font-size: 0.8rem;">
+                    <div><kbd
+                            style="background: #E2E8F0; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">F1</kbd>
+                        или <kbd
+                            style="background: #E2E8F0; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">?</kbd>
+                        — Эта справка</div>
+                    <div><kbd
+                            style="background: #E2E8F0; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">F2</kbd>
+                        — Быстрый поиск</div>
+                    <div><kbd
+                            style="background: #E2E8F0; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Enter</kbd>
+                        — Выбор из поиска</div>
+                    <div><kbd
+                            style="background: #E2E8F0; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">F9</kbd>
+                        — Провести оплату</div>
+                    <div><kbd
+                            style="background: #E2E8F0; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.75rem;">Esc</kbd>
+                        — Закрыть / Очистить</div>
+                </div>
+            </div>
+
+            <!-- Barcode Scanner -->
+            <div
+                style="background: rgba(2, 132, 199, 0.05); border-left: 3px solid var(--accent-cyan); padding: 0.75rem 1rem; border-radius: 0 var(--radius-md) var(--radius-md) 0;">
+                <strong
+                    style="color: var(--accent-cyan); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.2rem;">
+                    <i class="fa-solid fa-barcode"></i> Сканер штрихкодов:
+                </strong>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Поддерживаются любые USB и Bluetooth 1D/2D сканеры. Сканируйте штрихкод из любого места экрана —
+                    товар мгновенно добавляется в корзину с подтверждающим звуковым сигналом.
+                </p>
+            </div>
+
+            <!-- Payment & Quick Cash -->
+            <div>
+                <strong style="display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.25rem;">
+                    <i class="fa-solid fa-money-bill-wave" style="color: var(--accent-green);"></i> Оплата и быстрые
+                    купюры:
+                </strong>
+                <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-muted); font-size: 0.82rem;">
+                    <li><strong>Наличные:</strong> Нажимайте быстрые кнопки (+1000, +2000, +5000, +10000, +20000 ₸) или
+                        введите сумму — сдача рассчитается автоматически. Кнопка «Точно» вносит сумму без сдачи.</li>
+                    <li><strong>Kaspi QR / Карта:</strong> Переключайте метод оплаты в 1 клик для правильного учета в
+                        кассовом отчете.</li>
+                    <li><strong>Скидки:</strong> Введите скидку в тенге в поле «Скидка на чек».</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: right;">
+            <button type="button" class="btn btn-primary"
+                style="padding: 0.55rem 1.5rem; font-size: 0.88rem; font-weight: 700; border-radius: var(--radius-md);"
+                onclick="closePosHelpModal()">
+                Понятно (Esc)
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MOBILE CAMERA SCANNER MODAL -->
+<div class="modal-overlay" id="cameraScannerModal" role="dialog" aria-modal="true">
+    <div class="pos-camera-modal-box">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.6rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-camera" style="color: var(--accent-cyan); font-size: 1.1rem;"></i>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: #FFF;">Сканер штрихкодов</h3>
+            </div>
+            <button type="button" style="background: rgba(255, 255, 255, 0.1); border: none; font-size: 1.2rem; color: #FFF; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="closeCameraScannerModal()" title="Закрыть">&times;</button>
+        </div>
+
+        <div class="camera-viewfinder-container" id="cameraScannerViewport">
+            <div class="camera-laser-line"></div>
+            <div id="qr-reader" style="width: 100%;"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 0.85rem;">
+            <p style="font-size: 0.78rem; color: #94A3B8; margin: 0 0 0.65rem;">
+                Наведите камеру на штрихкод товара DACAR
+            </p>
+            <button type="button" class="btn btn-secondary" style="background: rgba(255, 255, 255, 0.1); color: #FFF; border: 1px solid rgba(255, 255, 255, 0.15); font-size: 0.82rem; padding: 6px 16px;" onclick="closeCameraScannerModal()">
+                Отмена
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -1576,12 +2037,12 @@
             grid.classList.add('list-mode');
             if (btnList) btnList.classList.add('active');
             if (btnGrid) btnGrid.classList.remove('active');
-            try { localStorage.setItem('dacar_pos_view_mode', 'list'); } catch(e){}
+            try { localStorage.setItem('dacar_pos_view_mode', 'list'); } catch (e) { }
         } else {
             grid.classList.remove('list-mode');
             if (btnGrid) btnGrid.classList.add('active');
             if (btnList) btnList.classList.remove('active');
-            try { localStorage.setItem('dacar_pos_view_mode', 'grid'); } catch(e){}
+            try { localStorage.setItem('dacar_pos_view_mode', 'grid'); } catch (e) { }
         }
     }
 
@@ -1591,7 +2052,7 @@
         if (savedView === 'list') {
             document.addEventListener('DOMContentLoaded', () => setPosViewMode('list'));
         }
-    } catch(e){}
+    } catch (e) { }
 
     let currentCategory = 'all';
     let cart = [];
@@ -1700,6 +2161,63 @@
         }
     }
 
+    // ===== AUDIO BEEP & FLY-TO-CART ANIMATION =====
+    let audioCtx = null;
+    function playScanBeep() {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.12);
+        } catch (e) {
+            // Audio context not allowed or unsupported
+        }
+    }
+
+    function triggerFlyToCart(sourceEl) {
+        if (!sourceEl) return;
+        const rect = sourceEl.getBoundingClientRect();
+        const targetEl = document.getElementById('cartHeaderCountBadge') || document.getElementById('floatingCartBadge');
+        if (!targetEl) return;
+        const targetRect = targetEl.getBoundingClientRect();
+
+        const particle = document.createElement('div');
+        particle.className = 'flying-cart-particle';
+        particle.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        particle.style.left = (rect.left + rect.width / 2 - 11) + 'px';
+        particle.style.top = (rect.top + rect.height / 2 - 11) + 'px';
+        document.body.appendChild(particle);
+
+        requestAnimationFrame(() => {
+            particle.style.transform = `translate(${targetRect.left - rect.left}px, ${targetRect.top - rect.top}px) scale(0.6)`;
+            particle.style.opacity = '0.4';
+        });
+
+        setTimeout(() => {
+            particle.remove();
+            targetEl.classList.add('badge-bouncing');
+            setTimeout(() => targetEl.classList.remove('badge-bouncing'), 350);
+        }, 480);
+    }
+
+    // ===== POS CASHIER HELP MODAL =====
+    function openPosHelpModal() {
+        const modal = document.getElementById('posHelpModal');
+        if (modal) modal.classList.add('active');
+    }
+    function closePosHelpModal() {
+        const modal = document.getElementById('posHelpModal');
+        if (modal) modal.classList.remove('active');
+    }
+
     function addToCartFromElement(el) {
         if (!el || !el.dataset) return;
         const priceStr = (el.dataset.price || '0').toString().replace(',', '.').replace(/\s/g, '');
@@ -1714,6 +2232,9 @@
             unit: el.dataset.unit || 'шт'
         };
         addToCart(product);
+        triggerFlyToCart(el);
+        playScanBeep();
+        showPosToast(`Товар "<strong>${product.name}</strong>" добавлен в корзину`, 'success');
 
         // Flash ripple animation
         el.style.transform = 'scale(0.95)';
@@ -1745,6 +2266,16 @@
 
     document.addEventListener('keydown', (e) => {
         // Hotkeys handling
+        if (e.key === 'F1' || (e.key === '?' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA')) {
+            e.preventDefault();
+            const helpModal = document.getElementById('posHelpModal');
+            if (helpModal && helpModal.classList.contains('active')) {
+                closePosHelpModal();
+            } else {
+                openPosHelpModal();
+            }
+            return;
+        }
         if (e.key === 'F2') {
             e.preventDefault();
             posSearchInput.focus();
@@ -1757,7 +2288,10 @@
             return;
         }
         if (e.key === 'Escape') {
-            if (document.getElementById('receiptModal').classList.contains('active')) {
+            const helpModal = document.getElementById('posHelpModal');
+            if (helpModal && helpModal.classList.contains('active')) {
+                closePosHelpModal();
+            } else if (document.getElementById('receiptModal').classList.contains('active')) {
                 closeReceiptModal();
             } else {
                 clearCart();
@@ -1804,39 +2338,9 @@
 
     // Toast Notification System for POS Scanner
     function showPosToast(message, type = 'info') {
-        let toastContainer = document.getElementById('posToastContainer');
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.id = 'posToastContainer';
-            toastContainer.style.position = 'fixed';
-            toastContainer.style.top = '1.5rem';
-            toastContainer.style.left = '50%';
-            toastContainer.style.transform = 'translateX(-50%)';
-            toastContainer.style.zIndex = '9999';
-            toastContainer.style.display = 'flex';
-            toastContainer.style.flexDirection = 'column';
-            toastContainer.style.gap = '0.5rem';
-            toastContainer.style.alignItems = 'center';
-            document.body.appendChild(toastContainer);
+        if (window.showToast) {
+            window.showToast(message, type, 3200);
         }
-
-        const toast = document.createElement('div');
-        toast.className = `alert alert-${type}`;
-        toast.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.5)';
-        toast.style.minWidth = '320px';
-        toast.style.margin = '0';
-        toast.style.animation = 'fadeIn 0.2s ease';
-        toast.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%;">
-                <div>${message}</div>
-                <i class="fa-solid fa-xmark" style="cursor: pointer; opacity: 0.7;" onclick="this.parentElement.parentElement.remove()"></i>
-            </div>
-        `;
-
-        toastContainer.appendChild(toast);
-        setTimeout(() => {
-            if (toast.parentElement) toast.remove();
-        }, 1200);
     }
 
     async function processScannedBarcode(code) {
@@ -1876,6 +2380,7 @@
 
         if (found) {
             addToCart(found);
+            playScanBeep();
             showPosToast(`<i class="fa-solid fa-cart-plus"></i> Добавлен: <strong>${found.name}</strong>`, 'success');
         } else {
             showPosToast(
@@ -1894,7 +2399,7 @@
     function addToCart(product) {
         const stockQty = parseFloat(product.stock_qty || product.stock || 0);
         const existingIndex = cart.findIndex(item => item.product_id === product.id);
-        
+
         let newQty = 1;
         if (existingIndex > -1) {
             newQty = cart[existingIndex].quantity + 1;
@@ -1926,12 +2431,12 @@
         if (cart[index]) {
             const stockQty = parseFloat(cart[index].stock_qty || 0);
             const newQty = cart[index].quantity + delta;
-            
+
             if (delta > 0 && stockQty < newQty) {
                 showPosToast(`Товар закончился! В наличии: ${stockQty}`, 'danger');
                 return;
             }
-            
+
             cart[index].quantity = newQty;
             if (cart[index].quantity <= 0) {
                 cart.splice(index, 1);
@@ -1961,6 +2466,7 @@
             globalDiscountInput.value = 0;
             paidAmountInput.value = '';
             renderCart();
+            if (window.showToast) window.showToast('Корзина успешно очищена', 'info', 2500);
         }
     }
 
@@ -2133,7 +2639,8 @@
     // 4. Submit Checkout to Django REST API
     async function submitCheckout() {
         if (cart.length === 0) {
-            alert('Корзина пуста! Добавьте товары для оформления продажи.');
+            if (window.showToast) window.showToast('Корзина пуста! Добавьте товары для продажи.', 'warning', 3200);
+            else alert('Корзина пуста! Добавьте товары для оформления продажи.');
             return;
         }
 
@@ -2141,7 +2648,8 @@
         let paid = parseFloat(paidAmountInput.value);
 
         if (selectedPaymentMethod === 'CASH' && (isNaN(paid) || paid < finalTotal)) {
-            alert(`Внесенная сумма (${paid || 0} ₸) меньше итоговой суммы (${finalTotal} ₸).`);
+            if (window.showToast) window.showToast(`Внесенная сумма (${paid || 0} ₸) меньше итоговой суммы (${finalTotal} ₸).`, 'warning', 3500);
+            else alert(`Внесенная сумма (${paid || 0} ₸) меньше итоговой суммы (${finalTotal} ₸).`);
             return;
         }
         if (selectedPaymentMethod !== 'CASH') {
@@ -2173,16 +2681,22 @@
             const data = await response.json();
             if (response.ok && data.success) {
                 showThermalReceipt(data.order);
+                if (window.showToast) {
+                    window.showToast(`Чек № <strong>${data.order.order_number}</strong> на <strong>${formatMoney(data.order.total_amount)} ₸</strong> успешно закрыт!`, 'success', 4500);
+                }
                 // Reset Cart
                 cart = [];
                 globalDiscountInput.value = 0;
                 paidAmountInput.value = '';
                 renderCart();
             } else {
-                alert('Ошибка проведения оплаты: ' + JSON.stringify(data.errors || data.detail));
+                const errMsg = JSON.stringify(data.errors || data.detail || 'Ошибка проведения оплаты');
+                if (window.showToast) window.showToast(errMsg, 'error', 4500);
+                else alert('Ошибка проведения оплаты: ' + errMsg);
             }
         } catch (err) {
-            alert('Сетевая ошибка при проведении чека: ' + err.message);
+            if (window.showToast) window.showToast('Сетевая ошибка: ' + err.message, 'error', 4500);
+            else alert('Сетевая ошибка при проведении чека: ' + err.message);
         }
     }
 
@@ -2441,9 +2955,9 @@
     // Utility Helpers
     function formatMoney(amount) {
         const num = parseFloat(amount || 0);
-        return num.toLocaleString('ru-RU', { 
-            minimumFractionDigits: 0, 
-            maximumFractionDigits: num % 1 === 0 ? 0 : 2 
+        return num.toLocaleString('ru-RU', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: num % 1 === 0 ? 0 : 2
         });
     }
 
@@ -2459,7 +2973,76 @@
                 }
             }
         }
-        return cookieValue;
+        // ===== MOBILE CAMERA BARCODE SCANNER =====
+    let html5QrCode = null;
+
+    async function openCameraScannerModal() {
+        const modal = document.getElementById('cameraScannerModal');
+        if (modal) modal.classList.add('active');
+
+        // Dynamically load html5-qrcode if not present
+        if (typeof Html5Qrcode === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+            script.onload = () => startCameraScanner();
+            script.onerror = () => {
+                if (window.showToast) window.showToast('Не удалось загрузить библиотеку камеры', 'error');
+            };
+            document.head.appendChild(script);
+        } else {
+            startCameraScanner();
+        }
+    }
+
+    function startCameraScanner() {
+        try {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => initScannerInstance()).catch(() => initScannerInstance());
+            } else {
+                initScannerInstance();
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function initScannerInstance() {
+        html5QrCode = new Html5Qrcode("qr-reader");
+        const config = { 
+            fps: 15, 
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                const qrboxSize = Math.floor(minEdge * 0.8);
+                return { width: qrboxSize, height: Math.floor(qrboxSize * 0.65) };
+            }, 
+            aspectRatio: 1.0 
+        };
+
+        html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText) => {
+                // Success Scan
+                if ('vibrate' in navigator) navigator.vibrate([50, 40, 50]);
+                playScanBeep();
+                closeCameraScannerModal();
+                processScannedBarcode(decodedText.trim());
+            },
+            (errorMessage) => {
+                // Frame miss, continue scanning
+            }
+        ).catch(err => {
+            console.warn('Camera permission error:', err);
+            if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
+        });
+    }
+
+    function closeCameraScannerModal() {
+        const modal = document.getElementById('cameraScannerModal');
+        if (modal) modal.classList.remove('active');
+        if (html5QrCode) {
+            html5QrCode.stop().catch(() => {});
+        }
     }
 </script>
 {% endblock %}

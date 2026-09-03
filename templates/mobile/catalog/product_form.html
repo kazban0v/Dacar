@@ -1,0 +1,323 @@
+{% extends 'mobile/base.html' %}
+
+{% block title %}{% if product %}Редактировать {{ product.name }}{% else %}Добавить новый товар{% endif %} — DACAR{% endblock %}
+
+{% block extra_head %}
+<style>
+    .product-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .product-form-grid .full-width { grid-column: 1 / -1; }
+    .form-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    .form-page-header h1 { font-size: 1.35rem; font-weight: 800; font-family: 'Outfit', sans-serif; }
+    .form-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        border-top: 1px solid var(--card-border);
+        padding-top: 1rem;
+        flex-wrap: wrap;
+    }
+    @media (max-width: 640px) {
+        .product-form-grid { grid-template-columns: 1fr; }
+        .product-form-grid .full-width { grid-column: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 760px; margin: 0 auto;">
+    <div class="form-page-header">
+        <h1>
+            {% if product %}<i class="fa-solid fa-pen-to-square" style="color: var(--accent-cyan);"></i> Редактировать товар{% else %}<i class="fa-solid fa-plus-circle" style="color: var(--accent-orange);"></i> Новый товар{% endif %}
+        </h1>
+        <a href="{% url 'm_product_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Назад</a>
+    </div>
+
+    <div class="dacar-card">
+        <form method="POST" id="productForm">
+            {% csrf_token %}
+            <div class="product-form-grid">
+                <!-- Штрихкод -->
+                <div class="full-width">
+                    <label style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem; flex-wrap: wrap; gap: 0.35rem;">
+                        <span><i class="fa-solid fa-barcode"></i> Штрихкод</span>
+                        <span id="barcodeScannerBadge" class="badge badge-cyan"><i class="fa-solid fa-barcode"></i> Сканер готов</span>
+                    </label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="text" name="barcode" id="productBarcode" class="form-control" style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan); flex: 1;" value="{% if initial_barcode %}{{ initial_barcode }}{% elif product %}{{ product.barcode }}{% endif %}" placeholder="Отсканируйте или введите штрихкод..." inputmode="text" autocomplete="off" {% if not product and not initial_barcode %}autofocus{% endif %}>
+                        <button type="button" class="btn btn-secondary" onclick="openCameraScannerModal()" style="height: 42px; border-radius: var(--radius-md); font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid var(--accent-cyan); color: var(--accent-cyan); background: rgba(2, 132, 199, 0.08); white-space: nowrap; padding: 0 14px;" title="Сканировать камерой смартфона">
+                            <i class="fa-solid fa-camera"></i> <span>Камера</span>
+                        </button>
+                    </div>
+                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Если оставить пустым, штрихкод сгенерируется автоматически</small>
+                </div>
+
+                <!-- Наименование -->
+                <div class="full-width">
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Наименование товара *</label>
+                    <input type="text" name="name" id="productName" class="form-control" required value="{{ product.name|default:'' }}" placeholder="Например: Шампунь Detail Nano 1 л" autocomplete="off" {% if initial_barcode %}autofocus{% endif %}>
+                </div>
+
+                <!-- Бренд (ручной ввод) -->
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+                        <i class="fa-solid fa-copyright"></i> Бренд (вручную)
+                    </label>
+                    <input type="text" name="brand" id="productBrand" list="brandsList" class="form-control" placeholder="Например: Detail, Grass, Koch, Soft99..." value="{% if product and product.brand %}{{ product.brand.name }}{% endif %}" autocomplete="off">
+                    <datalist id="brandsList">
+                        {% for b in brands %}
+                        <option value="{{ b.name }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+
+                <!-- Категория (необязательно) -->
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+                        <i class="fa-solid fa-tags"></i> Категория
+                    </label>
+                    <select name="category" id="productCategorySelect" class="form-control" onchange="handleCategoryChange(this)">
+                        <option value="">Общая / Автохимия</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                        <option value="__NEW__" style="color: var(--accent-cyan); font-weight: 700; background: #F0F9FF;">+ Создать новую категорию...</option>
+                    </select>
+                </div>
+
+                <!-- Цена продажи -->
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--accent-cyan); font-weight: 700; margin-bottom: 0.35rem;">Цена продажи (₸) *</label>
+                    <input type="number" step="1" name="retail_price" inputmode="numeric" class="form-control" style="font-weight: 800; font-size: 1.05rem;" required value="{% if product %}{{ product.retail_price|floatformat:0 }}{% endif %}" placeholder="например: 4500">
+                </div>
+
+                <!-- Закупочная цена -->
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Закупочная цена (₸)</label>
+                    <input type="number" step="1" name="purchase_price" inputmode="numeric" class="form-control" value="{% if product %}{{ product.purchase_price|floatformat:0 }}{% else %}0{% endif %}" placeholder="0">
+                </div>
+
+                <input type="hidden" name="unit" value="шт">
+
+                <!-- Количество на складе -->
+                {% if not product %}
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Начальное количество (шт)</label>
+                    <input type="number" step="1" name="stock_qty" inputmode="numeric" class="form-control" value="0" placeholder="например: 10">
+                </div>
+                {% endif %}
+
+                <!-- Мин. порог остатка -->
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Мин. порог (сигнал)</label>
+                    <input type="number" step="1" name="min_stock_alert" inputmode="numeric" class="form-control" value="{% if product %}{{ product.min_stock_alert|floatformat:0 }}{% else %}5{% endif %}" placeholder="5">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'm_product_list' %}" class="btn btn-secondary">Отмена</a>
+                <button type="submit" class="btn btn-primary" style="min-width: 160px;"><i class="fa-solid fa-floppy-disk"></i> Сохранить товар</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- CAMERA SCANNER MODAL -->
+<div class="modal-overlay" id="cameraScannerModal" role="dialog" aria-modal="true" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 99999; padding: 1rem; padding-bottom: calc(1rem + var(--safe-bottom));">
+    <div style="background: #0F172A; color: #F8FAFC; width: 100%; max-width: 440px; border-radius: var(--radius-xl); box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.25rem; position: relative; overflow: hidden; animation: receiptSlideIn 0.25s ease;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.6rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-camera" style="color: var(--accent-cyan); font-size: 1.1rem;"></i>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: #FFF;">Сканер штрихкодов</h3>
+            </div>
+            <button type="button" style="background: rgba(255, 255, 255, 0.1); border: none; font-size: 1.2rem; color: #FFF; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="closeCameraScannerModal()" title="Закрыть">&times;</button>
+        </div>
+
+        <div style="width: 100%; min-height: 260px; background: #000; border-radius: var(--radius-lg); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(2, 132, 199, 0.4);">
+            <div id="form-qr-reader" style="width: 100%;"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 0.85rem;">
+            <p style="font-size: 0.78rem; color: #94A3B8; margin: 0 0 0.65rem;">
+                Наведите камеру на штрихкод товара DACAR
+            </p>
+            <button type="button" class="btn btn-secondary" style="background: rgba(255, 255, 255, 0.1); color: #FFF; border: 1px solid rgba(255, 255, 255, 0.15); font-size: 0.82rem; padding: 6px 16px;" onclick="closeCameraScannerModal()">
+                Отмена
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // 1. Quick Category Creation right from dropdown
+    let prevCatVal = document.getElementById('productCategorySelect')?.value || '';
+
+    async function handleCategoryChange(select) {
+        if (select.value === '__NEW__') {
+            const catName = prompt('Введите название новой категории:');
+            if (catName && catName.trim()) {
+                try {
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                    const res = await fetch('/catalog/api/categories/create/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: new URLSearchParams({ name: catName.trim() })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const newOption = document.createElement('option');
+                        newOption.value = data.id;
+                        newOption.textContent = data.name;
+                        const triggerOpt = select.querySelector('option[value="__NEW__"]');
+                        select.insertBefore(newOption, triggerOpt);
+                        select.value = data.id;
+                        prevCatVal = data.id;
+                        if (window.showToast) window.showToast('Категория успешно создана: ' + data.name, 'success');
+                        return;
+                    } else {
+                        if (window.showToast) window.showToast(data.error || 'Ошибка при создании категории', 'error');
+                        else alert(data.error || 'Ошибка при создании категории');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    if (window.showToast) window.showToast('Не удалось создать категорию', 'error');
+                }
+            }
+            select.value = prevCatVal;
+        } else {
+            prevCatVal = select.value;
+        }
+    }
+
+    // 2. Hardware barcode scanner support (USB / Bluetooth / 2D reader)
+    let formBarcodeBuffer = '';
+    let formLastKeyTime = 0;
+
+    const productBarcode = document.getElementById('productBarcode');
+    const productName = document.getElementById('productName');
+    const barcodeBadge = document.getElementById('barcodeScannerBadge');
+
+    function applyScannedBarcode(code) {
+        if (!code) return;
+        if (productBarcode) {
+            productBarcode.value = code;
+            if (barcodeBadge) {
+                barcodeBadge.className = 'badge badge-green';
+                barcodeBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + code;
+            }
+            if (productName) {
+                productName.focus();
+            }
+        }
+        if (window.showToast) window.showToast('Штрихкод считан: ' + code, 'success', 2500);
+    }
+
+    document.addEventListener('keydown', function(e) {
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        const activeId = document.activeElement ? document.activeElement.id : '';
+        
+        if (activeTag === 'textarea' || (activeTag === 'input' && activeId !== 'productBarcode')) {
+            return;
+        }
+
+        const currentTime = new Date().getTime();
+        if (currentTime - formLastKeyTime > 100) {
+            formBarcodeBuffer = '';
+        }
+        formLastKeyTime = currentTime;
+
+        if (e.key === 'Enter') {
+            if (formBarcodeBuffer.length >= 3) {
+                e.preventDefault();
+                applyScannedBarcode(formBarcodeBuffer.trim());
+                formBarcodeBuffer = '';
+            }
+        } else if (e.key.length === 1) {
+            formBarcodeBuffer += e.key;
+        }
+    });
+
+    // 3. Camera Barcode Scanner Logic
+    let formHtml5QrCode = null;
+
+    async function openCameraScannerModal() {
+        const modal = document.getElementById('cameraScannerModal');
+        if (modal) modal.style.display = 'flex';
+
+        if (typeof Html5Qrcode === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+            script.onload = () => startFormCameraScanner();
+            script.onerror = () => {
+                if (window.showToast) window.showToast('Не удалось загрузить библиотеку камеры', 'error');
+            };
+            document.head.appendChild(script);
+        } else {
+            startFormCameraScanner();
+        }
+    }
+
+    function startFormCameraScanner() {
+        try {
+            if (formHtml5QrCode) {
+                formHtml5QrCode.stop().then(() => initFormScannerInstance()).catch(() => initFormScannerInstance());
+            } else {
+                initFormScannerInstance();
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function initFormScannerInstance() {
+        formHtml5QrCode = new Html5Qrcode("form-qr-reader");
+        const config = { 
+            fps: 15, 
+            qrbox: (w, h) => {
+                const min = Math.min(w, h);
+                return { width: Math.floor(min * 0.8), height: Math.floor(min * 0.6) };
+            },
+            aspectRatio: 1.0 
+        };
+
+        formHtml5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText) => {
+                if ('vibrate' in navigator) navigator.vibrate([50, 40, 50]);
+                closeCameraScannerModal();
+                applyScannedBarcode(decodedText.trim());
+            },
+            (errorMessage) => {}
+        ).catch(err => {
+            console.warn('Form camera scan start error:', err);
+            if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
+        });
+    }
+
+    function closeCameraScannerModal() {
+        const modal = document.getElementById('cameraScannerModal');
+        if (modal) modal.style.display = 'none';
+        if (formHtml5QrCode) {
+            formHtml5QrCode.stop().catch(() => {});
+        }
+    }
+</script>
+{% endblock %}

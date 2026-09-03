@@ -99,6 +99,7 @@ class StockMovement(models.Model):
     class MovementType(models.TextChoices):
         IN = 'IN', 'Приход / Поступление'
         OUT = 'OUT', 'Списание / Потеря'
+        TRANSFER_TO_SHOP = 'TRANSFER_TO_SHOP', 'Отгрузка в магазин'
         ADJUSTMENT = 'ADJUSTMENT', 'Корректировка инвентаризации'
         SALE = 'SALE', 'Продажа'
         RETURN = 'RETURN', 'Возврат от покупателя'
@@ -108,6 +109,7 @@ class StockMovement(models.Model):
     quantity = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Количество")
     cost_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="Себестоимость (₸)")
     comment = models.CharField(max_length=255, blank=True, verbose_name="Комментарий")
+    client_sync_id = models.CharField(max_length=64, blank=True, null=True, db_index=True, verbose_name="UUID синхронизации")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, verbose_name="Сотрудник")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время")
 

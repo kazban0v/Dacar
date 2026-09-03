@@ -1,0 +1,219 @@
+{% extends 'desktop/base.html' %}
+
+{% block title %}{% if product %}Редактировать {{ product.name }}{% else %}Добавить новый товар{% endif %} — DACAR{% endblock %}
+
+{% block extra_head %}
+<style>
+    .product-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .product-form-grid .full-width { grid-column: 1 / -1; }
+    .form-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    .form-page-header h1 { font-size: 1.35rem; font-weight: 800; font-family: 'Outfit', sans-serif; }
+    .form-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        border-top: 1px solid var(--card-border);
+        padding-top: 1rem;
+        flex-wrap: wrap;
+    }
+    @media (max-width: 640px) {
+        .product-form-grid { grid-template-columns: 1fr; }
+        .product-form-grid .full-width { grid-column: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 760px; margin: 0 auto;">
+    <div class="form-page-header">
+        <h1>
+            {% if product %}<i class="fa-solid fa-pen-to-square" style="color: var(--accent-cyan);"></i> Редактировать товар{% else %}<i class="fa-solid fa-plus-circle" style="color: var(--accent-orange);"></i> Новый товар{% endif %}
+        </h1>
+        <a href="{% url 'product_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Назад</a>
+    </div>
+
+    <div class="dacar-card">
+        <form method="POST" id="productForm">
+            {% csrf_token %}
+            <div class="product-form-grid">
+                <!-- Штрихкод -->
+                <div class="full-width">
+                    <label style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem; flex-wrap: wrap; gap: 0.35rem;">
+                        <span><i class="fa-solid fa-barcode"></i> Штрихкод</span>
+                        <span id="barcodeScannerBadge" class="badge badge-cyan"><i class="fa-solid fa-barcode"></i> Сканер готов</span>
+                    </label>
+                    <input type="text" name="barcode" id="productBarcode" class="form-control" style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan);" value="{% if initial_barcode %}{{ initial_barcode }}{% elif product %}{{ product.barcode }}{% endif %}" placeholder="Отсканируйте или введите штрихкод..." inputmode="text" autocomplete="off" {% if not product and not initial_barcode %}autofocus{% endif %}>
+                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 3px; display: block;">Если оставить пустым, штрихкод сгенерируется автоматически</small>
+                </div>
+
+                <!-- Наименование -->
+                <div class="full-width">
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Наименование товара *</label>
+                    <input type="text" name="name" id="productName" class="form-control" required value="{{ product.name|default:'' }}" placeholder="Например: Шампунь Detail Nano 1 л" autocomplete="off" {% if initial_barcode %}autofocus{% endif %}>
+                </div>
+
+                <!-- Бренд (ручной ввод) -->
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+                        <i class="fa-solid fa-copyright"></i> Бренд (вручную)
+                    </label>
+                    <input type="text" name="brand" id="productBrand" list="brandsList" class="form-control" placeholder="Например: Detail, Grass, Koch, Soft99..." value="{% if product and product.brand %}{{ product.brand.name }}{% endif %}" autocomplete="off">
+                    <datalist id="brandsList">
+                        {% for b in brands %}
+                        <option value="{{ b.name }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+
+                <!-- Категория (необязательно) -->
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+                        <i class="fa-solid fa-tags"></i> Категория
+                    </label>
+                    <select name="category" id="productCategorySelect" class="form-control" onchange="handleCategoryChange(this)">
+                        <option value="">Общая / Автохимия</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                        <option value="__NEW__" style="color: var(--accent-cyan); font-weight: 700; background: #F0F9FF;">➕ Создать новую категорию...</option>
+                    </select>
+                </div>
+
+                <!-- Цена продажи -->
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--accent-cyan); font-weight: 700; margin-bottom: 0.35rem;">Цена продажи (₸) *</label>
+                    <input type="number" step="1" name="retail_price" inputmode="numeric" class="form-control" style="font-weight: 800; font-size: 1.05rem;" required value="{% if product %}{{ product.retail_price|floatformat:0 }}{% endif %}" placeholder="например: 4500">
+                </div>
+
+                <!-- Закупочная цена -->
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Закупочная цена (₸)</label>
+                    <input type="number" step="1" name="purchase_price" inputmode="numeric" class="form-control" value="{% if product %}{{ product.purchase_price|floatformat:0 }}{% else %}0{% endif %}" placeholder="0">
+                </div>
+
+                <input type="hidden" name="unit" value="шт">
+
+                <!-- Количество на складе -->
+                {% if not product %}
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Начальное количество (шт)</label>
+                    <input type="number" step="1" name="stock_qty" inputmode="numeric" class="form-control" value="0" placeholder="например: 10">
+                </div>
+                {% endif %}
+
+                <!-- Мин. порог остатка -->
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Мин. порог (сигнал)</label>
+                    <input type="number" step="1" name="min_stock_alert" inputmode="numeric" class="form-control" value="{% if product %}{{ product.min_stock_alert|floatformat:0 }}{% else %}5{% endif %}" placeholder="5">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'product_list' %}" class="btn btn-secondary">Отмена</a>
+                <button type="submit" class="btn btn-primary" style="min-width: 160px;"><i class="fa-solid fa-floppy-disk"></i> Сохранить товар</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // 1. Quick Category Creation right from dropdown
+    let prevCatVal = document.getElementById('productCategorySelect')?.value || '';
+
+    async function handleCategoryChange(select) {
+        if (select.value === '__NEW__') {
+            const catName = prompt('Введите название новой категории:');
+            if (catName && catName.trim()) {
+                try {
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                    const res = await fetch('/catalog/api/categories/create/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: new URLSearchParams({ name: catName.trim() })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const newOption = document.createElement('option');
+                        newOption.value = data.id;
+                        newOption.textContent = data.name;
+                        const triggerOpt = select.querySelector('option[value="__NEW__"]');
+                        select.insertBefore(newOption, triggerOpt);
+                        select.value = data.id;
+                        prevCatVal = data.id;
+                        return;
+                    } else {
+                        alert(data.error || 'Ошибка при создании категории');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert('Не удалось создать категорию');
+                }
+            }
+            select.value = prevCatVal;
+        } else {
+            prevCatVal = select.value;
+        }
+    }
+
+    // 2. Hardware barcode scanner support (USB / Bluetooth / 2D reader)
+    let formBarcodeBuffer = '';
+    let formLastKeyTime = 0;
+
+    const productBarcode = document.getElementById('productBarcode');
+    const productName = document.getElementById('productName');
+    const barcodeBadge = document.getElementById('barcodeScannerBadge');
+
+    document.addEventListener('keydown', function(e) {
+        // If focus is in name or price inputs, ignore global scan intercept
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        const activeId = document.activeElement ? document.activeElement.id : '';
+        
+        if (activeTag === 'textarea' || (activeTag === 'input' && activeId !== 'productBarcode')) {
+            return;
+        }
+
+        const currentTime = new Date().getTime();
+        if (currentTime - formLastKeyTime > 100) {
+            formBarcodeBuffer = '';
+        }
+        formLastKeyTime = currentTime;
+
+        if (e.key === 'Enter') {
+            if (formBarcodeBuffer.length >= 3) {
+                e.preventDefault();
+                if (productBarcode) {
+                    productBarcode.value = formBarcodeBuffer.trim();
+                    if (barcodeBadge) {
+                        barcodeBadge.className = 'badge badge-green';
+                        barcodeBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + formBarcodeBuffer;
+                    }
+                    if (productName) {
+                        productName.focus();
+                    }
+                }
+                formBarcodeBuffer = '';
+            }
+        } else if (e.key.length === 1) {
+            formBarcodeBuffer += e.key;
+        }
+    });
+</script>
+{% endblock %}

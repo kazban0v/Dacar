@@ -1,325 +1,861 @@
 {% extends 'base.html' %}
 
-{% block title %}Дашборд Продаж — DACAR Детейлинг Маркет{% endblock %}
+{% block title %}Обзор — DACAR Mobile Hub{% endblock %}
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-    .metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1.25rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .metric-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 0.85rem;
-        padding: 1.25rem;
+    /* ===== DACAR MOBILE HUB DASHBOARD STYLES ===== */
+    .hub-dashboard-container {
+        max-width: 680px;
+        margin: 0 auto;
         display: flex;
         flex-direction: column;
+        gap: 0.85rem;
+        padding-bottom: 2rem;
+    }
+
+    /* Staggered Rise Animation ("Волна" при загрузке экрана) */
+    .hub-dashboard-container > * {
+        animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+    .hub-dashboard-container > *:nth-child(1) { animation-delay: 0.02s; }
+    .hub-dashboard-container > *:nth-child(2) { animation-delay: 0.06s; }
+    .hub-dashboard-container > *:nth-child(3) { animation-delay: 0.10s; }
+    .hub-dashboard-container > *:nth-child(4) { animation-delay: 0.14s; }
+    .hub-dashboard-container > *:nth-child(5) { animation-delay: 0.18s; }
+    .hub-dashboard-container > *:nth-child(6) { animation-delay: 0.22s; }
+    .hub-dashboard-container > *:nth-child(7) { animation-delay: 0.26s; }
+
+    /* Top Hub Header */
+    .hub-header {
+        display: flex;
+        align-items: center;
         justify-content: space-between;
+        padding: 0.25rem 0 0.5rem;
+    }
+
+    .hub-header-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .hub-avatar-logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.45rem;
+        font-weight: 900;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+        flex-shrink: 0;
+    }
+
+    .hub-brand-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    .hub-brand-subtitle {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-top: 2px;
+    }
+
+    /* Status Row (Live Радар Пульсация) */
+    .hub-status-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        padding-left: 2px;
+        margin-top: -0.25rem;
+        margin-bottom: 0.15rem;
+    }
+
+    .hub-status-dot {
+        position: relative;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--accent-green);
+        flex-shrink: 0;
+        display: inline-block;
+    }
+
+    .hub-status-dot::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 1.5px solid var(--accent-green);
+        animation: ping 1.8s cubic-bezier(0.2, 0.7, 0.4, 1) infinite;
+        pointer-events: none;
+    }
+
+    @keyframes ping {
+        0% { transform: scale(0.6); opacity: 0.9; }
+        100% { transform: scale(2.1); opacity: 0; }
+    }
+
+    /* 1. HERO REVENUE CARD */
+    .hub-hero-card {
+        background: linear-gradient(145deg, #131E36 0%, #0D1526 100%);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 1.35rem 1.4rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
         position: relative;
         overflow: hidden;
     }
 
-    .metric-card::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 3px;
+    [data-theme="light"] .hub-hero-card {
+        background: linear-gradient(145deg, #FFFFFF 0%, #F1F5F9 100%);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
 
-    .metric-card.cyan::before { background: linear-gradient(90deg, var(--accent-cyan), #4FACFE); }
-    .metric-card.orange::before { background: linear-gradient(90deg, var(--accent-orange), #FF8008); }
-    .metric-card.green::before { background: linear-gradient(90deg, var(--accent-green), #059669); }
-    .metric-card.purple::before { background: linear-gradient(90deg, var(--accent-purple), #6366F1); }
-
-    .metric-title {
-        font-size: 0.85rem;
-        color: var(--text-muted);
+    .hub-hero-label {
+        font-size: 0.84rem;
+        color: var(--text-secondary);
         font-weight: 500;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .hub-hero-body {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .hub-gauge-wrap {
+        width: 110px;
+        height: 65px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hub-hero-numbers {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .hub-hero-amount {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2.15rem;
+        font-weight: 900;
+        color: var(--text-primary);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+    }
+
+    .hub-growth-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(16, 185, 129, 0.15);
+        color: #34D399;
+        padding: 3px 9px;
+        border-radius: var(--radius-full);
+        font-size: 0.78rem;
+        font-weight: 700;
+        width: fit-content;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .hub-hero-target-text {
+        font-size: 0.76rem;
+        color: var(--text-secondary);
+        margin-top: 0.95rem;
+        line-height: 1.4;
+    }
+
+    /* 2. 3-COLUMN COMPACT KPI GRID */
+    .hub-mini-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.65rem;
+    }
+
+    .hub-mini-kpi-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 0.95rem 0.85rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.15s ease;
+    }
+
+    .hub-mini-kpi-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .hub-kpi-icon-box {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.88rem;
+    }
+
+    .hub-kpi-icon-box.blue   { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
+    .hub-kpi-icon-box.purple { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
+    .hub-kpi-icon-box.green  { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+
+    .hub-kpi-value {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1.15;
+    }
+
+    .hub-kpi-label {
+        font-size: 0.72rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    /* 3. LOW STOCK WARNING BANNER */
+    .hub-warning-banner {
+        background: rgba(245, 158, 11, 0.06);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+        border-radius: 16px;
+        padding: 0.9rem 1.15rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 0.75rem;
     }
 
-    .metric-value {
-        font-size: 1.8rem;
+    .hub-warning-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .hub-warning-icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(245, 158, 11, 0.15);
+        color: #F59E0B;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        flex-shrink: 0;
+    }
+
+    .hub-warning-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.25;
+    }
+
+    .hub-warning-subtitle {
+        font-size: 0.74rem;
+        color: var(--text-secondary);
+        margin-top: 1px;
+    }
+
+    .hub-warning-link {
+        color: #F59E0B;
         font-weight: 800;
-        color: var(--text-main);
-        font-family: 'Outfit', sans-serif;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+        padding: 6px 10px;
+        border-radius: var(--radius-md);
+        background: rgba(245, 158, 11, 0.1);
+        transition: background 0.15s;
+    }
+    .hub-warning-link:hover {
+        background: rgba(245, 158, 11, 0.2);
     }
 
-    .metric-sub {
-        font-size: 0.78rem;
-        color: var(--text-muted);
-        margin-top: 0.4rem;
+    /* 4. HOURLY SALES BAR CHART CARD */
+    .hub-chart-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 1.2rem 1.35rem;
+        box-shadow: var(--shadow-sm);
     }
 
-    .charts-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 1.25rem;
-        margin-bottom: 1.5rem;
+    .hub-chart-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
     }
 
-    @media (max-width: 900px) {
-        .charts-grid {
-            grid-template-columns: 1fr;
+    .hub-chart-title {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .hub-chart-tag {
+        font-size: 0.74rem;
+        color: var(--text-secondary);
+    }
+
+    /* 5. PAYMENT METHODS CARD */
+    .hub-payment-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 1.2rem 1.35rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .hub-payment-body {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .hub-doughnut-wrap {
+        width: 105px;
+        height: 105px;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    .hub-payment-legend {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+    }
+
+    .hub-legend-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.84rem;
+    }
+
+    .hub-legend-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+    }
+
+    .hub-legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        flex-shrink: 0;
+    }
+
+    .hub-legend-pct {
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    /* Recent Live Sale Banner */
+    .hub-recent-sale-row {
+        background: var(--glass-card);
+        border: 1px solid var(--card-border);
+        border-radius: 14px;
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        font-size: 0.82rem;
+    }
+
+    @media (max-width: 480px) {
+        .hub-mini-kpi-grid {
+            gap: 0.45rem;
+        }
+        .hub-mini-kpi-card {
+            padding: 0.75rem 0.55rem;
+        }
+        .hub-kpi-value {
+            font-size: 1.05rem;
+        }
+        .hub-hero-amount {
+            font-size: 1.85rem;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-page-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
-    <div>
-        <h1 style="font-size: 1.4rem; font-weight: 800; font-family: 'Outfit', sans-serif;">Дашборд и Аналитика Продаж</h1>
-        <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 3px;">Магазин автохимии и детейлинга "DACAR Детейлинг Маркет"</p>
+<div class="hub-dashboard-container">
+    
+    <!-- TOP APP HEADER -->
+    <div class="hub-header">
+        <div class="hub-header-brand">
+            <div class="hub-avatar-logo">D</div>
+            <div>
+                <div class="hub-brand-title">DACAR Mobile Hub</div>
+                <div class="hub-brand-subtitle">Склад · Аналитика · Аудит</div>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="toggleDacarTheme()" style="width: 38px; height: 38px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center;" title="Переключить тему">
+                <i class="fa-solid fa-moon" id="themeIcon" style="color: #F59E0B; font-size: 0.95rem;"></i>
+            </button>
+        </div>
     </div>
-    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        <a href="{% url 'pos' %}" class="btn btn-primary">
-            <i class="fa-solid fa-cash-register"></i> Открыть Кассу (POS)
+
+    <!-- STATUS ROW -->
+    <div class="hub-status-row">
+        <span class="hub-status-dot"></span>
+        <span style="font-weight: 700; color: var(--text-primary);">В сети</span>
+        <span>· обновлено только что</span>
+    </div>
+
+    <!-- 1. HERO REVENUE CARD (Выручка сегодня + Semicircle Gauge) -->
+    <div class="hub-hero-card">
+        <div class="hub-hero-label">Выручка сегодня</div>
+        <div class="hub-hero-body">
+            <!-- Radial Semicircle Gauge -->
+            <div class="hub-gauge-wrap">
+                <svg viewBox="0 0 100 55" style="width: 100%; height: 100%; overflow: visible;">
+                    <defs>
+                        <linearGradient id="hubGaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#06B6D4" />
+                            <stop offset="100%" stop-color="#10B981" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Background track -->
+                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="8" stroke-linecap="round" />
+                    <!-- Dynamic fill arc -->
+                    <path id="hubGaugeArc" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="url(#hubGaugeGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="0" style="transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);" />
+                </svg>
+            </div>
+
+            <!-- Revenue Numbers & Growth Pill -->
+            <div class="hub-hero-numbers">
+                <div class="hub-hero-amount">
+                    <span id="heroRevenueAmount">{{ today_revenue|floatformat:0 }}</span> ₸
+                </div>
+                <div class="hub-growth-pill" id="heroGrowthPill">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                    <span id="heroGrowthText">+{{ growth_percent|floatformat:0 }}% к вчера</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hub-hero-target-text" id="heroTargetText">
+            Цель дня 130% от вчерашней выручки — сейчас на отметке <strong><span id="heroTargetPct">{{ target_percent }}</span>%</strong>
+        </div>
+    </div>
+
+    <!-- 2. 3-COLUMN COMPACT KPI GRID -->
+    <div class="hub-mini-kpi-grid">
+        <!-- Чеков сегодня -->
+        <div class="hub-mini-kpi-card">
+            <div class="hub-kpi-icon-box blue">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div class="hub-kpi-value" id="kpiChecksCount">{{ today_count }}</div>
+            <div class="hub-kpi-label">Чеков сегодня</div>
+        </div>
+
+        <!-- Средний чек -->
+        <div class="hub-mini-kpi-card">
+            <div class="hub-kpi-icon-box purple">
+                <i class="fa-solid fa-bullseye"></i>
+            </div>
+            <div class="hub-kpi-value">
+                <span id="kpiAvgCheck">{{ today_avg_check|floatformat:0 }}</span> ₸
+            </div>
+            <div class="hub-kpi-label">Средний чек</div>
+        </div>
+
+        <!-- Валовая прибыль -->
+        <div class="hub-mini-kpi-card">
+            <div class="hub-kpi-icon-box green">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+            </div>
+            <div class="hub-kpi-value">
+                <span id="kpiProfit">{{ today_profit|floatformat:0 }}</span> ₸
+            </div>
+            <div class="hub-kpi-label">Валовая прибыль</div>
+        </div>
+    </div>
+
+    <!-- 3. INVENTORY WARNING BANNER -->
+    <div class="hub-warning-banner" id="hubWarningBanner">
+        <div class="hub-warning-left">
+            <div class="hub-warning-icon-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <div class="hub-warning-title">
+                    <span id="warningStockCount">{{ low_stock_count }}</span> товара требуют дозаказа
+                </div>
+                <div class="hub-warning-subtitle">Остаток ниже минимального порога</div>
+            </div>
+        </div>
+        <a href="{% url 'product_list' %}?low_stock=1" class="hub-warning-link">
+            Склад &rarr;
         </a>
     </div>
-</div>
 
-<!-- TOP METRICS STATS -->
-<div class="metrics-grid">
-    <div class="metric-card cyan">
-        <div class="metric-title">
-            <span>Выручка за сегодня</span>
-            <i class="fa-solid fa-tenge-sign" style="color: var(--accent-cyan);"></i>
+    <!-- 4. HOURLY SALES CHART CARD -->
+    <div class="hub-chart-card">
+        <div class="hub-chart-header">
+            <div class="hub-chart-title">Продажи по часам</div>
+            <div class="hub-chart-tag">сегодня</div>
         </div>
-        <div class="metric-value">{{ today_revenue|floatformat:0 }} ₸</div>
-        <div class="metric-sub">За месяц: {{ month_revenue|floatformat:0 }} ₸</div>
-    </div>
-
-    <div class="metric-card green">
-        <div class="metric-title">
-            <span>Валовая прибыль за сегодня</span>
-            <i class="fa-solid fa-sack-dollar" style="color: var(--accent-green);"></i>
-        </div>
-        <div class="metric-value">{{ today_profit|floatformat:0 }} ₸</div>
-        <div class="metric-sub">За месяц: {{ month_profit|floatformat:0 }} ₸</div>
-    </div>
-
-    <div class="metric-card orange">
-        <div class="metric-title">
-            <span>Количество чеков</span>
-            <i class="fa-solid fa-receipt" style="color: var(--accent-orange);"></i>
-        </div>
-        <div class="metric-value">{{ today_count }} шт</div>
-        <div class="metric-sub">Средний чек: {{ today_avg_check|floatformat:0 }} ₸</div>
-    </div>
-
-    <div class="metric-card purple">
-        <div class="metric-title">
-            <span>Предупреждения остатков</span>
-            <i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-purple);"></i>
-        </div>
-        <div class="metric-value">{{ low_stock_count }} тов.</div>
-        <div class="metric-sub"><a href="{% url 'product_list' %}?low_stock=1" style="color: var(--accent-cyan); text-decoration: none;">Посмотреть товары &rarr;</a></div>
-    </div>
-</div>
-
-<!-- CHARTS SECTION -->
-<div class="charts-grid">
-    <div class="dacar-card">
-        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-            <i class="fa-solid fa-chart-area" style="color: var(--accent-cyan);"></i>
-            Динамика Выручки и Прибыли (7 дней)
-        </h3>
-        <div style="height: 280px; position: relative;">
-            <canvas id="salesTrendChart"></canvas>
+        <div style="height: 160px; position: relative;">
+            <canvas id="hubHourlyChart"></canvas>
         </div>
     </div>
 
-    <div class="dacar-card">
-        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-            <i class="fa-solid fa-pie-chart" style="color: var(--accent-orange);"></i>
-            Способы Оплаты
-        </h3>
-        <div style="height: 280px; position: relative; display: flex; align-items: center; justify-content: center;">
-            <canvas id="paymentMethodsChart"></canvas>
+    <!-- 5. PAYMENT METHODS CARD -->
+    <div class="hub-payment-card">
+        <div class="hub-chart-header" style="margin-bottom: 0.75rem;">
+            <div class="hub-chart-title">Способы оплаты</div>
+        </div>
+        <div class="hub-payment-body">
+            <!-- Doughnut Ring Chart -->
+            <div class="hub-doughnut-wrap">
+                <canvas id="hubPaymentChart"></canvas>
+            </div>
+
+            <!-- Legend List -->
+            <div class="hub-payment-legend">
+                <div class="hub-legend-row">
+                    <div class="hub-legend-label">
+                        <span class="hub-legend-dot" style="background: #F59E0B;"></span>
+                        <span>Kaspi QR</span>
+                    </div>
+                    <span class="hub-legend-pct" id="legendQrPct">{{ payment_breakdown.qr_pct|default:"52" }}%</span>
+                </div>
+
+                <div class="hub-legend-row">
+                    <div class="hub-legend-label">
+                        <span class="hub-legend-dot" style="background: #10B981;"></span>
+                        <span>Наличные</span>
+                    </div>
+                    <span class="hub-legend-pct" id="legendCashPct">{{ payment_breakdown.cash_pct|default:"37" }}%</span>
+                </div>
+
+                <div class="hub-legend-row">
+                    <div class="hub-legend-label">
+                        <span class="hub-legend-dot" style="background: #38BDF8;"></span>
+                        <span>Карта</span>
+                    </div>
+                    <span class="hub-legend-pct" id="legendCardPct">{{ payment_breakdown.card_pct|default:"11" }}%</span>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- CASHIER PERFORMANCE ANALYTICS TABLE -->
-<div class="dacar-card" style="margin-bottom: 1.5rem;">
-    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <i class="fa-solid fa-users" style="color: var(--accent-orange);"></i>
-        Детализация продаж по кассирам (Кто, сколько и что продал)
-    </h3>
-    <div class="table-responsive">
-        <table class="dacar-table">
-            <thead>
-                <tr>
-                    <th>Сотрудник / Кассир</th>
-                    <th>Роль</th>
-                    <th>Проведено чеков</th>
-                    <th>Общая выручка</th>
-                    <th>Валовая прибыль</th>
-                    <th>Средний чек</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cs in cashier_stats %}
-                <tr>
-                    <td style="font-weight: 700; color: var(--text-main);">
-                        <i class="fa-solid fa-user-tie" style="color: var(--accent-cyan); margin-right: 0.35rem;"></i>
-                        {% if cs.user %}{{ cs.user.get_full_name|default:cs.user.username }}{% else %}Удален{% endif %}
-                    </td>
-                    <td><span class="badge {% if cs.user.is_admin_user %}badge-orange{% else %}badge-green{% endif %}">{{ cs.user.get_role_display }}</span></td>
-                    <td style="font-weight: 700; color: var(--accent-cyan);">{{ cs.count }} шт</td>
-                    <td style="font-weight: 800; color: var(--text-main);">{{ cs.revenue|floatformat:0 }} ₸</td>
-                    <td style="color: var(--accent-green); font-weight: 700;">+{{ cs.profit|floatformat:0 }} ₸</td>
-                    <td style="color: var(--text-muted);">{{ cs.avg_check|floatformat:0 }} ₸</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
-                        Статистика по кассирам за выбранный период отсутствует.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- RECENT TRANSACTIONS TABLE -->
-<div class="dacar-card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="font-size: 1.1rem; font-weight: 700;">Последние проведенные чеки</h3>
-        <a href="{% url 'sales_orders_list' %}" class="btn btn-secondary" style="font-size: 0.8rem;">Все чеки &rarr;</a>
+    <!-- RECENT SALE REAL-TIME STREAM BANNER -->
+    <div class="hub-recent-sale-row" id="hubRecentSaleBanner" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 0.85rem 1.15rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; flex: 1;">
+            <i class="fa-solid fa-bell" style="color: var(--accent-cyan); font-size: 0.95rem;"></i>
+            <span style="color: var(--text-secondary); white-space: nowrap; font-size: 0.8rem;">Последний чек:</span>
+            <strong style="color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: 0.82rem;" id="hubLastSaleText">
+                {% if recent_orders.0 %}
+                №{{ recent_orders.0.order_number }} • {{ recent_orders.0.total_amount|floatformat:0 }} ₸ ({{ recent_orders.0.get_payment_method_display }})
+                {% else %}
+                Ожидание продаж...
+                {% endif %}
+            </strong>
+        </div>
+        <a href="{% url 'sales_orders_list' %}" style="color: var(--accent-cyan); font-weight: 700; text-decoration: none; white-space: nowrap; font-size: 0.85rem;">
+            Чеки &rarr;
+        </a>
     </div>
 
-    <div class="table-responsive">
-        <table class="dacar-table">
-            <thead>
-                <tr>
-                    <th>№ Чека</th>
-                    <th>Дата и время</th>
-                    <th>Кассир</th>
-                    <th>Способ оплаты</th>
-                    <th>Итого</th>
-                    <th>Прибыль</th>
-                    <th>Статус</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for order in recent_orders %}
-                <tr>
-                    <td style="font-weight: 700; color: var(--accent-cyan);">{{ order.order_number }}</td>
-                    <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
-                    <td>{% if order.cashier %}{{ order.cashier.get_full_name|default:order.cashier.username }}{% else %}Удален{% endif %}</td>
-                    <td><span class="badge badge-cyan">{{ order.get_payment_method_display }}</span></td>
-                    <td style="font-weight: 800; color: var(--text-main);">{{ order.total_amount }} ₸</td>
-                    <td style="color: var(--accent-green); font-weight: 700;">+{{ order.gross_profit|floatformat:0 }} ₸</td>
-                    <td>
-                        {% if order.status == 'COMPLETED' %}
-                        <span class="badge badge-green">Проведен</span>
-                        {% elif order.status == 'REFUNDED' %}
-                        <span class="badge badge-red">Возвращен</span>
-                        {% else %}
-                        <span class="badge badge-orange">{{ order.get_status_display }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'order_print' order.id %}" target="_blank" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
-                            <i class="fa-solid fa-print"></i> Чек
-                        </a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                        Продажи пока не проводились.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const res = await fetch('/api/analytics/data/');
-            const data = await res.json();
+    // ===== 1. COUNT-UP NUMBER ANIMATION HELPER =====
+    function animateNumber(el, to, dur = 900) {
+        if (!el) return;
+        const target = typeof to === 'number' ? to : (parseFloat(String(to).replace(/\s/g, '').replace('₸', '')) || 0);
+        const startVal = parseFloat(String(el.textContent).replace(/\s/g, '').replace('₸', '')) || 0;
+        const startTime = performance.now();
 
-            // 1. Sales Trend Chart
-            const ctxTrend = document.getElementById('salesTrendChart').getContext('2d');
-            new Chart(ctxTrend, {
-                type: 'line',
-                data: {
-                    labels: data.sales_trend.labels,
-                    datasets: [
-                        {
-                            label: 'Выручка (₸)',
-                            data: data.sales_trend.revenues,
-                            borderColor: '#00F2FE',
-                            backgroundColor: 'rgba(0, 242, 254, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.35,
-                        },
-                        {
-                            label: 'Прибыль (₸)',
-                            data: data.sales_trend.profits,
-                            borderColor: '#10B981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.35,
+        function frame(now) {
+            const elapsed = now - startTime;
+            const p = Math.min(1, elapsed / dur);
+            const eased = 1 - Math.pow(1 - p, 3);
+            const current = Math.round(startVal + (target - startVal) * eased);
+            el.textContent = current.toLocaleString('ru-RU');
+            if (p < 1) requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+    }
+
+    // ===== RADIAL GAUGE UPDATE =====
+    function updateRadialGauge(percent) {
+        const arc = document.getElementById('hubGaugeArc');
+        if (!arc) return;
+        const totalLength = 126;
+        const clamped = Math.max(0, Math.min(100, percent));
+        const offset = totalLength * (1 - clamped / 100);
+        arc.style.strokeDashoffset = offset;
+    }
+
+    // Initial page load triggers
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initial Count-up for Numbers
+        const initialRevenue = {{ today_revenue|floatformat:0|default:0 }};
+        const initialChecks = {{ today_count|default:0 }};
+        const initialAvg = {{ today_avg_check|floatformat:0|default:0 }};
+        const initialProfit = {{ today_profit|floatformat:0|default:0 }};
+
+        animateNumber(document.getElementById('heroRevenueAmount'), initialRevenue, 900);
+        animateNumber(document.getElementById('kpiChecksCount'), initialChecks, 900);
+        animateNumber(document.getElementById('kpiAvgCheck'), initialAvg, 900);
+        animateNumber(document.getElementById('kpiProfit'), initialProfit, 900);
+
+        // Radial gauge fill
+        setTimeout(() => {
+            updateRadialGauge({{ target_percent|default:100 }});
+        }, 150);
+    });
+
+    // ===== 3. HOURLY BAR CHART (Staggered Grow Animation) =====
+    let hourlyChartInstance = null;
+    const initialHourlyData = {{ hourly_sales|safe|default:"[]" }};
+
+    function initHourlyChart(dataArray) {
+        const ctx = document.getElementById('hubHourlyChart');
+        if (!ctx) return;
+
+        let full24 = dataArray && dataArray.length === 24 ? dataArray : new Array(24).fill(0);
+        const maxVal = Math.max(...full24);
+        const barColors = full24.map(val => (val > 0 && val === maxVal) ? '#A855F7' : '#38BDF8');
+        const labels = Array.from({length: 24}, (_, i) => `${String(i).padStart(2, '0')}:00`);
+
+        if (hourlyChartInstance) hourlyChartInstance.destroy();
+
+        hourlyChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: full24,
+                    backgroundColor: barColors,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                    barPercentage: 0.7,
+                    categoryPercentage: 0.85
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 750,
+                    easing: 'easeOutQuart',
+                    delay: (context) => {
+                        let delay = 0;
+                        if (context.type === 'data' && context.mode === 'default') {
+                            delay = context.dataIndex * 45; // 0.045s stagger delay between bars
                         }
-                    ]
+                        return delay;
+                    }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#9CA3AF' } }
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1E293B',
+                        titleColor: '#F8FAFC',
+                        bodyColor: '#38BDF8',
+                        padding: 8,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(c) {
+                                return c.raw.toLocaleString('ru-RU') + ' ₸';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            color: '#64748B',
+                            font: { size: 10, weight: '600' },
+                            maxRotation: 0,
+                            minRotation: 0,
+                            callback: function(val, index) {
+                                if (index === 0 || index === 6 || index === 12 || index === 18 || index === 23) {
+                                    return index === 23 ? '24:00' : labels[index];
+                                }
+                                return '';
+                            },
+                            autoSkip: false
+                        }
                     },
-                    scales: {
-                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#9CA3AF' } },
-                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#9CA3AF' } }
+                    y: {
+                        display: false,
+                        grid: { display: false },
+                        beginAtZero: true
                     }
                 }
-            });
+            }
+        });
+    }
 
-            // 2. Payment Methods Doughnut Chart
-            const ctxPay = document.getElementById('paymentMethodsChart').getContext('2d');
-            new Chart(ctxPay, {
-                type: 'doughnut',
-                data: {
-                    labels: data.payment_methods.labels,
-                    datasets: [{
-                        data: data.payment_methods.values,
-                        backgroundColor: ['#10B981', '#00F2FE', '#FF5E36', '#8B5CF6'],
-                        borderWidth: 0
-                    }]
+    initHourlyChart(initialHourlyData);
+
+    // ===== PAYMENT METHODS DOUGHNUT CHART (Rotate + Scale Animation) =====
+    let paymentChartInstance = null;
+    const initialQr = {{ payment_breakdown.qr_pct|default:52 }};
+    const initialCash = {{ payment_breakdown.cash_pct|default:37 }};
+    const initialCard = {{ payment_breakdown.card_pct|default:11 }};
+
+    function initPaymentChart(qr, cash, card) {
+        const ctx = document.getElementById('hubPaymentChart');
+        if (!ctx) return;
+
+        let total = qr + cash + card;
+        let dataVals = total > 0 ? [qr, cash, card] : [52, 37, 11];
+
+        if (paymentChartInstance) paymentChartInstance.destroy();
+
+        paymentChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Kaspi QR', 'Наличные', 'Карта'],
+                datasets: [{
+                    data: dataVals,
+                    backgroundColor: ['#F59E0B', '#10B981', '#38BDF8'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 850,
+                    easing: 'easeOutQuart'
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#9CA3AF' } }
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1E293B',
+                        titleColor: '#F8FAFC',
+                        bodyColor: '#38BDF8',
+                        padding: 8,
+                        callbacks: {
+                            label: function(c) {
+                                return `${c.label}: ${c.raw}%`;
+                            }
+                        }
                     }
                 }
-            });
+            }
+        });
+    }
 
-        } catch (e) {
-            console.error('Error loading analytics chart data:', e);
+    initPaymentChart(initialQr, initialCash, initialCard);
+
+    // ===== LIVE KPI REAL-TIME SYNC LISTENER =====
+    window.addEventListener('dacar:live_kpi', (e) => {
+        const data = e.detail;
+        if (!data) return;
+
+        // Count-up for Live Revenue
+        const revEl = document.getElementById('heroRevenueAmount');
+        if (revEl && data.revenue_today !== undefined) {
+            animateNumber(revEl, data.revenue_today, 600);
+        }
+
+        // Growth
+        const growthEl = document.getElementById('heroGrowthText');
+        if (growthEl && data.growth_percent !== undefined) {
+            growthEl.textContent = `+${Math.round(data.growth_percent)}% к вчера`;
+        }
+
+        // Target %
+        const targetPct = data.target_percent !== undefined ? data.target_percent : 100;
+        const targetEl = document.getElementById('heroTargetPct');
+        if (targetEl) targetEl.textContent = targetPct;
+        updateRadialGauge(targetPct);
+
+        // 3 KPI Cards Animated Count-Up
+        const checksEl = document.getElementById('kpiChecksCount');
+        if (checksEl && data.orders_count_today !== undefined) {
+            animateNumber(checksEl, data.orders_count_today, 600);
+        }
+
+        const avgEl = document.getElementById('kpiAvgCheck');
+        if (avgEl && data.avg_check_today !== undefined) {
+            animateNumber(avgEl, data.avg_check_today, 600);
+        }
+
+        const profitEl = document.getElementById('kpiProfit');
+        if (profitEl && data.profit_today !== undefined) {
+            animateNumber(profitEl, data.profit_today, 600);
+        }
+
+        // Low stock warning
+        const stockEl = document.getElementById('warningStockCount');
+        if (stockEl && data.low_stock_count !== undefined) {
+            stockEl.textContent = data.low_stock_count;
+        }
+
+        // Last sale banner
+        const lastSaleEl = document.getElementById('hubLastSaleText');
+        if (lastSaleEl && data.last_order) {
+            lastSaleEl.textContent = `№${data.last_order.order_number} • ${Math.round(data.last_order.total_amount).toLocaleString('ru-RU')} ₸ (${data.last_order.payment_method_display})`;
+        }
+
+        // Charts
+        if (data.hourly_sales) {
+            initHourlyChart(data.hourly_sales);
+        }
+
+        if (data.payment_breakdown) {
+            const qr = data.payment_breakdown.qr_pct || 0;
+            const cash = data.payment_breakdown.cash_pct || 0;
+            const card = data.payment_breakdown.card_pct || 0;
+            
+            const lQr = document.getElementById('legendQrPct');
+            const lCash = document.getElementById('legendCashPct');
+            const lCard = document.getElementById('legendCardPct');
+            if (lQr) lQr.textContent = `${qr}%`;
+            if (lCash) lCash.textContent = `${cash}%`;
+            if (lCard) lCard.textContent = `${card}%`;
+
+            initPaymentChart(qr, cash, card);
         }
     });
 </script>

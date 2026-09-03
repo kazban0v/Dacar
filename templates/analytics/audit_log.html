@@ -30,6 +30,32 @@
         .audit-filter-search { min-width: 100%; flex: none; }
         .audit-filter-select { width: 100%; }
     }
+
+    /* Help (?) Button */
+    .pos-help-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: var(--radius-md);
+        background: rgba(2, 132, 199, 0.08);
+        border: 1px solid var(--accent-cyan);
+        color: var(--accent-cyan);
+        font-weight: 800;
+        font-size: 0.8rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .pos-help-btn:hover {
+        background: var(--accent-cyan);
+        color: #FFF;
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    }
 </style>
 {% endblock %}
 
@@ -38,6 +64,9 @@
     <div>
         <h1 style="font-size: 1.4rem; font-weight: 800; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             <i class="fa-solid fa-shield-halved" style="color: var(--accent-cyan);"></i> Журнал аудита действий
+            <button type="button" class="pos-help-btn" id="auditHelpBtn" title="Справка по журналу аудита" onclick="openAuditHelpModal()">
+                <i class="fa-solid fa-question"></i>
+            </button>
         </h1>
         <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 3px;">
             Неудаляемая история всех ключевых операций. Защищено от редактирования.
@@ -155,4 +184,71 @@
         </div>
     </div>
     {% endif %}
-</div>{% endblock %}
+</div>
+
+<!-- AUDIT HELP MODAL -->
+<div class="modal-overlay" id="auditHelpModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: var(--card-bg, #ffffff); border-radius: var(--radius-xl); max-width: 500px; width: 100%; padding: 1.75rem; box-shadow: 0 25px 60px rgba(0,0,0,0.3); border: 1px solid var(--card-border); max-height: calc(100dvh - 3rem); overflow-y: auto;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border);">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan)); display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.1rem; font-weight: 900; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Справка по журналу аудита</h3>
+                    <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Защита и безопасность операций</p>
+                </div>
+            </div>
+            <button type="button" style="background: rgba(0, 0, 0, 0.05); border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="closeAuditHelpModal()" title="Закрыть">&times;</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.85rem; color: var(--text-main); line-height: 1.5;">
+            <div style="background: var(--btn-secondary-bg); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 0.85rem 1rem;">
+                <strong style="display: flex; align-items: center; gap: 0.4rem; color: var(--accent-cyan); font-size: 0.88rem; margin-bottom: 0.35rem;">
+                    <i class="fa-solid fa-lock"></i> Неизменяемый аудит (Audit Trail):
+                </strong>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Каждое действие в системе (вход/выход сотрудника, проведение или возврат чека, изменение цен, создание товаров) навсегда сохраняется в журнал с точным временем и IP-адресом.
+                </p>
+            </div>
+
+            <div style="background: rgba(2, 132, 199, 0.05); border-left: 3px solid var(--accent-cyan); padding: 0.75rem 1rem; border-radius: 0 var(--radius-md) var(--radius-md) 0;">
+                <strong style="color: var(--accent-cyan); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.2rem;">
+                    <i class="fa-solid fa-user-shield"></i> Контроль персонала:
+                </strong>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Записи журнала невозможно отредактировать или скрыть, что исключает махинации с ценами или остатками на кассе.
+                </p>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: right;">
+            <button type="button" class="btn btn-primary" style="padding: 0.55rem 1.5rem; font-size: 0.88rem; font-weight: 700; border-radius: var(--radius-md);" onclick="closeAuditHelpModal()">
+                Понятно (Esc)
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openAuditHelpModal() {
+        const modal = document.getElementById('auditHelpModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeAuditHelpModal() {
+        const modal = document.getElementById('auditHelpModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAuditHelpModal();
+    });
+</script>
+{% endblock %}

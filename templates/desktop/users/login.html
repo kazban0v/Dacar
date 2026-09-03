@@ -1,0 +1,294 @@
+{% extends 'desktop/base.html' %}
+
+{% block title %}Вход в систему — DACAR Детейлинг Маркет{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes cardIn {
+        0% {
+            opacity: 0;
+            transform: translateY(24px) scale(0.97);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes carDriveIn {
+        0% {
+            transform: translateX(-220%) scaleX(-1);
+            opacity: 0;
+        }
+
+        70% {
+            transform: translateX(6%) scaleX(-1);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translateX(0) scaleX(-1);
+            opacity: 1;
+        }
+    }
+
+    @keyframes carDriveOut {
+        0% {
+            transform: translateX(0) scaleX(-1);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translateX(220%) scaleX(-1);
+            opacity: 0;
+        }
+    }
+
+    @keyframes carBounce {
+
+        0%,
+        100% {
+            transform: translateY(0) scaleX(-1);
+        }
+
+        50% {
+            transform: translateY(-3px) scaleX(-1);
+        }
+    }
+
+    @keyframes roadLine {
+        0% {
+            transform: translateX(0);
+            opacity: 0.6;
+        }
+
+        100% {
+            transform: translateX(-140%);
+            opacity: 0;
+        }
+    }
+
+    @keyframes fieldIn {
+        0% {
+            opacity: 0;
+            transform: translateX(-8px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    .dacar-login-card {
+        animation: cardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .dacar-login-icon-wrap {
+        position: relative;
+        width: 96px;
+        height: 64px;
+        margin: 0 auto 1rem;
+        overflow: hidden;
+    }
+
+    .dacar-road-line {
+        position: absolute;
+        bottom: 10px;
+        height: 2px;
+        width: 22px;
+        border-radius: 2px;
+        background: var(--text-muted);
+        opacity: 0;
+        animation: roadLine 0.9s linear infinite;
+    }
+
+    .dacar-road-line:nth-child(1) {
+        right: -10%;
+        animation-delay: 0.9s;
+    }
+
+    .dacar-road-line:nth-child(2) {
+        right: -30%;
+        animation-delay: 1.2s;
+    }
+
+    .dacar-road-line:nth-child(3) {
+        right: -50%;
+        animation-delay: 1.5s;
+    }
+
+    .dacar-login-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan));
+        border-radius: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        animation: carDriveIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+            carBounce 1.6s ease-in-out 0.9s infinite;
+    }
+
+    .dacar-login-icon.driving-away {
+        animation: carDriveOut 0.6s cubic-bezier(0.55, 0, 1, 0.45) forwards !important;
+    }
+
+    .dacar-login-icon i {
+        font-size: 2rem;
+        color: #000;
+    }
+
+    .dacar-field {
+        margin-bottom: 1.25rem;
+        opacity: 0;
+        animation: fieldIn 0.5s ease-out forwards;
+    }
+
+    .dacar-field:nth-of-type(1) {
+        animation-delay: 0.15s;
+    }
+
+    .dacar-field:nth-of-type(2) {
+        animation-delay: 0.28s;
+    }
+
+    .dacar-field .form-control {
+        transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+    }
+
+    .dacar-field .form-control:focus {
+        transform: translateY(-1px);
+        box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.18);
+    }
+
+    .dacar-field i {
+        transition: color 0.25s ease;
+    }
+
+    .dacar-field:focus-within i {
+        color: var(--accent-cyan);
+    }
+
+    .dacar-login-btn {
+        position: relative;
+        overflow: hidden;
+        opacity: 0;
+        animation: fieldIn 0.5s ease-out forwards;
+        animation-delay: 0.4s;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+    }
+
+    .dacar-login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(0, 242, 254, 0.35);
+    }
+
+    .dacar-login-btn:active {
+        transform: translateY(0);
+    }
+
+    .dacar-login-btn::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+        background-size: 200% 100%;
+        animation: shimmer 2.8s linear infinite;
+    }
+
+    .dacar-login-btn.is-loading {
+        pointer-events: none;
+        opacity: 0.75;
+    }
+</style>
+
+<div
+    style="min-height: calc(100dvh - 120px); display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem;">
+    <div class="dacar-card dacar-login-card"
+        style="width: 100%; max-width: 420px; padding: 2rem 1.5rem; box-shadow: var(--shadow-lg);">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div class="dacar-login-icon-wrap">
+                <span class="dacar-road-line"></span>
+                <span class="dacar-road-line"></span>
+                <span class="dacar-road-line"></span>
+                <div class="dacar-login-icon" id="dacarLoginIcon">
+                    <i class="fa-solid fa-car-side"></i>
+                </div>
+            </div>
+            <h2
+                style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--text-main);">
+                DACAR POS &amp; Учет</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">Авторизация сотрудников
+                магазина</p>
+        </div>
+
+        <form method="POST" id="dacarLoginForm">
+            {% csrf_token %}
+            <div class="dacar-field">
+                <label
+                    style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Логин
+                    сотрудника</label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-user"
+                        style="position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="text" name="username" class="form-control" required style="padding-left: 2.5rem;"
+                        placeholder="например: admin или cashier1" autofocus>
+                </div>
+            </div>
+
+            <div class="dacar-field">
+                <label
+                    style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Пароль</label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-lock"
+                        style="position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="password" name="password" class="form-control" required style="padding-left: 2.5rem;"
+                        placeholder="••••••••">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary dacar-login-btn" id="dacarLoginBtn"
+                style="width: 100%; padding: 0.85rem; font-size: 1rem; font-weight: 700;">
+                <i class="fa-solid fa-right-to-bracket"></i> Войти в систему
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    (function () {
+        var form = document.getElementById('dacarLoginForm');
+        var icon = document.getElementById('dacarLoginIcon');
+        var btn = document.getElementById('dacarLoginBtn');
+        var isLeaving = false;
+
+        form.addEventListener('submit', function (e) {
+            if (isLeaving) return;
+            if (typeof form.reportValidity === 'function' && !form.reportValidity()) return;
+
+            e.preventDefault();
+            isLeaving = true;
+            icon.classList.add('driving-away');
+            btn.classList.add('is-loading');
+
+            setTimeout(function () {
+                form.submit();
+            }, 550);
+        });
+    })();
+</script>
+{% endblock %}

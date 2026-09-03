@@ -1,0 +1,377 @@
+{% extends 'mobile/base.html' %}
+
+{% block title %}Регистрация сотрудника — DACAR Детейлинг Маркет{% endblock %}
+
+{% block content %}
+<style>
+    .dacar-reg-container {
+        min-height: calc(100dvh - 120px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem 1rem;
+        position: relative;
+    }
+
+    .dacar-reg-container::before {
+        content: '';
+        position: absolute;
+        width: 340px;
+        height: 340px;
+        background: radial-gradient(circle, rgba(0, 242, 254, 0.12) 0%, rgba(255, 107, 0, 0.08) 60%, transparent 80%);
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        filter: blur(40px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .dacar-reg-card {
+        width: 100%;
+        max-width: 480px;
+        padding: 2.2rem 1.75rem;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08), 0 4px 15px rgba(0, 0, 0, 0.04);
+        position: relative;
+        z-index: 1;
+        border-radius: 1.25rem;
+        background: var(--card-bg, #ffffff);
+        border: 1px solid rgba(0, 0, 0, 0.07);
+        animation: cardAppear 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+    }
+
+    @keyframes cardAppear {
+        0% { opacity: 0; transform: translateY(25px) scale(0.96); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Help Button */
+    .dacar-help-btn {
+        position: absolute;
+        top: 1.2rem;
+        right: 1.2rem;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: rgba(0, 242, 254, 0.1);
+        border: 1px solid rgba(0, 242, 254, 0.3);
+        color: #0284c7;
+        font-weight: 800;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 10;
+    }
+
+    .dacar-help-btn:hover {
+        background: linear-gradient(135deg, var(--accent-cyan, #00f2fe), #0284c7);
+        color: #ffffff;
+        transform: scale(1.1) rotate(8deg);
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    }
+
+    /* Help Modal */
+    .dacar-help-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .dacar-help-modal.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .dacar-help-content {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 1.25rem;
+        max-width: 460px;
+        width: 100%;
+        padding: 1.75rem;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+        position: relative;
+        transform: scale(0.92);
+        transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+    }
+
+    .dacar-help-modal.active .dacar-help-content {
+        transform: scale(1);
+    }
+
+    .dacar-help-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.05);
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dacar-input-group {
+        margin-bottom: 1.1rem;
+        position: relative;
+    }
+
+    .dacar-input-group label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-muted, #64748b);
+        margin-bottom: 0.35rem;
+    }
+
+    .dacar-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .dacar-input-icon {
+        position: absolute;
+        left: 1rem;
+        color: var(--text-muted, #94a3b8);
+        font-size: 0.95rem;
+        transition: color 0.2s, transform 0.2s;
+        pointer-events: none;
+    }
+
+    .dacar-auth-input {
+        width: 100%;
+        padding: 0.8rem 1rem 0.8rem 2.6rem;
+        border-radius: 0.75rem;
+        border: 1.5px solid var(--card-border, #e2e8f0);
+        background: #f8fafc;
+        color: var(--text-main, #0f172a);
+        font-size: 0.92rem;
+        font-weight: 500;
+        transition: all 0.25s ease;
+        outline: none;
+    }
+
+    .dacar-auth-input:focus {
+        background: #ffffff;
+        border-color: #0284c7;
+        box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.14);
+        transform: translateY(-1px);
+    }
+
+    .dacar-input-wrap:focus-within .dacar-input-icon {
+        color: #0284c7;
+        transform: scale(1.1);
+    }
+
+    .dacar-pwd-toggle {
+        position: absolute;
+        right: 0.85rem;
+        background: none;
+        border: none;
+        color: var(--text-muted, #94a3b8);
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 0.35rem;
+        border-radius: 0.4rem;
+        transition: color 0.2s;
+    }
+
+    .dacar-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    @media (max-width: 480px) {
+        .dacar-grid-2 {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+        .dacar-reg-card {
+            padding: 1.85rem 1.25rem;
+            border-radius: 1rem;
+        }
+    }
+</style>
+
+<div class="dacar-reg-container">
+    <div class="dacar-reg-card">
+        
+        <!-- Help Button '?' -->
+        <button type="button" class="dacar-help-btn" id="dacarHelpBtn" title="Справка по ролям">
+            <i class="fa-solid fa-question"></i>
+        </button>
+
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div style="width: 52px; height: 52px; margin: 0 auto 0.75rem; border-radius: 1rem; background: linear-gradient(135deg, #ff6b00, #0284c7); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.4rem; box-shadow: 0 8px 20px rgba(2, 132, 199, 0.3);">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.55rem; color: var(--text-main); margin: 0;">
+                Регистрация сотрудника
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                Создание нового профиля в системе DACAR
+            </p>
+        </div>
+
+        <form method="POST" id="dacarRegForm">
+            {% csrf_token %}
+
+            <div class="dacar-input-group">
+                <label>Логин (Имя пользователя) *</label>
+                <div class="dacar-input-wrap">
+                    <i class="fa-solid fa-at dacar-input-icon"></i>
+                    <input type="text" name="username" class="dacar-auth-input" required placeholder="например: cashier_alex" autofocus>
+                </div>
+            </div>
+
+            <div class="dacar-grid-2">
+                <div class="dacar-input-group">
+                    <label>Имя</label>
+                    <div class="dacar-input-wrap">
+                        <i class="fa-solid fa-user dacar-input-icon"></i>
+                        <input type="text" name="first_name" class="dacar-auth-input" placeholder="Александр">
+                    </div>
+                </div>
+                <div class="dacar-input-group">
+                    <label>Фамилия</label>
+                    <div class="dacar-input-wrap">
+                        <i class="fa-solid fa-user dacar-input-icon"></i>
+                        <input type="text" name="last_name" class="dacar-auth-input" placeholder="Иванов">
+                    </div>
+                </div>
+            </div>
+
+            <div class="dacar-input-group">
+                <label>Телефон для связи</label>
+                <div class="dacar-input-wrap">
+                    <i class="fa-solid fa-phone dacar-input-icon"></i>
+                    <input type="text" name="phone" class="dacar-auth-input" placeholder="+7 (707) 123-45-67">
+                </div>
+            </div>
+
+            <div class="dacar-input-group">
+                <label>Роль в магазине *</label>
+                <div class="dacar-input-wrap">
+                    <i class="fa-solid fa-briefcase dacar-input-icon"></i>
+                    <select name="role" class="dacar-auth-input" style="padding-left: 2.6rem;">
+                        {% for r_val, r_lbl in roles %}
+                        <option value="{{ r_val }}">{{ r_lbl }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="dacar-input-group">
+                <label>Пароль *</label>
+                <div class="dacar-input-wrap">
+                    <i class="fa-solid fa-lock dacar-input-icon"></i>
+                    <input type="password" id="regPassword" name="password" class="dacar-auth-input" required placeholder="••••••••">
+                    <button type="button" class="dacar-pwd-toggle" id="regPwdToggle" title="Показать/скрыть пароль" tabindex="-1">
+                        <i class="fa-solid fa-eye" id="regPwdIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.9rem; font-size: 1rem; font-weight: 700; border-radius: 0.75rem; margin-top: 0.5rem;">
+                <i class="fa-solid fa-user-plus"></i> Зарегистрировать аккаунт
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed var(--card-border, #e2e8f0);">
+            <a href="{% url 'm_login' %}" style="color: #0284c7; font-size: 0.88rem; font-weight: 700; text-decoration: none;">
+                &larr; Вернуться на страницу входа
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- HELP MODAL -->
+<div class="dacar-help-modal" id="dacarHelpModal" role="dialog" aria-modal="true">
+    <div class="dacar-help-content">
+        <button type="button" class="dacar-help-close" id="dacarHelpClose" title="Закрыть">&times;</button>
+        
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #ff6b00, #0284c7); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; flex-shrink: 0;">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Справка по регистрации</h3>
+                <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Правила создания аккаунтов</p>
+            </div>
+        </div>
+
+        <div style="font-size: 0.85rem; color: var(--text-main); line-height: 1.5; display: flex; flex-direction: column; gap: 0.85rem;">
+            <p style="margin: 0; color: var(--text-muted);">
+                Убедитесь, что вы указываете уникальный логин для каждого сотрудника.
+            </p>
+            <div style="background: rgba(2, 132, 199, 0.06); border-left: 3px solid #0284c7; padding: 0.75rem 1rem; border-radius: 0 0.5rem 0.5rem 0;">
+                <strong style="color: #0284c7; display: block; margin-bottom: 0.2rem;">Доступные роли:</strong>
+                <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-muted); font-size: 0.8rem;">
+                    <li><strong>Кассир:</strong> Пробитие продаж, сканирование ШК, печать чеков.</li>
+                    <li><strong>Администратор:</strong> Полный доступ ко всем финансовым отчетам и складу.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: right;">
+            <button type="button" class="btn btn-primary" id="dacarHelpOkBtn" style="padding: 0.55rem 1.25rem; font-size: 0.85rem; font-weight: 700;">
+                Понятно
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const pwdInput = document.getElementById('regPassword');
+        const pwdToggle = document.getElementById('regPwdToggle');
+        const pwdIcon = document.getElementById('regPwdIcon');
+
+        if (pwdToggle && pwdInput) {
+            pwdToggle.addEventListener('click', function () {
+                const isPwd = pwdInput.type === 'password';
+                pwdInput.type = isPwd ? 'text' : 'password';
+                pwdIcon.className = isPwd ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+                pwdInput.focus();
+            });
+        }
+
+        const helpBtn = document.getElementById('dacarHelpBtn');
+        const helpModal = document.getElementById('dacarHelpModal');
+        const helpClose = document.getElementById('dacarHelpClose');
+        const helpOkBtn = document.getElementById('dacarHelpOkBtn');
+
+        function openHelp() { helpModal.classList.add('active'); }
+        function closeHelp() { helpModal.classList.remove('active'); }
+
+        if (helpBtn) helpBtn.addEventListener('click', openHelp);
+        if (helpClose) helpClose.addEventListener('click', closeHelp);
+        if (helpOkBtn) helpOkBtn.addEventListener('click', closeHelp);
+        if (helpModal) {
+            helpModal.addEventListener('click', function (e) {
+                if (e.target === helpModal) closeHelp();
+            });
+        }
+    })();
+</script>
+{% endblock %}

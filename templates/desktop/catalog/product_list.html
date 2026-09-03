@@ -1,0 +1,471 @@
+{% extends 'desktop/base.html' %}
+
+{% block title %}Каталог и Склад товаров — DACAR{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ===== CATALOG HEADER & CONTROLS ===== */
+    .catalog-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-bar-form {
+        display: flex;
+        gap: 0.625rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-search { flex: 2; min-width: 220px; }
+    .filter-select { flex: 1; min-width: 160px; }
+
+    /* Desktop Table vs Mobile Cards */
+    .catalog-table-wrapper {
+        display: block;
+    }
+
+    .catalog-cards-mobile {
+        display: none;
+    }
+
+    /* ===== MOBILE PRODUCT CARD ===== */
+    .product-list-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        box-shadow: var(--shadow-xs);
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .product-list-card:hover {
+        border-color: var(--accent-cyan);
+    }
+
+    .product-list-card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .product-list-card-title {
+        font-weight: 700;
+        font-size: 0.98rem;
+        color: var(--text-main);
+        line-height: 1.35;
+        flex: 1;
+    }
+
+    .product-list-card-badges {
+        display: flex;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .product-list-card-codes {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+        font-size: 0.76rem;
+        color: var(--text-muted);
+        background: #F9FAFB;
+        padding: 6px 10px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--card-border);
+    }
+
+    .product-code-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: 600;
+    }
+
+    .product-list-card-pricing {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.35rem 0;
+        border-top: 1px dashed var(--card-border);
+        border-bottom: 1px dashed var(--card-border);
+    }
+
+    .product-card-price {
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: var(--accent-cyan);
+    }
+
+    .product-card-stock-status {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .product-list-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .product-list-card-actions .btn {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+        min-height: 38px;
+    }
+
+    /* Modal dialog */
+    .modal-refill-box {
+        width: 100%;
+        max-width: min(440px, calc(100vw - 32px));
+        margin: 1rem;
+        border: 1px solid var(--accent-green);
+        box-shadow: 0 12px 36px rgba(0,0,0,0.4);
+        border-radius: var(--radius-xl);
+        background: var(--card-bg);
+        padding: 1.35rem;
+        animation: refillModalIn 0.2s ease;
+    }
+
+    @keyframes refillModalIn {
+        from { opacity: 0; transform: scale(0.96) translateY(8px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ===== RESPONSIVE MEDIA QUERIES ===== */
+    @media (max-width: 768px) {
+        .catalog-table-wrapper {
+            display: none;
+        }
+
+        .catalog-cards-mobile {
+            display: block;
+        }
+
+        .catalog-page-header h1 {
+            font-size: 1.25rem !important;
+        }
+
+        .filter-search { min-width: 100%; flex: none; }
+        .filter-select { min-width: calc(50% - 0.35rem); flex: 1; }
+
+        .filter-bar-form {
+            gap: 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .filter-select { min-width: 100%; flex: none; }
+        .filter-bar-form label { width: 100%; }
+        .filter-bar-form .btn { flex: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="catalog-page-header">
+    <div>
+        <h1 style="font-size: 1.4rem; font-weight: 800; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-boxes-stacked" style="color: var(--accent-cyan);"></i> Каталог и Остатки
+        </h1>
+        <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 3px;">
+            Реестр товаров, розничные цены и оперативное пополнение склада
+        </p>
+    </div>
+    {% if user.is_admin_user %}
+    <a href="{% url 'product_create' %}" class="btn btn-primary" style="font-weight: 700;">
+        <i class="fa-solid fa-plus"></i> <span>Добавить товар</span>
+    </a>
+    {% endif %}
+</div>
+
+<!-- FILTER BAR -->
+<div class="dacar-card" style="margin-bottom: 1rem;">
+    <form method="GET" class="filter-bar-form">
+        <div class="filter-search">
+            <input type="text" name="q" value="{{ search|default:'' }}" class="form-control" placeholder="Поиск по названию, артикулу или штрихкоду..." autocomplete="off">
+        </div>
+        <div class="filter-select">
+            <select name="category" class="form-control" onchange="this.form.submit()">
+                <option value="">Все категории</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-select">
+            <select name="brand" class="form-control" onchange="this.form.submit()">
+                <option value="">Все бренды</option>
+                {% for b in brands %}
+                <option value="{{ b.id }}" {% if selected_brand == b.id|stringformat:"i" %}selected{% endif %}>{{ b.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <label style="color: var(--text-muted); font-size: 0.82rem; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; white-space: nowrap; padding: 4px 0;">
+            <input type="checkbox" name="low_stock" value="1" {% if low_stock_filter == '1' %}checked{% endif %} onchange="this.form.submit()" style="accent-color: var(--accent-orange); width: 16px; height: 16px;">
+            <span>Мало на складе</span>
+        </label>
+        <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> <span>Найти</span></button>
+        {% if search or selected_category or selected_brand or low_stock_filter %}
+        <a href="{% url 'product_list' %}" class="btn btn-secondary" title="Сбросить все фильтры"><i class="fa-solid fa-xmark"></i> <span>Сброс</span></a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- PRODUCTS CONTAINER -->
+<div class="dacar-card">
+    <!-- DESKTOP TABLE VIEW (>= 768px) -->
+    <div class="table-responsive catalog-table-wrapper">
+        <table class="dacar-table">
+            <thead>
+                <tr>
+                    <th style="width: 180px;">ШТК / Код</th>
+                    <th>Наименование</th>
+                    <th>Категория</th>
+                    <th>Бренд</th>
+                    <th>Розничная цена</th>
+                    <th>Остаток на складе</th>
+                    <th style="text-align: right;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td>
+                        <div style="font-size: 0.82rem; font-weight: 700; color: var(--accent-cyan);"><i class="fa-solid fa-barcode"></i> {{ p.barcode }}</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">Арт: {{ p.sku }}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 700; color: var(--text-main); font-size: 0.92rem;">{{ p.name }}</div>
+                    </td>
+                    <td>
+                        <span class="badge badge-cyan">{{ p.category.name }}</span>
+                    </td>
+                    <td style="color: var(--text-muted);">
+                        {{ p.brand.name|default:"—" }}
+                    </td>
+                    <td>
+                        <div style="font-weight: 800; color: var(--text-main); font-size: 1.05rem;">{{ p.retail_price|floatformat:0 }} ₸</div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            {% if p.is_low_stock %}
+                            <span class="badge badge-red" style="font-size: 0.82rem; padding: 0.3rem 0.6rem;">
+                                <i class="fa-solid fa-triangle-exclamation"></i> {{ p.stock_qty|floatformat:0 }} {{ p.unit }} (Мало!)
+                            </span>
+                            {% else %}
+                            <span class="badge badge-green" style="font-size: 0.82rem; padding: 0.3rem 0.6rem;">
+                                <i class="fa-solid fa-check"></i> {{ p.stock_qty|floatformat:0 }} {{ p.unit }}
+                            </span>
+                            {% endif %}
+
+                            {% if user.is_admin_user %}
+                            <button type="button" class="btn btn-success" style="padding: 0.2rem 0.5rem; font-size: 0.72rem;" onclick="openStockRefillModal('{{ p.id }}', '{{ p.name|escapejs }}', '{{ p.stock_qty|floatformat:0 }}')" title="Быстрое пополнение склада">
+                                <i class="fa-solid fa-plus"></i> Пополнить
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td style="text-align: right;">
+                        {% if user.is_admin_user %}
+                        <a href="{% url 'product_edit' p.id %}" class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" title="Редактировать товар">
+                            <i class="fa-solid fa-pen-to-square"></i> Изменить
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                        <i class="fa-solid fa-box-open" style="font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.4;"></i>
+                        <p style="font-weight: 600; font-size: 1rem;">Товары не найдены</p>
+                        <p style="font-size: 0.8rem; margin-top: 0.25rem;">Попробуйте изменить параметры поиска или фильтра</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- MOBILE CARDS VIEW (< 768px) -->
+    <div class="catalog-cards-mobile">
+        {% for p in products %}
+        <div class="product-list-card">
+            <!-- Card Header: Title and Category -->
+            <div class="product-list-card-header">
+                <div class="product-list-card-title">{{ p.name }}</div>
+            </div>
+
+            <!-- Badges: Category & Brand -->
+            <div class="product-list-card-badges">
+                <span class="badge badge-cyan"><i class="fa-solid fa-tags"></i> {{ p.category.name }}</span>
+                {% if p.brand %}
+                <span class="badge badge-purple"><i class="fa-solid fa-award"></i> {{ p.brand.name }}</span>
+                {% endif %}
+            </div>
+
+            <!-- SKU & Barcode Bar -->
+            <div class="product-list-card-codes">
+                <div class="product-code-badge" style="color: var(--accent-cyan);">
+                    <i class="fa-solid fa-barcode"></i> <span>{{ p.barcode }}</span>
+                </div>
+                <div style="color: var(--card-border);">|</div>
+                <div class="product-code-badge">
+                    <span>Арт: {{ p.sku }}</span>
+                </div>
+            </div>
+
+            <!-- Price & Stock section -->
+            <div class="product-list-card-pricing">
+                <div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Цена:</div>
+                    <div class="product-card-price">{{ p.retail_price|floatformat:0 }} ₸</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px;">Остаток:</div>
+                    {% if p.is_low_stock %}
+                    <span class="badge badge-red" style="font-size: 0.8rem; padding: 0.25rem 0.55rem;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> {{ p.stock_qty|floatformat:0 }} {{ p.unit }}
+                    </span>
+                    {% else %}
+                    <span class="badge badge-green" style="font-size: 0.8rem; padding: 0.25rem 0.55rem;">
+                        <i class="fa-solid fa-check"></i> {{ p.stock_qty|floatformat:0 }} {{ p.unit }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions Footer -->
+            {% if user.is_admin_user %}
+            <div class="product-list-card-actions">
+                <button type="button" class="btn btn-success" onclick="openStockRefillModal('{{ p.id }}', '{{ p.name|escapejs }}', '{{ p.stock_qty|floatformat:0 }}')">
+                    <i class="fa-solid fa-plus"></i> Пополнить
+                </button>
+                <a href="{% url 'product_edit' p.id %}" class="btn btn-secondary">
+                    <i class="fa-solid fa-pen-to-square"></i> Изменить
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+            <i class="fa-solid fa-box-open" style="font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.4;"></i>
+            <p style="font-weight: 600; font-size: 1rem;">Товары не найдены</p>
+            <p style="font-size: 0.8rem; margin-top: 0.25rem;">Попробуйте изменить параметры поиска или фильтра</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- PAGINATION -->
+    {% if page_obj.has_other_pages %}
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--card-border); margin-top: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="font-size: 0.82rem; color: var(--text-muted);">
+            Стр. <strong>{{ page_obj.number }}</strong> из <strong>{{ page_obj.paginator.num_pages }}</strong> (Всего: <strong>{{ page_obj.paginator.count }}</strong>)
+        </div>
+
+        <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap;">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ search|default:'' }}&category={{ selected_category|default:'' }}&brand={{ selected_brand|default:'' }}&low_stock={{ low_stock_filter|default:'' }}" class="btn btn-secondary" style="padding: 0.35rem 0.7rem; font-size: 0.82rem;">
+                &laquo; Назад
+            </a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="btn btn-primary" style="padding: 0.35rem 0.7rem; font-size: 0.82rem; pointer-events: none;">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}&q={{ search|default:'' }}&category={{ selected_category|default:'' }}&brand={{ selected_brand|default:'' }}&low_stock={{ low_stock_filter|default:'' }}" class="btn btn-secondary" style="padding: 0.35rem 0.7rem; font-size: 0.82rem;">
+                    {{ num }}
+                </a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ search|default:'' }}&category={{ selected_category|default:'' }}&brand={{ selected_brand|default:'' }}&low_stock={{ low_stock_filter|default:'' }}" class="btn btn-secondary" style="padding: 0.35rem 0.7rem; font-size: 0.82rem;">
+                Вперед &raquo;
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- QUICK STOCK REFILL MODAL -->
+<div id="stockRefillModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+    <div class="modal-refill-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.75rem;">
+            <h3 style="font-size: 1.1rem; color: var(--accent-green); margin: 0; display: flex; align-items: center; gap: 0.5rem; font-weight: 800;">
+                <i class="fa-solid fa-boxes-packing"></i> Пополнение склада
+            </h3>
+            <i class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-muted); font-size: 1.2rem; padding: 4px;" onclick="closeStockRefillModal()" aria-label="Закрыть"></i>
+        </div>
+
+        <form method="POST" action="{% url 'stock_movement' %}">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" id="modalProductId">
+            <input type="hidden" name="movement_type" value="IN">
+
+            <div style="margin-bottom: 0.85rem;">
+                <span style="color: var(--text-muted); font-size: 0.78rem; display: block; font-weight: 600;">Товар:</span>
+                <strong id="modalProductName" style="color: var(--text-main); font-size: 0.98rem; line-height: 1.35; display: block; margin-top: 2px;"></strong>
+            </div>
+
+            <div style="margin-bottom: 0.85rem; background: #F9FAFB; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                <span style="color: var(--text-muted); font-size: 0.78rem;">Текущий остаток:</span>
+                <span id="modalCurrentStock" style="color: var(--accent-cyan); font-weight: 800; font-size: 1rem; margin-left: 4px;"></span> <span style="color: var(--text-muted); font-size: 0.85rem;">шт</span>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.82rem; color: var(--text-main); font-weight: 700; margin-bottom: 0.35rem;">
+                    Сколько штук привезли / добавить (шт) <span style="color: var(--accent-red);">*</span>
+                </label>
+                <input type="number" step="1" min="1" name="quantity" class="form-control" style="font-weight: 800; font-size: 1.2rem; color: var(--accent-green); height: 46px;" required placeholder="10" autofocus>
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-size: 0.78rem; color: var(--text-muted); font-weight: 600; margin-bottom: 0.35rem;">Заметка / Поставщик (Необязательно)</label>
+                <input type="text" name="comment" class="form-control" placeholder="например: Поставка от 30 августа">
+            </div>
+
+            <div style="display: flex; gap: 0.6rem; justify-content: flex-end;">
+                <button type="button" onclick="closeStockRefillModal()" class="btn btn-secondary" style="flex: 1;">Отмена</button>
+                <button type="submit" class="btn btn-success" style="flex: 1.5; font-weight: 700;"><i class="fa-solid fa-check"></i> Пополнить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+    function openStockRefillModal(id, name, currentStock) {
+        document.getElementById('modalProductId').value = id;
+        document.getElementById('modalProductName').innerText = name;
+        document.getElementById('modalCurrentStock').innerText = currentStock;
+        document.getElementById('stockRefillModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeStockRefillModal() {
+        document.getElementById('stockRefillModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeStockRefillModal();
+    });
+</script>
+{% endblock %}
+{% endblock %}

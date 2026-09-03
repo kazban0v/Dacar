@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
+from config.rendering import render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, F
@@ -259,7 +260,10 @@ def stock_movement_view(request):
             f"Складская операция [{movement_type}] для '{product.name}': {qty} {product.unit}. Комментарий: {comment}"
         )
 
-        messages.success(request, f'Операция с товаром {product.name} успешно проведена.')
+        messages.success(request, f'Остаток товара "{product.name}" успешно обновлен (+{qty} {product.unit}).')
+        referer = request.META.get('HTTP_REFERER')
+        if referer and '/catalog/' in referer:
+            return redirect(referer)
         return redirect('stock_movement')
 
     movements = StockMovement.objects.select_related('product', 'created_by').all()[:100]
@@ -329,4 +333,108 @@ def create_category_api(request):
             return JsonResponse({'success': True, 'id': category.id, 'name': category.name})
 
     return JsonResponse({'success': False, 'error': 'Название категории обязательно.'}, status=400)
+
+
+@login_required
+def stock_action_api(request):
+    """
+    Atomic Stock Operations API for DACAR Mobile Hub (+ Принять / − Отгрузить в магазин).
+    Features:
+    - @transaction.atomic with row-level select_for_update() (deadlock-free).
+    - Idempotency by client_sync_id (UUID v4).
+    - 409 Conflict validation when stock is insufficient.
+    - Automatic Live KPI cache invalidation.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Метод не поддерживается'}, status=405)
+
+    import json
+    from django.db import transaction
+    from django.core.cache import cache
+
+    try:
+        data = json.loads(request.body.decode('utf-8')) if request.body else request.POST
+    except Exception:
+        data = request.POST
+
+    product_id = data.get('product_id')
+    action = data.get('action', 'IN').upper() # IN, TRANSFER_TO_SHOP, OUT
+    quantity_raw = data.get('quantity', 1)
+    comment = (data.get('comment') or '').strip()
+    client_sync_id = data.get('client_sync_id', '').strip()
+
+    try:
+        qty = Decimal(str(quantity_raw))
+        if qty <= 0:
+            return JsonResponse({'success': False, 'error': 'Количество должно быть больше 0'}, status=400)
+    except Exception:
+        return JsonResponse({'success': False, 'error': 'Некорректное значение количества'}, status=400)
+
+    # 1. Idempotency Check
+    if client_sync_id and StockMovement.objects.filter(client_sync_id=client_sync_id).exists():
+        existing_mov = StockMovement.objects.filter(client_sync_id=client_sync_id).first()
+        return JsonResponse({
+            'success': True,
+            'message': 'Операция уже была успешно выполнена (Idempotent)',
+            'stock_qty': float(existing_mov.product.stock_qty),
+            'product_name': existing_mov.product.name
+        })
+
+    with transaction.atomic():
+        product = Product.objects.filter(id=product_id).select_for_update().first()
+        if not product:
+            return JsonResponse({'success': False, 'error': 'Товар не найден'}, status=404)
+
+        prev_stock = product.stock_qty
+
+        # 2. Validation for Outgoing/Transfer Actions (Preventing Negative Stock)
+        if action in ['TRANSFER_TO_SHOP', 'OUT', StockMovement.MovementType.TRANSFER_TO_SHOP, StockMovement.MovementType.OUT]:
+            if product.stock_qty < qty:
+                return JsonResponse({
+                    'success': False,
+                    'error_code': 'INSUFFICIENT_STOCK',
+                    'message': f'Недостаточно товара на складе. Доступно: {product.stock_qty} {product.unit}',
+                    'available_stock': float(product.stock_qty),
+                    'product_name': product.name
+                }, status=409)
+            
+            product.stock_qty -= qty
+            movement_type = StockMovement.MovementType.TRANSFER_TO_SHOP if action == 'TRANSFER_TO_SHOP' else StockMovement.MovementType.OUT
+            action_label = "Отгрузка в магазин" if action == 'TRANSFER_TO_SHOP' else "Списание"
+        else:
+            product.stock_qty += qty
+            movement_type = StockMovement.MovementType.IN
+            action_label = "Приемка на склад"
+
+        product.save()
+
+        StockMovement.objects.create(
+            product=product,
+            movement_type=movement_type,
+            quantity=qty,
+            cost_price=product.purchase_price,
+            comment=comment or f"{action_label} через мобильное приложение",
+            client_sync_id=client_sync_id or None,
+            created_by=request.user
+        )
+
+        AuditLog.log(
+            request,
+            AuditLog.ActionType.STOCK_IN if movement_type == 'IN' else AuditLog.ActionType.STOCK_OUT,
+            f"Склад: {action_label} для '{product.name}': {qty} {product.unit} (было {prev_stock}, стало {product.stock_qty}). Заметка: {comment}"
+        )
+
+        # Invalidate Live KPI cache
+        cache.delete('dacar_live_kpi')
+
+        return JsonResponse({
+            'success': True,
+            'message': f'{action_label} успешно выполнена (+{qty} {product.unit})' if movement_type == 'IN' else f'{action_label} успешно выполнена (-{qty} {product.unit})',
+            'product_id': product.id,
+            'product_name': product.name,
+            'stock_qty': float(product.stock_qty),
+            'prev_stock': float(prev_stock),
+            'unit': product.unit,
+            'is_low_stock': product.is_low_stock
+        })
 

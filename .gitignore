@@ -27,7 +27,9 @@ wheels/
 # Django
 *.log
 local_settings.py
+db.sqlite3
 db.sqlite3-journal
+*.apk
 
 # Temporary scripts and rendered test files
 rendered_pos.html
@@ -49,3 +51,7 @@ Thumbs.db
 *.swo
 .agents/
 .gemini/
+.gradle/
+android/.gradle/
+android/local.properties
+android/**/build/

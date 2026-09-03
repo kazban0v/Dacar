@@ -1,0 +1,794 @@
+{% extends 'mobile/base.html' %}
+
+{% block title %}Управление персоналом — DACAR{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ===== STAFF MANAGEMENT LAYOUT ===== */
+    .users-grid-layout {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 1.25rem;
+        align-items: start;
+    }
+
+    .users-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    /* Mobile toggle add user form button */
+    .mobile-add-btn {
+        display: none;
+    }
+
+    /* Search & Filter pills */
+    .staff-filter-bar {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .staff-filter-pills {
+        display: flex;
+        gap: 0.35rem;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .staff-pill {
+        background: var(--btn-secondary-bg);
+        border: 1px solid var(--card-border);
+        color: var(--text-secondary);
+        padding: 6px 13px;
+        border-radius: var(--radius-full);
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+        font-family: inherit;
+    }
+
+    .staff-pill:hover, .staff-pill.active {
+        background: var(--accent-cyan);
+        color: #FFF;
+        border-color: var(--accent-cyan);
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+    }
+
+    /* Avatar Initial */
+    .user-avatar-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.88rem;
+        color: #FFF;
+        flex-shrink: 0;
+    }
+
+    .avatar-admin   { background: linear-gradient(135deg, #EA580C, #F97316); }
+    .avatar-manager { background: linear-gradient(135deg, #0284C7, #38BDF8); }
+    .avatar-cashier { background: linear-gradient(135deg, #059669, #34D399); }
+
+    /* Desktop Table vs Mobile Cards */
+    .staff-table-wrapper {
+        display: block;
+    }
+
+    .staff-cards-mobile {
+        display: none;
+    }
+
+    .staff-card-item {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        box-shadow: var(--shadow-xs);
+        transition: border-color 0.15s, box-shadow 0.15s;
+        animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .staff-cards-mobile > *:nth-child(1) { animation-delay: 0.03s; }
+    .staff-cards-mobile > *:nth-child(2) { animation-delay: 0.07s; }
+    .staff-cards-mobile > *:nth-child(3) { animation-delay: 0.11s; }
+    .staff-cards-mobile > *:nth-child(4) { animation-delay: 0.15s; }
+    .staff-cards-mobile > *:nth-child(5) { animation-delay: 0.19s; }
+    .staff-cards-mobile > *:nth-child(6) { animation-delay: 0.23s; }
+    .staff-cards-mobile > *:nth-child(7) { animation-delay: 0.27s; }
+    .staff-cards-mobile > *:nth-child(8) { animation-delay: 0.31s; }
+
+    .staff-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.65rem;
+        border-bottom: 1px solid var(--card-border);
+    }
+
+    .staff-card-user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .staff-card-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--text-main);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .staff-card-username {
+        font-size: 0.78rem;
+        color: var(--accent-cyan);
+        font-weight: 600;
+    }
+
+    .staff-card-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .staff-detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .staff-detail-label {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .staff-detail-value {
+        color: var(--text-main);
+        font-weight: 500;
+        word-break: break-word;
+    }
+
+    .staff-detail-value a {
+        color: var(--accent-cyan);
+        text-decoration: none;
+    }
+
+    .staff-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding-top: 0.65rem;
+        border-top: 1px dashed var(--card-border);
+    }
+
+    .staff-card-actions form {
+        flex: 1;
+    }
+
+    .staff-card-actions .btn {
+        width: 100%;
+        padding: 7px 10px;
+        font-size: 0.8rem;
+    }
+
+    /* Password Input Wrapper */
+    .password-input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .password-toggle-btn {
+        position: absolute;
+        right: 10px;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+        font-size: 0.9rem;
+    }
+
+    /* ===== RESPONSIVE MEDIA QUERIES ===== */
+    @media (max-width: 960px) {
+        .users-grid-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .mobile-add-btn {
+            display: inline-flex;
+        }
+
+        .add-user-card {
+            display: none;
+        }
+
+        .add-user-card.open {
+            display: block;
+            animation: fadeInDown 0.22s ease;
+        }
+    }
+
+    @media (max-width: 1200px) {
+        .staff-table-wrapper {
+            display: none !important;
+        }
+
+        .staff-cards-mobile {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+    }
+
+    @media (min-width: 600px) and (max-width: 1200px) {
+        .staff-cards-mobile {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important;
+            gap: 1rem !important;
+        }
+        .staff-card-item {
+            margin-bottom: 0 !important;
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+        }
+    }
+
+        .staff-list-container {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .users-page-header {
+            margin-bottom: 0.85rem;
+        }
+
+        .users-page-header h1 {
+            font-size: 1.2rem !important;
+        }
+
+        .staff-card-item {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-xl);
+            padding: 1.15rem;
+            margin-bottom: 0;
+            box-shadow: var(--shadow-sm);
+        }
+    }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Help (?) Button */
+    .pos-help-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: var(--radius-md);
+        background: rgba(2, 132, 199, 0.08);
+        border: 1px solid var(--accent-cyan);
+        color: var(--accent-cyan);
+        font-weight: 800;
+        font-size: 0.8rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .pos-help-btn:hover {
+        background: var(--accent-cyan);
+        color: #FFF;
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="users-page-header">
+    <div>
+        <h1 style="font-size: 1.4rem; font-weight: 800; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-users-gear" style="color: var(--accent-cyan);"></i> Управление персоналом
+            <button type="button" class="pos-help-btn" id="usersHelpBtn" title="Справка по ролям и правам доступа" onclick="openUsersHelpModal()">
+                <i class="fa-solid fa-question"></i>
+            </button>
+        </h1>
+        <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 3px;">
+            Учет учетных записей, роли и права доступа в DACAR Market
+        </p>
+    </div>
+    
+    <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+        <span class="badge {% if ALLOW_REGISTRATION %}badge-green{% else %}badge-red{% endif %}" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;">
+            <i class="fa-solid fa-shield-halved"></i> {% if ALLOW_REGISTRATION %}Регистрация открыта{% else %}Регистрация закрыта{% endif %}
+        </span>
+        <a href="{% url 'm_logout' %}" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.35rem 0.65rem; color: #EF4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08); text-decoration: none;" title="Выйти из системы">
+            <i class="fa-solid fa-right-from-bracket"></i> Выйти
+        </a>
+        <button type="button" class="btn btn-primary mobile-add-btn" id="toggleAddUserBtn" onclick="toggleAddUserForm()">
+            <i class="fa-solid fa-user-plus"></i> <span id="toggleAddUserBtnText">Добавить сотрудника</span>
+        </button>
+    </div>
+</div>
+
+<div class="users-grid-layout">
+    <!-- CREATE USER CARD -->
+    <div class="dacar-card add-user-card" id="addUserCard">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.45rem;">
+                <i class="fa-solid fa-user-plus" style="color: var(--accent-orange);"></i> Новый сотрудник
+            </h3>
+            <button type="button" class="btn btn-secondary mobile-add-btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="toggleAddUserForm()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST" id="createStaffForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+            
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">
+                    Логин (Username) <span style="color: var(--accent-red);">*</span>
+                </label>
+                <input type="text" name="username" class="form-control" required placeholder="cashier3" autocomplete="username">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
+                <div>
+                    <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Имя</label>
+                    <input type="text" name="first_name" class="form-control" placeholder="Иван">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Фамилия</label>
+                    <input type="text" name="last_name" class="form-control" placeholder="Петров">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Роль в системе</label>
+                <select name="role" class="form-control">
+                    {% for r_val, r_lbl in roles %}
+                    <option value="{{ r_val }}">{{ r_lbl }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Телефон</label>
+                <input type="tel" name="phone" class="form-control" placeholder="+7 (707) 000-00-00">
+            </div>
+
+            <div style="margin-bottom: 1.15rem;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">
+                    Пароль <span style="color: var(--accent-red);">*</span>
+                </label>
+                <div class="password-input-group">
+                    <input type="password" name="password" id="staffPasswordInput" class="form-control" required placeholder="••••••••" autocomplete="new-password" style="padding-right: 36px;">
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('staffPasswordInput', this)" aria-label="Показать пароль">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; font-weight: 700; min-height: 42px;">
+                <i class="fa-solid fa-user-check"></i> Создать сотрудника
+            </button>
+        </form>
+    </div>
+
+    <!-- USERS LIST CONTAINER -->
+    <div class="dacar-card staff-list-container">
+        <!-- HEADER & LIVE SEARCH -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 700;">
+                Сотрудники <span class="badge badge-cyan" style="font-size: 0.75rem; margin-left: 0.25rem;">{{ users_list.count }}</span>
+            </h3>
+        </div>
+
+        <!-- SEARCH AND ROLE FILTERS -->
+        <div class="staff-filter-bar">
+            <div style="position: relative; flex: 1; min-width: 180px;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
+                <input type="text" id="staffSearchInput" class="form-control" placeholder="Поиск по имени, логину, телефону..." style="padding-left: 2.2rem; height: 38px; font-size: 0.85rem;" oninput="filterStaffList()">
+            </div>
+            <div class="staff-filter-pills">
+                <button class="staff-pill active" onclick="filterStaffRole('all', this)">Все ({{ users_list.count }})</button>
+                <button class="staff-pill" onclick="filterStaffRole('ADMIN', this)">Админы</button>
+                <button class="staff-pill" onclick="filterStaffRole('MANAGER', this)">Менеджеры</button>
+                <button class="staff-pill" onclick="filterStaffRole('CASHIER', this)">Кассиры</button>
+            </div>
+        </div>
+
+        <!-- DESKTOP TABLE VIEW (>= 768px) -->
+        <div class="table-responsive staff-table-wrapper">
+            <table class="dacar-table" id="desktopStaffTable">
+                <thead>
+                    <tr>
+                        <th>Сотрудник</th>
+                        <th>Роль</th>
+                        <th>Телефон</th>
+                        <th>Дата регистрации</th>
+                        <th>Статус</th>
+                        <th style="text-align: right;">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users_list %}
+                    <tr class="staff-row" data-name="{{ u.get_full_name|default:'' }}" data-username="{{ u.username }}" data-phone="{{ u.phone|default:'' }}" data-role="{{ u.role }}" data-active="{{ u.is_active|yesno:'true,false' }}">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.65rem;">
+                                <div class="user-avatar-circle {% if u.role == 'ADMIN' %}avatar-admin{% elif u.role == 'MANAGER' %}avatar-manager{% else %}avatar-cashier{% endif %}">
+                                    {{ u.first_name|default:u.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 700; color: var(--text-main); font-size: 0.9rem;">
+                                        {{ u.get_full_name|default:u.username }}
+                                        {% if u == request.user %}
+                                        <span class="badge badge-cyan" style="font-size: 0.65rem; padding: 1px 5px; margin-left: 4px;">Вы</span>
+                                        {% endif %}
+                                    </div>
+                                    <div style="font-size: 0.78rem; color: var(--text-muted);">@{{ u.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if u.role == 'ADMIN' %}
+                            <span class="badge badge-orange"><i class="fa-solid fa-crown"></i> Администратор</span>
+                            {% elif u.role == 'MANAGER' %}
+                            <span class="badge badge-cyan"><i class="fa-solid fa-user-tie"></i> Менеджер</span>
+                            {% else %}
+                            <span class="badge badge-green"><i class="fa-solid fa-cash-register"></i> Кассир</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.phone %}
+                            <a href="tel:{{ u.phone }}" style="color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem;">
+                                <i class="fa-solid fa-phone" style="color: var(--accent-cyan); font-size: 0.75rem;"></i> {{ u.phone }}
+                            </a>
+                            {% else %}
+                            <span style="color: var(--text-secondary);">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size: 0.82rem; color: var(--text-muted);">
+                            <i class="fa-regular fa-calendar" style="margin-right: 3px; font-size: 0.75rem;"></i> {{ u.date_joined|date:"d.m.Y H:i" }}
+                        </td>
+                        <td>
+                            {% if u.is_active %}
+                            <span class="badge badge-green"><i class="fa-solid fa-circle-check"></i> Активен</span>
+                            {% else %}
+                            <span class="badge badge-red"><i class="fa-solid fa-ban"></i> Заблокирован</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            {% if u != request.user %}
+                            <div style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                                <!-- Toggle Active / Lock -->
+                                <form method="POST" style="display: inline;" onsubmit="return confirm('Вы уверены, что хотите изменить статус сотрудника {{ u.username }}?')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="toggle_status">
+                                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                                    {% if u.is_active %}
+                                    <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.55rem; font-size: 0.75rem;" title="Заблокировать доступ">
+                                        <i class="fa-solid fa-lock"></i> Блок
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" class="btn btn-success" style="padding: 0.25rem 0.55rem; font-size: 0.75rem;" title="Разблокировать доступ">
+                                        <i class="fa-solid fa-lock-open"></i> Разблок
+                                    </button>
+                                    {% endif %}
+                                </form>
+
+                                <!-- Delete button -->
+                                <form method="POST" style="display: inline;" onsubmit="return confirm('Удалить сотрудника {{ u.username }} из системы?')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                                    <button type="submit" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: var(--accent-red);" title="Удалить сотрудника">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">(Главный Админ)</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MOBILE CARDS VIEW (< 768px) -->
+        <div class="staff-cards-mobile" id="mobileStaffCards">
+            {% for u in users_list %}
+            <div class="staff-card-item staff-row" data-name="{{ u.get_full_name|default:'' }}" data-username="{{ u.username }}" data-phone="{{ u.phone|default:'' }}" data-role="{{ u.role }}" data-active="{{ u.is_active|yesno:'true,false' }}">
+                <!-- Card Header -->
+                <div class="staff-card-header">
+                    <div class="staff-card-user-info">
+                        <div class="user-avatar-circle {% if u.role == 'ADMIN' %}avatar-admin{% elif u.role == 'MANAGER' %}avatar-manager{% else %}avatar-cashier{% endif %}">
+                            {{ u.first_name|default:u.username|slice:":1"|upper }}
+                        </div>
+                        <div style="min-width: 0;">
+                            <div class="staff-card-name">
+                                {{ u.get_full_name|default:u.username }}
+                                {% if u == request.user %}
+                                <span class="badge badge-cyan" style="font-size: 0.65rem; padding: 1px 4px;">Вы</span>
+                                {% endif %}
+                            </div>
+                            <div class="staff-card-username">@{{ u.username }}</div>
+                        </div>
+                    </div>
+                    <div>
+                        {% if u.is_active %}
+                        <span class="badge badge-green" style="font-size: 0.72rem;"><i class="fa-solid fa-circle-check"></i> Активен</span>
+                        {% else %}
+                        <span class="badge badge-red" style="font-size: 0.72rem;"><i class="fa-solid fa-ban"></i> Блок</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Card Details Grid -->
+                <div class="staff-card-details">
+                    <div class="staff-detail-item">
+                        <span class="staff-detail-label">Роль:</span>
+                        <div class="staff-detail-value">
+                            {% if u.role == 'ADMIN' %}
+                            <span class="badge badge-orange" style="font-size: 0.75rem;"><i class="fa-solid fa-crown"></i> Админ</span>
+                            {% elif u.role == 'MANAGER' %}
+                            <span class="badge badge-cyan" style="font-size: 0.75rem;"><i class="fa-solid fa-user-tie"></i> Менеджер</span>
+                            {% else %}
+                            <span class="badge badge-green" style="font-size: 0.75rem;"><i class="fa-solid fa-cash-register"></i> Кассир</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="staff-detail-item">
+                        <span class="staff-detail-label">Телефон:</span>
+                        <div class="staff-detail-value">
+                            {% if u.phone %}
+                            <a href="tel:{{ u.phone }}" style="color: var(--accent-cyan); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="fa-solid fa-phone" style="font-size: 0.7rem;"></i> {{ u.phone }}
+                            </a>
+                            {% else %}
+                            <span style="color: var(--text-secondary);">—</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="staff-detail-item" style="grid-column: 1 / -1;">
+                        <span class="staff-detail-label">Дата регистрации:</span>
+                        <div class="staff-detail-value" style="font-size: 0.78rem; color: var(--text-muted);">
+                            <i class="fa-regular fa-calendar" style="margin-right: 3px;"></i> {{ u.date_joined|date:"d.m.Y H:i" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Actions -->
+                {% if u != request.user %}
+                <div class="staff-card-actions">
+                    <form method="POST" onsubmit="return confirm('Вы уверены, что хотите изменить статус сотрудника {{ u.username }}?')">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="toggle_status">
+                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                        {% if u.is_active %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fa-solid fa-lock"></i> Заблокировать
+                        </button>
+                        {% else %}
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-lock-open"></i> Разблокировать
+                        </button>
+                        {% endif %}
+                    </form>
+
+                    <form method="POST" style="flex: 0 0 auto;" onsubmit="return confirm('Удалить сотрудника {{ u.username }} из системы?')">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                        <button type="submit" class="btn btn-secondary" style="color: var(--accent-red);" title="Удалить">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 0.65rem; border-top: 1px dashed var(--card-border); gap: 0.5rem; flex-wrap: wrap;">
+                    <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+                        <i class="fa-solid fa-shield-halved" style="color: var(--accent-cyan);"></i> Ваш профиль ({{ user.get_role_display }})
+                    </div>
+                    <a href="{% url 'm_logout' %}" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.8rem; font-weight: 700; color: #EF4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08); text-decoration: none; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 6px;" title="Выйти из этого аккаунта">
+                        <i class="fa-solid fa-right-from-bracket"></i> Выйти из аккаунта
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div id="noStaffMessage" style="display: none; text-align: center; color: var(--text-muted); padding: 2.5rem 1rem;">
+            <i class="fa-solid fa-user-slash" style="font-size: 2.2rem; margin-bottom: 0.5rem; opacity: 0.4;"></i>
+            <p style="font-weight: 600;">Сотрудники не найдены</p>
+            <p style="font-size: 0.8rem; margin-top: 0.25rem;">Попробуйте изменить поисковый запрос или фильтр</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let selectedRoleFilter = 'all';
+
+    // Toggle Add User Form on mobile
+    function toggleAddUserForm() {
+        const formCard = document.getElementById('addUserCard');
+        const btnText = document.getElementById('toggleAddUserBtnText');
+        if (!formCard) return;
+
+        formCard.classList.toggle('open');
+        const isOpen = formCard.classList.contains('open');
+        if (btnText) {
+            btnText.textContent = isOpen ? 'Скрыть форму' : 'Добавить сотрудника';
+        }
+        if (isOpen) {
+            formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // Toggle Password Visibility
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+        }
+    }
+
+    // Filter by Role Pills
+    function filterStaffRole(role, btn) {
+        selectedRoleFilter = role;
+        document.querySelectorAll('.staff-pill').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        filterStaffList();
+    }
+
+    // Filter Staff rows (in both Desktop table and Mobile cards)
+    function filterStaffList() {
+        const query = (document.getElementById('staffSearchInput')?.value || '').toLowerCase().trim();
+        const rows = document.querySelectorAll('.staff-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const name = (row.dataset.name || '').toLowerCase();
+            const username = (row.dataset.username || '').toLowerCase();
+            const phone = (row.dataset.phone || '').toLowerCase();
+            const role = row.dataset.role || '';
+
+            const matchesRole = (selectedRoleFilter === 'all' || role === selectedRoleFilter);
+            const matchesQuery = !query || name.includes(query) || username.includes(query) || phone.includes(query);
+
+            if (matchesRole && matchesQuery) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        const noMsg = document.getElementById('noStaffMessage');
+        if (noMsg) {
+            noMsg.style.display = (visibleCount === 0) ? 'block' : 'none';
+        }
+    }
+
+    function openUsersHelpModal() {
+        const modal = document.getElementById('usersHelpModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeUsersHelpModal() {
+        const modal = document.getElementById('usersHelpModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeUsersHelpModal();
+    });
+</script>
+
+<!-- USERS HELP MODAL -->
+<div class="modal-overlay" id="usersHelpModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: var(--card-bg, #ffffff); border-radius: var(--radius-xl); max-width: 500px; width: 100%; padding: 1.75rem; box-shadow: 0 25px 60px rgba(0,0,0,0.3); border: 1px solid var(--card-border); max-height: calc(100dvh - 3rem); overflow-y: auto;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border);">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan)); display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.1rem; font-weight: 900; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
+                    <i class="fa-solid fa-users-gear"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Справка по персоналу и ролям</h3>
+                    <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Разграничение прав и безопасность</p>
+                </div>
+            </div>
+            <button type="button" style="background: rgba(0, 0, 0, 0.05); border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="closeUsersHelpModal()" title="Закрыть">&times;</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.85rem; color: var(--text-main); line-height: 1.5;">
+            <div style="background: var(--btn-secondary-bg); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 0.85rem 1rem;">
+                <strong style="display: flex; align-items: center; gap: 0.4rem; color: var(--accent-cyan); font-size: 0.88rem; margin-bottom: 0.35rem;">
+                    <i class="fa-solid fa-user-shield"></i> Администратор:
+                </strong>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Имеет полный доступ ко всем разделам (Касса, Склад, Дашборд прибыли, Журнал аудита, управление сотрудниками).
+                </p>
+            </div>
+
+            <div style="background: rgba(16, 185, 129, 0.05); border-left: 3px solid var(--accent-green); padding: 0.75rem 1rem; border-radius: 0 var(--radius-md) var(--radius-md) 0;">
+                <strong style="color: var(--accent-green); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.2rem;">
+                    <i class="fa-solid fa-cash-register"></i> Кассир:
+                </strong>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Имеет доступ к POS-терминалу кассы для пробития чеков и своей личной истории продаж за день. Финансовая маржа и системные настройки скрыты.
+                </p>
+            </div>
+
+            <div>
+                <strong style="display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.25rem;">
+                    <i class="fa-solid fa-user-xmark" style="color: var(--accent-red);"></i> Блокировка и удаление:
+                </strong>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Если кассир больше не работает, нажмите «Заблокировать» или «Удалить». Все пробитые им чеки и складские документы сохранятся в отчетах.
+                </p>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: right;">
+            <button type="button" class="btn btn-primary" style="padding: 0.55rem 1.5rem; font-size: 0.88rem; font-weight: 700; border-radius: var(--radius-md);" onclick="closeUsersHelpModal()">
+                Понятно (Esc)
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -4,290 +4,519 @@
 
 {% block content %}
 <style>
-    @keyframes cardIn {
-        0% {
-            opacity: 0;
-            transform: translateY(24px) scale(0.97);
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
-
-    @keyframes carDriveIn {
-        0% {
-            transform: translateX(-220%) scaleX(-1);
-            opacity: 0;
-        }
-
-        70% {
-            transform: translateX(6%) scaleX(-1);
-            opacity: 1;
-        }
-
-        100% {
-            transform: translateX(0) scaleX(-1);
-            opacity: 1;
-        }
-    }
-
-    @keyframes carDriveOut {
-        0% {
-            transform: translateX(0) scaleX(-1);
-            opacity: 1;
-        }
-
-        100% {
-            transform: translateX(220%) scaleX(-1);
-            opacity: 0;
-        }
-    }
-
-    @keyframes carBounce {
-
-        0%,
-        100% {
-            transform: translateY(0) scaleX(-1);
-        }
-
-        50% {
-            transform: translateY(-3px) scaleX(-1);
-        }
-    }
-
-    @keyframes roadLine {
-        0% {
-            transform: translateX(0);
-            opacity: 0.6;
-        }
-
-        100% {
-            transform: translateX(-140%);
-            opacity: 0;
-        }
-    }
-
-    @keyframes fieldIn {
-        0% {
-            opacity: 0;
-            transform: translateX(-8px);
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    @keyframes shimmer {
-        0% {
-            background-position: -200% 0;
-        }
-
-        100% {
-            background-position: 200% 0;
-        }
-    }
-
-    .dacar-login-card {
-        animation: cardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    }
-
-    .dacar-login-icon-wrap {
-        position: relative;
-        width: 96px;
-        height: 64px;
-        margin: 0 auto 1rem;
-        overflow: hidden;
-    }
-
-    .dacar-road-line {
-        position: absolute;
-        bottom: 10px;
-        height: 2px;
-        width: 22px;
-        border-radius: 2px;
-        background: var(--text-muted);
-        opacity: 0;
-        animation: roadLine 0.9s linear infinite;
-    }
-
-    .dacar-road-line:nth-child(1) {
-        right: -10%;
-        animation-delay: 0.9s;
-    }
-
-    .dacar-road-line:nth-child(2) {
-        right: -30%;
-        animation-delay: 1.2s;
-    }
-
-    .dacar-road-line:nth-child(3) {
-        right: -50%;
-        animation-delay: 1.5s;
-    }
-
-    .dacar-login-icon {
-        width: 64px;
-        height: 64px;
-        margin: 0 auto;
-        background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan));
-        border-radius: 1rem;
-        display: inline-flex;
+    /* ===== PAGE WRAPPER & BACKGROUND ===== */
+    .dacar-auth-container {
+        min-height: calc(100dvh - 120px);
+        display: flex;
         align-items: center;
         justify-content: center;
-        animation: carDriveIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards,
-            carBounce 1.6s ease-in-out 0.9s infinite;
-    }
-
-    .dacar-login-icon.driving-away {
-        animation: carDriveOut 0.6s cubic-bezier(0.55, 0, 1, 0.45) forwards !important;
-    }
-
-    .dacar-login-icon i {
-        font-size: 2rem;
-        color: #000;
-    }
-
-    .dacar-field {
-        margin-bottom: 1.25rem;
-        opacity: 0;
-        animation: fieldIn 0.5s ease-out forwards;
-    }
-
-    .dacar-field:nth-of-type(1) {
-        animation-delay: 0.15s;
-    }
-
-    .dacar-field:nth-of-type(2) {
-        animation-delay: 0.28s;
-    }
-
-    .dacar-field .form-control {
-        transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
-    }
-
-    .dacar-field .form-control:focus {
-        transform: translateY(-1px);
-        box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.18);
-    }
-
-    .dacar-field i {
-        transition: color 0.25s ease;
-    }
-
-    .dacar-field:focus-within i {
-        color: var(--accent-cyan);
-    }
-
-    .dacar-login-btn {
+        padding: 1.5rem 1rem;
         position: relative;
-        overflow: hidden;
-        opacity: 0;
-        animation: fieldIn 0.5s ease-out forwards;
-        animation-delay: 0.4s;
-        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
     }
 
-    .dacar-login-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 24px rgba(0, 242, 254, 0.35);
+    /* Ambient background glow */
+    .dacar-auth-container::before {
+        content: '';
+        position: absolute;
+        width: 340px;
+        height: 340px;
+        background: radial-gradient(circle, rgba(2, 132, 199, 0.15) 0%, rgba(249, 115, 22, 0.08) 60%, transparent 80%);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        filter: blur(50px);
+        pointer-events: none;
+        z-index: 0;
     }
 
-    .dacar-login-btn:active {
+    /* ===== MAIN CARD ===== */
+    .dacar-login-card {
+        width: 100%;
+        max-width: 420px;
+        padding: 2.25rem 1.75rem;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25), 0 4px 15px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 1;
+        border-radius: 1.25rem;
+        background: var(--card-bg, #111827);
+        border: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+        animation: cardAppear 0.4s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+    }
+
+    @keyframes cardAppear {
+        0% { opacity: 0; transform: translateY(18px) scale(0.97); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Shake card on error */
+    .dacar-login-card.shake-card {
+        animation: shakeCard 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    @keyframes shakeCard {
+        10%, 90% { transform: translate3d(-2px, 0, 0); }
+        20%, 80% { transform: translate3d(4px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+        40%, 60% { transform: translate3d(6px, 0, 0); }
+    }
+
+    /* ===== BRAND BADGE & HEADER ===== */
+    .dacar-brand-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .dacar-brand-badge {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1.15rem;
+        border-radius: 1.1rem;
+        background: linear-gradient(135deg, #F97316 0%, #0284C7 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 1.85rem;
+        box-shadow: 0 8px 24px rgba(2, 132, 199, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .dacar-brand-title {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 1.65rem;
+        color: var(--text-main, #F8FAFC);
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .dacar-brand-subtitle {
+        color: var(--text-muted, #94A3B8);
+        font-size: 0.88rem;
+        margin-top: 0.4rem;
+        margin-bottom: 0;
+    }
+
+    /* ===== HELP (?) BUTTON & MODAL ===== */
+    .dacar-help-btn {
+        position: absolute;
+        top: 1.2rem;
+        right: 1.2rem;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(2, 132, 199, 0.12);
+        border: 1px solid rgba(2, 132, 199, 0.3);
+        color: #38BDF8;
+        font-weight: 800;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        z-index: 10;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .dacar-help-btn:hover {
+        background: #0284C7;
+        color: #ffffff;
+        transform: scale(1.08);
+    }
+
+    /* ===== ULTRA-READABLE INPUT FIELDS ===== */
+    .dacar-input-group {
+        margin-bottom: 1.35rem;
+        position: relative;
+    }
+
+    .dacar-input-group label {
+        display: block;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--text-muted, #94A3B8);
+        margin-bottom: 0.45rem;
+        letter-spacing: 0.01em;
+    }
+
+    .dacar-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .dacar-input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748B;
+        font-size: 1.05rem;
+        transition: color 0.2s ease;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    /* Target with multiple high-specificity selectors to prevent base.html overrides */
+    .dacar-input-wrap input.dacar-auth-input,
+    input[type="text"].dacar-auth-input,
+    input[type="password"].dacar-auth-input {
+        width: 100% !important;
+        height: 48px !important;
+        min-height: 48px !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        padding-left: 48px !important;
+        padding-right: 48px !important;
+        border-radius: 0.75rem !important;
+        border: 1.5px solid var(--input-border, rgba(148, 163, 184, 0.25)) !important;
+        background: var(--input-bg, #0F172A) !important;
+        color: var(--text-main, #F8FAFC) !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+        line-height: 48px !important;
+        outline: none !important;
+        box-sizing: border-box !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+        -webkit-text-fill-color: var(--text-main, #F8FAFC) !important;
+    }
+
+    .dacar-input-wrap input.dacar-auth-input:focus,
+    input[type="text"].dacar-auth-input:focus,
+    input[type="password"].dacar-auth-input:focus {
+        border-color: #0284C7 !important;
+        background: var(--card-bg, #111827) !important;
+        box-shadow: 0 0 0 3.5px rgba(2, 132, 199, 0.25) !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+    }
+
+    .dacar-input-wrap:focus-within .dacar-input-icon {
+        color: #38BDF8 !important;
+    }
+
+    /* High contrast visible placeholder */
+    .dacar-auth-input::placeholder,
+    .dacar-auth-input::-webkit-input-placeholder,
+    .dacar-auth-input::-moz-placeholder {
+        color: #64748B !important;
+        -webkit-text-fill-color: #64748B !important;
+        opacity: 1 !important;
+        font-size: 0.92rem !important;
+        font-weight: 400 !important;
+    }
+
+    /* Password Toggle Button */
+    .dacar-pwd-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #64748B;
+        font-size: 1.05rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s ease, background 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+        z-index: 10;
+    }
+
+    .dacar-pwd-toggle:hover {
+        color: #F8FAFC;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* ===== SUBMIT BUTTON ===== */
+    .dacar-submit-btn {
+        width: 100%;
+        height: 48px;
+        border-radius: 0.75rem;
+        background: linear-gradient(135deg, #F97316 0%, #0284C7 100%);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 1.02rem;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+        margin-top: 1.5rem;
+    }
+
+    .dacar-submit-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 25px rgba(2, 132, 199, 0.4);
+    }
+
+    .dacar-submit-btn:active {
         transform: translateY(0);
     }
 
-    .dacar-login-btn::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
-        background-size: 200% 100%;
-        animation: shimmer 2.8s linear infinite;
+    .dacar-submit-btn.is-loading {
+        pointer-events: none;
+        opacity: 0.85;
     }
 
-    .dacar-login-btn.is-loading {
-        pointer-events: none;
-        opacity: 0.75;
+    /* ===== HELP MODAL ===== */
+    .dacar-help-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .dacar-help-modal.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .dacar-help-content {
+        background: var(--card-bg, #1E293B);
+        border: 1px solid var(--card-border, rgba(255, 255, 255, 0.12));
+        border-radius: 1.25rem;
+        max-width: 440px;
+        width: 100%;
+        padding: 1.75rem;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+        position: relative;
+    }
+
+    .dacar-help-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        border: none;
+        color: var(--text-muted, #94A3B8);
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+
+    .dacar-help-close:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #EF4444;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 480px) {
+        .dacar-login-card {
+            padding: 2rem 1.35rem;
+            border-radius: 1rem;
+        }
+        .dacar-brand-badge {
+            width: 58px;
+            height: 58px;
+            font-size: 1.65rem;
+            margin-bottom: 1rem;
+        }
+        .dacar-brand-title {
+            font-size: 1.45rem;
+        }
     }
 </style>
 
-<div
-    style="min-height: calc(100dvh - 120px); display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem;">
-    <div class="dacar-card dacar-login-card"
-        style="width: 100%; max-width: 420px; padding: 2rem 1.5rem; box-shadow: var(--shadow-lg);">
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <div class="dacar-login-icon-wrap">
-                <span class="dacar-road-line"></span>
-                <span class="dacar-road-line"></span>
-                <span class="dacar-road-line"></span>
-                <div class="dacar-login-icon" id="dacarLoginIcon">
-                    <i class="fa-solid fa-car-side"></i>
-                </div>
+<div class="dacar-auth-container">
+    <div class="dacar-login-card" id="dacarLoginCard">
+        
+        <!-- Help Button '?' -->
+        <button type="button" class="dacar-help-btn" id="dacarHelpBtn" title="Справка и подсказки">
+            <i class="fa-solid fa-question"></i>
+        </button>
+
+        <!-- Clean, Professional Brand Header -->
+        <div class="dacar-brand-header">
+            <div class="dacar-brand-badge">
+                <i class="fa-solid fa-car-side"></i>
             </div>
-            <h2
-                style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--text-main);">
-                DACAR POS &amp; Учет</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">Авторизация сотрудников
-                магазина</p>
+            <h2 class="dacar-brand-title">DACAR POS &amp; Учет</h2>
+            <p class="dacar-brand-subtitle">Авторизация в системе учета и кассы</p>
         </div>
 
-        <form method="POST" id="dacarLoginForm">
+        <!-- Login Form -->
+        <form method="POST" id="dacarLoginForm" autocomplete="on">
             {% csrf_token %}
-            <div class="dacar-field">
-                <label
-                    style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Логин
-                    сотрудника</label>
-                <div style="position: relative;">
-                    <i class="fa-solid fa-user"
-                        style="position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
-                    <input type="text" name="username" class="form-control" required style="padding-left: 2.5rem;"
-                        placeholder="например: admin или cashier1" autofocus>
+
+            <!-- Username Field -->
+            <div class="dacar-input-group">
+                <label for="usernameInput">Логин сотрудника</label>
+                <div class="dacar-input-wrap">
+                    <i class="fa-solid fa-user dacar-input-icon"></i>
+                    <input type="text" id="usernameInput" name="username" class="dacar-auth-input" required 
+                           placeholder="например: beybit или cashier1" autofocus autocomplete="username">
                 </div>
             </div>
 
-            <div class="dacar-field">
-                <label
-                    style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Пароль</label>
-                <div style="position: relative;">
-                    <i class="fa-solid fa-lock"
-                        style="position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
-                    <input type="password" name="password" class="form-control" required style="padding-left: 2.5rem;"
-                        placeholder="••••••••">
+            <!-- Password Field with Show/Hide Toggle -->
+            <div class="dacar-input-group">
+                <label for="passwordInput">Пароль доступа</label>
+                <div class="dacar-input-wrap">
+                    <i class="fa-solid fa-lock dacar-input-icon"></i>
+                    <input type="password" id="passwordInput" name="password" class="dacar-auth-input" required 
+                           placeholder="••••••••" autocomplete="current-password">
+                    <button type="button" class="dacar-pwd-toggle" id="pwdToggleBtn" title="Показать/скрыть пароль" tabindex="-1">
+                        <i class="fa-solid fa-eye" id="pwdToggleIcon"></i>
+                    </button>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary dacar-login-btn" id="dacarLoginBtn"
-                style="width: 100%; padding: 0.85rem; font-size: 1rem; font-weight: 700;">
-                <i class="fa-solid fa-right-to-bracket"></i> Войти в систему
+            <!-- Submit Button -->
+            <button type="submit" class="dacar-submit-btn" id="dacarSubmitBtn">
+                <i class="fa-solid fa-arrow-right-to-bracket" id="btnIcon"></i>
+                <span id="btnText">Войти в систему</span>
             </button>
         </form>
 
     </div>
 </div>
 
+<!-- HELP MODAL WITH DETAILED INSTRUCTIONS & FAQ -->
+<div class="dacar-help-modal" id="dacarHelpModal" role="dialog" aria-modal="true">
+    <div class="dacar-help-content">
+        <button type="button" class="dacar-help-close" id="dacarHelpClose" title="Закрыть">&times;</button>
+        
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #F97316, #0284C7); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; flex-shrink: 0;">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Справка по входу в DACAR</h3>
+                <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Информация для персонала магазина</p>
+            </div>
+        </div>
+
+        <div style="font-size: 0.85rem; color: var(--text-main); line-height: 1.5; display: flex; flex-direction: column; gap: 1rem;">
+            <div style="background: rgba(2, 132, 199, 0.08); border-left: 3px solid #0284C7; padding: 0.75rem 1rem; border-radius: 0 0.5rem 0.5rem 0;">
+                <strong style="color: #0284C7; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.35rem;">
+                    <i class="fa-solid fa-user-gear"></i> Роли в системе:
+                </strong>
+                <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-muted); font-size: 0.8rem;">
+                    <li><strong>Администратор:</strong> Полный доступ к кассе, складу, отчетам маржи, управлению персоналом и аналитике.</li>
+                    <li><strong>Кассир:</strong> Доступ к POS-терминалу для пробития чеков, сканеру штрихкодов и печати чеков.</li>
+                </ul>
+            </div>
+
+            <div>
+                <strong style="display: flex; align-items: center; gap: 0.4rem; color: var(--text-main);">
+                    <i class="fa-solid fa-key" style="color: #F97316;"></i> Забыли пароль или логин?
+                </strong>
+                <p style="margin: 0.25rem 0 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Обратитесь к Главному Администратору магазина. Администратор может сбросить пароль или активировать профиль в разделе <em>«Штат»</em>.
+                </p>
+            </div>
+
+            <div>
+                <strong style="display: flex; align-items: center; gap: 0.4rem; color: var(--text-main);">
+                    <i class="fa-solid fa-lightbulb" style="color: #0284C7;"></i> Подсказка:
+                </strong>
+                <p style="margin: 0.25rem 0 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Для быстрого входа нажимайте клавишу <code>Enter</code> на клавиатуре после ввода пароля.
+                </p>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: right;">
+            <button type="button" class="btn btn-primary" id="dacarHelpOkBtn" style="padding: 0.55rem 1.25rem; font-size: 0.85rem; font-weight: 700;">
+                Понятно
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     (function () {
-        var form = document.getElementById('dacarLoginForm');
-        var icon = document.getElementById('dacarLoginIcon');
-        var btn = document.getElementById('dacarLoginBtn');
-        var isLeaving = false;
+        const form = document.getElementById('dacarLoginForm');
+        const submitBtn = document.getElementById('dacarSubmitBtn');
+        const btnIcon = document.getElementById('btnIcon');
+        const btnText = document.getElementById('btnText');
+        const card = document.getElementById('dacarLoginCard');
 
+        // Help Modal elements
+        const helpBtn = document.getElementById('dacarHelpBtn');
+        const helpModal = document.getElementById('dacarHelpModal');
+        const helpClose = document.getElementById('dacarHelpClose');
+        const helpOkBtn = document.getElementById('dacarHelpOkBtn');
+
+        // Password visibility toggle
+        const pwdInput = document.getElementById('passwordInput');
+        const pwdToggleBtn = document.getElementById('pwdToggleBtn');
+        const pwdToggleIcon = document.getElementById('pwdToggleIcon');
+
+        if (pwdToggleBtn && pwdInput) {
+            pwdToggleBtn.addEventListener('click', function () {
+                const isPassword = pwdInput.type === 'password';
+                pwdInput.type = isPassword ? 'text' : 'password';
+                pwdToggleIcon.className = isPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+                pwdInput.focus();
+            });
+        }
+
+        // Open/Close Help Modal
+        function openHelp() {
+            helpModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeHelp() {
+            helpModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        if (helpBtn) helpBtn.addEventListener('click', openHelp);
+        if (helpClose) helpClose.addEventListener('click', closeHelp);
+        if (helpOkBtn) helpOkBtn.addEventListener('click', closeHelp);
+        if (helpModal) {
+            helpModal.addEventListener('click', function (e) {
+                if (e.target === helpModal) closeHelp();
+            });
+        }
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && helpModal.classList.contains('active')) closeHelp();
+        });
+
+        // Form Submit
+        let isSubmitting = false;
         form.addEventListener('submit', function (e) {
-            if (isLeaving) return;
-            if (typeof form.reportValidity === 'function' && !form.reportValidity()) return;
+            if (isSubmitting) return;
 
-            e.preventDefault();
-            isLeaving = true;
-            icon.classList.add('driving-away');
-            btn.classList.add('is-loading');
+            if (typeof form.reportValidity === 'function' && !form.reportValidity()) {
+                card.classList.add('shake-card');
+                setTimeout(() => { card.classList.remove('shake-card'); }, 500);
+                return;
+            }
 
-            setTimeout(function () {
-                form.submit();
-            }, 550);
+            isSubmitting = true;
+            submitBtn.classList.add('is-loading');
+            btnIcon.className = 'fa-solid fa-spinner fa-spin';
+            btnText.innerText = 'Вход в систему...';
         });
     })();
 </script>

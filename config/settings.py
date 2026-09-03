@@ -16,8 +16,11 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.trycloudflare.com',
     'https://*.loca.lt',
     'https://*.ngrok-free.app',
+    'https://dacar-market.kz',
+    'http://dacar-market.kz',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'http://10.0.2.2:8000',
 ]
 
 # Application definition
@@ -46,6 +49,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'config.middleware.MobileLoginRedirectMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'users.middleware.RegistrationControlMiddleware',
@@ -83,7 +87,7 @@ DATABASES = {
 AUTH_USER_MODEL = 'users.User'
 
 # Registration Control Flag
-ALLOW_REGISTRATION = True
+ALLOW_REGISTRATION = False
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

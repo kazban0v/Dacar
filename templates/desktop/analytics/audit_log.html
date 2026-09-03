@@ -1,0 +1,158 @@
+{% extends 'desktop/base.html' %}
+
+{% block title %}Журнал аудита (Audit Trail) — DACAR{% endblock %}
+
+{% block extra_head %}
+<style>
+    .audit-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .audit-filter-form {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .audit-filter-search { flex: 1; min-width: 220px; }
+    .audit-filter-select { width: 200px; }
+    
+    @media (max-width: 768px) {
+        .col-ip { display: none; }
+        .audit-page-header h1 { font-size: 1.2rem; }
+    }
+    @media (max-width: 480px) {
+        .col-user { display: none; }
+        .audit-filter-search { min-width: 100%; flex: none; }
+        .audit-filter-select { width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="audit-page-header">
+    <div>
+        <h1 style="font-size: 1.4rem; font-weight: 800; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <i class="fa-solid fa-shield-halved" style="color: var(--accent-cyan);"></i> Журнал аудита действий
+        </h1>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 3px;">
+            Неудаляемая история всех ключевых операций. Защищено от редактирования.
+        </p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="dacar-card" style="margin-bottom: 1rem;">
+    <form method="GET" class="audit-filter-form">
+        <div class="audit-filter-search">
+            <input type="text" name="q" class="form-control" placeholder="Поиск по описанию..." value="{{ search|default:'' }}">
+        </div>
+
+        <div class="audit-filter-select">
+            <select name="action_type" class="form-control" onchange="this.form.submit()">
+                <option value="">Все типы действий</option>
+                {% for code, label in action_types %}
+                <option value="{{ code }}" {% if action_type == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> <span>Найти</span></button>
+        {% if search or action_type %}
+        <a href="{% url 'audit_log' %}" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i></a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Table -->
+<div class="dacar-card">
+    <div class="table-responsive">
+        <table class="dacar-table">
+            <thead>
+                <tr>
+                    <th>Дата и время</th>
+                    <th class="col-user">Сотрудник</th>
+                    <th>Действие</th>
+                    <th>Описание операции</th>
+                    <th class="col-ip">IP адрес</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td style="font-family: monospace; color: var(--text-muted); font-size: 0.8rem;">
+                        {{ log.created_at|date:"d.m.Y H:i" }}
+                    </td>
+                    <td class="col-user">
+                        <strong style="color: var(--text-main);">
+                            {% if log.user %}{{ log.user.get_full_name|default:log.user.username }}{% else %}Удаленный пользователь{% endif %}
+                        </strong>
+                        {% if log.user %}
+                        <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">{{ log.user.get_role_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if log.action_type == 'SALE' %}
+                            <span class="badge badge-green"><i class="fa-solid fa-cart-shopping"></i> Продажа</span>
+                        {% elif log.action_type == 'REFUND' %}
+                            <span class="badge badge-orange"><i class="fa-solid fa-rotate-left"></i> Возврат</span>
+                        {% elif log.action_type == 'STOCK_IN' or log.action_type == 'STOCK_OUT' %}
+                            <span class="badge badge-cyan"><i class="fa-solid fa-boxes-stacked"></i> Склад</span>
+                        {% else %}
+                            <span class="badge badge-secondary"><i class="fa-solid fa-circle-info"></i> {{ log.get_action_type_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="color: var(--text-main); font-size: 0.9rem;">
+                        {{ log.description }}
+                    </td>
+                    <td class="col-ip" style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">
+                        {{ log.ip_address|default:"127.0.0.1" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        Записи в журнале аудита не найдены.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--card-border); margin-top: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+            Страница <strong>{{ page_obj.number }}</strong> из <strong>{{ page_obj.paginator.num_pages }}</strong> (Всего <strong>{{ page_obj.paginator.count }}</strong> записей)
+        </div>
+
+        <div style="display: flex; gap: 0.35rem; align-items: center;">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ search|default:'' }}&action_type={{ action_type|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
+                &laquo; Назад
+            </a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="btn btn-primary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem; pointer-events: none;">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}&q={{ search|default:'' }}&action_type={{ action_type|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
+                    {{ num }}
+                </a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ search|default:'' }}&action_type={{ action_type|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
+                Вперед &raquo;
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>{% endblock %}

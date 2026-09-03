@@ -43,7 +43,17 @@
         display: flex;
         flex-direction: column;
         gap: 0.65rem;
+        animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
+
+    .orders-cards-mobile > *:nth-child(1) { animation-delay: 0.03s; }
+    .orders-cards-mobile > *:nth-child(2) { animation-delay: 0.07s; }
+    .orders-cards-mobile > *:nth-child(3) { animation-delay: 0.11s; }
+    .orders-cards-mobile > *:nth-child(4) { animation-delay: 0.15s; }
+    .orders-cards-mobile > *:nth-child(5) { animation-delay: 0.19s; }
+    .orders-cards-mobile > *:nth-child(6) { animation-delay: 0.23s; }
+    .orders-cards-mobile > *:nth-child(7) { animation-delay: 0.27s; }
+    .orders-cards-mobile > *:nth-child(8) { animation-delay: 0.31s; }
 
     .order-card-header {
         display: flex;
@@ -118,20 +128,65 @@
         }
 
         .orders-cards-mobile {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .orders-list-card {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .orders-filter-card {
+            border-radius: var(--radius-xl) !important;
+            padding: 0.85rem !important;
+            margin-bottom: 0.75rem !important;
+        }
+
+        .order-mobile-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-xl);
+            padding: 1.15rem;
+            margin-bottom: 0;
+            box-shadow: var(--shadow-sm);
         }
 
         .orders-page-header h1 {
-            font-size: 1.25rem !important;
+            font-size: 1.2rem !important;
         }
 
         .orders-filter-search { min-width: 100%; flex: none; }
         .orders-filter-select { min-width: calc(50% - 0.35rem); flex: 1; }
     }
 
-    @media (max-width: 480px) {
-        .orders-filter-select { min-width: 100%; flex: none; }
-        .orders-filter-form .btn { flex: 1; }
+    /* Help (?) Button */
+    .pos-help-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: var(--radius-md);
+        background: rgba(2, 132, 199, 0.08);
+        border: 1px solid var(--accent-cyan);
+        color: var(--accent-cyan);
+        font-weight: 800;
+        font-size: 0.8rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .pos-help-btn:hover {
+        background: var(--accent-cyan);
+        color: #FFF;
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
     }
 </style>
 {% endblock %}
@@ -146,6 +201,9 @@
             <i class="fa-solid fa-user-clock" style="color: var(--accent-orange);"></i> Моя история продаж
             <span class="badge badge-orange"><i class="fa-solid fa-lock"></i> Изолировано</span>
             {% endif %}
+            <button type="button" class="pos-help-btn" id="ordersHelpBtn" title="Справка по чекам и возвратам" onclick="openOrdersHelpModal()">
+                <i class="fa-solid fa-question"></i>
+            </button>
         </h1>
         <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 3px;">
             {% if user.is_admin_user %}
@@ -159,7 +217,7 @@
 </div>
 
 <!-- FILTERS -->
-<div class="dacar-card" style="margin-bottom: 1rem;">
+<div class="dacar-card orders-filter-card" style="margin-bottom: 1rem;">
     <form method="GET" class="orders-filter-form">
         <div class="orders-filter-search">
             <input type="text" name="q" value="{{ search|default:'' }}" class="form-control" placeholder="Поиск по № чека..." autocomplete="off">
@@ -189,7 +247,7 @@
 </div>
 
 <!-- ORDERS CONTAINER -->
-<div class="dacar-card">
+<div class="dacar-card orders-list-card">
     <!-- DESKTOP TABLE VIEW (>= 768px) -->
     <div class="table-responsive orders-table-wrapper">
         <table class="dacar-table">
@@ -319,26 +377,33 @@
                 <div class="order-card-total-sum">{{ order.total_amount|floatformat:0 }} ₸</div>
             </div>
 
+            <!-- Items Breakdown Accordion/Box -->
+            <div style="background: var(--glass-card); padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+                <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">Товары в чеке:</div>
+                {% for it in order.items.all %}
+                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 2px;">
+                    <span style="color: var(--text-main);">{{ it.product.name }} &times; {{ it.quantity|floatformat:0 }} {{ it.product.unit }}</span>
+                    <strong style="color: var(--accent-cyan);">{{ it.total_amount|floatformat:0 }} ₸</strong>
+                </div>
+                {% endfor %}
+            </div>
+
             <!-- Action Buttons -->
             <div class="order-card-actions">
-                <a href="{% url 'order_print' order.id %}" target="_blank" class="btn btn-secondary">
-                    <i class="fa-solid fa-print"></i> Печать
-                </a>
-
-                {% if order.status == 'COMPLETED' %}
-                <button type="button" onclick="openRefundModal({{ order.id }}, '{{ order.order_number }}', '{{ order.total_amount|floatformat:0 }}')" class="btn btn-danger">
-                    <i class="fa-solid fa-rotate-left"></i> Возврат
+                {% if order.status == 'COMPLETED' and user.is_admin_user or order.status == 'COMPLETED' and user.role == 'MANAGER' %}
+                <button type="button" onclick="openRefundModal({{ order.id }}, '{{ order.order_number }}', '{{ order.total_amount|floatformat:0 }}')" class="btn btn-danger" style="font-weight: 700;">
+                    <i class="fa-solid fa-rotate-left"></i> Оформить возврат
                 </button>
                 {% elif order.status == 'REFUNDED' %}
-                <button type="button" class="btn btn-secondary" style="border-color: var(--accent-orange); color: var(--accent-orange);" onclick="showRefundReasonModal('{{ order.order_number }}', '{{ order.refund_reason|default:"Причина не указана"|escapejs }}', '{% if order.refunded_by %}{{ order.refunded_by.get_full_name|default:order.refunded_by.username|escapejs }}{% else %}Удален{% endif %}', '{{ order.refunded_at|date:"d.m.Y H:i" }}', '{{ order.total_amount|floatformat:0 }}')">
-                    <i class="fa-solid fa-circle-info"></i> Причина
+                <button type="button" class="btn btn-secondary" style="border-color: var(--accent-orange); color: var(--accent-orange); font-weight: 700;" onclick="showRefundReasonModal('{{ order.order_number }}', '{{ order.refund_reason|default:"Причина не указана"|escapejs }}', '{% if order.refunded_by %}{{ order.refunded_by.get_full_name|default:order.refunded_by.username|escapejs }}{% else %}Удален{% endif %}', '{{ order.refunded_at|date:"d.m.Y H:i" }}', '{{ order.total_amount|floatformat:0 }}')">
+                    <i class="fa-solid fa-circle-info"></i> Причина возврата
                 </button>
                 {% endif %}
 
                 {% if user.is_admin_user %}
                 <form method="POST" action="{% url 'order_delete' order.id %}" style="flex: 0 0 auto;" onsubmit="return confirm('ВНИМАНИЕ! Вы собираетесь навсегда аннулировать чек {{ order.order_number }}. Это действие запишется в журнал аудита.')">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-secondary" style="color: var(--accent-red); padding: 8px 12px;" title="Удалить чек">
+                    <button type="submit" class="btn btn-secondary" style="color: var(--accent-red); padding: 8px 12px;" title="Аннулировать чек (Только админ)">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </form>
@@ -430,7 +495,7 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 0.85rem;">
-            <div style="background: #F9FAFB; padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--card-border); display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; font-size: 0.85rem;">
+            <div style="background: var(--btn-secondary-bg); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--card-border); display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; font-size: 0.85rem;">
                 <div>
                     <span style="color: var(--text-muted); display: block; font-size: 0.72rem; text-transform: uppercase;">Номер чека</span>
                     <strong id="viewModalOrderNum" style="color: var(--accent-cyan); font-family: monospace;"></strong>
@@ -463,8 +528,77 @@
     </div>
 </div>
 
+<!-- ORDERS HELP MODAL -->
+<div class="modal-overlay" id="ordersHelpModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: var(--card-bg, #ffffff); border-radius: var(--radius-xl); max-width: 500px; width: 100%; padding: 1.75rem; box-shadow: 0 25px 60px rgba(0,0,0,0.3); border: 1px solid var(--card-border); max-height: calc(100dvh - 3rem); overflow-y: auto;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border);">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan)); display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.1rem; font-weight: 900; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Справка по чекам и возвратам</h3>
+                    <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Реестр продаж и правила возвратов</p>
+                </div>
+            </div>
+            <button type="button" style="background: rgba(0, 0, 0, 0.05); border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="closeOrdersHelpModal()" title="Закрыть">&times;</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.85rem; color: var(--text-main); line-height: 1.5;">
+            <div style="background: var(--btn-secondary-bg); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 0.85rem 1rem;">
+                <strong style="display: flex; align-items: center; gap: 0.4rem; color: var(--accent-cyan); font-size: 0.88rem; margin-bottom: 0.35rem;">
+                    <i class="fa-solid fa-rotate-left"></i> Как оформить возврат товара:
+                </strong>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Найдите нужный чек по номеру, нажмите оранжевую кнопку «Возврат», укажите причину возврата и подтвердите операцию. Товар автоматически вернется на баланс склада, а сумма будет списана из кассового отчета.
+                </p>
+            </div>
+
+            <div style="background: rgba(2, 132, 199, 0.05); border-left: 3px solid var(--accent-cyan); padding: 0.75rem 1rem; border-radius: 0 var(--radius-md) var(--radius-md) 0;">
+                <strong style="color: var(--accent-cyan); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.2rem;">
+                    <i class="fa-solid fa-print"></i> Печать дубликата чека:
+                </strong>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Нажмите «Печать» в строке любого чека, чтобы повторно открыть и распечатать товарный чек на термопринтере или в PDF.
+                </p>
+            </div>
+
+            <div>
+                <strong style="display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.25rem;">
+                    <i class="fa-solid fa-filter" style="color: var(--accent-orange);"></i> Фильтры:
+                </strong>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Используйте фильтр по типу оплаты (Kaspi QR, Наличные, Карта) для сверки кассы в конце смены.
+                </p>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: right;">
+            <button type="button" class="btn btn-primary" style="padding: 0.55rem 1.5rem; font-size: 0.88rem; font-weight: 700; border-radius: var(--radius-md);" onclick="closeOrdersHelpModal()">
+                Понятно (Esc)
+            </button>
+        </div>
+    </div>
+</div>
+
 {% block extra_scripts %}
 <script>
+    function openOrdersHelpModal() {
+        const modal = document.getElementById('ordersHelpModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeOrdersHelpModal() {
+        const modal = document.getElementById('ordersHelpModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
     function openRefundModal(orderId, orderNum, totalSum) {
         document.getElementById('refundModalOrderNum').innerText = orderNum;
         document.getElementById('refundModalSum').innerText = totalSum;
@@ -497,6 +631,7 @@
         if (e.key === 'Escape') {
             closeRefundModal();
             closeRefundReasonViewModal();
+            closeOrdersHelpModal();
         }
     });
 </script>

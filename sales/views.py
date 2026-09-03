@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
+from config.rendering import render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
@@ -50,6 +51,9 @@ class CheckoutAPIView(APIView):
                 except Exception as ex:
                     print_status = f"Ошибка автопечати: {str(ex)}"
 
+            from django.core.cache import cache
+            cache.delete('dacar_live_kpi')
+
             order_serializer = SaleOrderSerializer(order)
             return Response({
                 'success': True,
@@ -100,7 +104,7 @@ def sales_orders_list_view(request):
 
     # DATA ISOLATION RULE: Cashiers can ONLY see their own sales for current shift/day!
     if not request.user.is_admin_user:
-        today = timezone.now().date()
+        today = timezone.localdate()
         orders = orders.filter(cashier=request.user, created_at__date=today)
 
     if search:
@@ -157,9 +161,10 @@ def order_refund_view(request, pk):
     """
     order = get_object_or_404(SaleOrder, pk=pk)
 
-    # Cashiers can only refund their own orders unless Admin
-    if not request.user.is_admin_user and order.cashier != request.user:
-        messages.error(request, 'Вы не можете оформить возврат по чеку другого кассира.')
+    # Permission check: ADMIN and MANAGER can refund. CASHIER cannot.
+    is_mgr_or_admin = request.user.is_admin_user or getattr(request.user, 'role', '') == 'MANAGER'
+    if not is_mgr_or_admin:
+        messages.error(request, 'Оформление возврата разрешено только Управляющему или Администратору.')
         return redirect('sales_orders_list')
 
     if order.status == SaleOrder.Status.REFUNDED:
@@ -168,8 +173,8 @@ def order_refund_view(request, pk):
 
     if request.method == 'POST':
         refund_reason = request.POST.get('refund_reason', '').strip()
-        if not refund_reason:
-            messages.error(request, 'Пожалуйста, укажите обязательную причину возврата.')
+        if not refund_reason or len(refund_reason) < 5:
+            messages.error(request, 'Пожалуйста, укажите подробную причину возврата (не менее 5 символов).')
             return redirect('sales_orders_list')
 
         with transaction.atomic():
@@ -201,6 +206,9 @@ def order_refund_view(request, pk):
                 f"Оформлен возврат по чеку № {order.order_number} на сумму {order.total_amount} ₸. Провел: {request.user}. Причина: '{refund_reason}'"
             )
 
+            from django.core.cache import cache
+            cache.delete('dacar_live_kpi')
+
         messages.success(request, f'Возврат по чеку № {order.order_number} на сумму {order.total_amount} ₸ успешно оформлен. Остатки товаров восстановлены.')
         return redirect('sales_orders_list')
 
@@ -231,6 +239,9 @@ def order_delete_view(request, pk):
                 f"Администратор {request.user} отменил/удалил чек № {order_num} на сумму {order_sum} ₸"
             )
             order.delete()
+
+            from django.core.cache import cache
+            cache.delete('dacar_live_kpi')
 
         messages.success(request, f'Чек № {order_num} успешно аннулирован администратором.')
         return redirect('sales_orders_list')

@@ -1,0 +1,819 @@
+{% extends 'mobile/base.html' %}
+
+{% block title %}Склад и Остатки — DACAR Market{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ===== WAREHOUSE HEADER & CONTROLS ===== */
+    .catalog-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-bar-form {
+        display: flex;
+        gap: 0.625rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-search { flex: 2; min-width: 220px; }
+    .filter-select { flex: 1; min-width: 150px; }
+
+    /* Desktop Table vs Mobile Cards */
+    .catalog-table-wrapper {
+        display: block;
+    }
+
+    .catalog-cards-mobile {
+        display: none;
+    }
+
+    /* ===== MOBILE PRODUCT CARD ===== */
+    .product-list-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-xl);
+        padding: 1.15rem;
+        margin-bottom: 0.85rem;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+        animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .products-mobile-grid > *:nth-child(1) { animation-delay: 0.03s; }
+    .products-mobile-grid > *:nth-child(2) { animation-delay: 0.07s; }
+    .products-mobile-grid > *:nth-child(3) { animation-delay: 0.11s; }
+    .products-mobile-grid > *:nth-child(4) { animation-delay: 0.15s; }
+    .products-mobile-grid > *:nth-child(5) { animation-delay: 0.19s; }
+    .products-mobile-grid > *:nth-child(6) { animation-delay: 0.23s; }
+    .products-mobile-grid > *:nth-child(7) { animation-delay: 0.27s; }
+    .products-mobile-grid > *:nth-child(8) { animation-delay: 0.31s; }
+
+    .product-list-card:hover {
+        border-color: var(--accent-cyan);
+        box-shadow: var(--shadow-md);
+    }
+
+    .product-list-card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .product-list-card-title {
+        font-weight: 800;
+        font-size: 1.02rem;
+        color: var(--text-main);
+        line-height: 1.35;
+        flex: 1;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .product-list-card-badges {
+        display: flex;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .product-list-card-codes {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        align-items: center;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        background: var(--glass-card);
+        padding: 6px 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--card-border);
+    }
+
+    .product-code-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 600;
+    }
+
+    .product-list-card-pricing {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-top: 1px dashed var(--card-border);
+        border-bottom: 1px dashed var(--card-border);
+    }
+
+    .product-card-price {
+        font-size: 1.35rem;
+        font-weight: 900;
+        color: var(--accent-cyan);
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .product-card-stock-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: var(--radius-full);
+        font-size: 0.82rem;
+        font-weight: 800;
+    }
+    .stock-ok { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .stock-warn { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .stock-danger { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .product-list-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .product-list-card-actions .btn {
+        flex: 1;
+        padding: 8px 10px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border-radius: var(--radius-md);
+    }
+
+    /* Modal dialog */
+    .modal-refill-box {
+        width: 100%;
+        max-width: min(440px, calc(100vw - 32px));
+        margin: 1rem;
+        border: 1px solid var(--card-border);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        border-radius: var(--radius-xl);
+        background: var(--card-bg);
+        padding: 1.35rem;
+        animation: refillModalIn 0.2s ease;
+    }
+
+    @keyframes refillModalIn {
+        from { opacity: 0; transform: scale(0.96) translateY(8px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .quick-qty-btn {
+        padding: 6px 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--card-border);
+        background: var(--glass-card);
+        color: var(--text-main);
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .quick-qty-btn:hover {
+        border-color: var(--accent-cyan);
+        color: var(--accent-cyan);
+    }
+
+    /* Responsive & Tablet Adaptation */
+    @media (max-width: 1200px) {
+        .catalog-table-wrapper { display: none !important; }
+        .catalog-cards-mobile { display: block !important; }
+    }
+
+    @media (min-width: 600px) and (max-width: 1200px) {
+        .catalog-cards-mobile {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+            gap: 1rem !important;
+        }
+        .product-list-card {
+            margin-bottom: 0 !important;
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+        }
+        .filter-bar-form {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            gap: 0.75rem !important;
+        }
+        .filter-search { flex: 2 !important; min-width: 240px !important; }
+        .filter-select { flex: 1 !important; min-width: 160px !important; }
+    }
+
+    @media (max-width: 599px) {
+        .filter-search { min-width: 100%; flex: none; }
+        .filter-select { min-width: calc(50% - 0.35rem); flex: 1; }
+    }
+
+    .pos-help-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-md);
+        background: rgba(2, 132, 199, 0.08);
+        border: 1px solid var(--accent-cyan);
+        color: var(--accent-cyan);
+        font-weight: 800;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="catalog-page-header">
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 4px;">
+            <h1 style="font-size: 1.45rem; font-weight: 800; font-family: 'Outfit', sans-serif; margin: 0; color: var(--text-main);">
+                Склад и Остатки
+            </h1>
+            <button type="button" class="pos-help-btn" id="catalogHelpBtn" title="Справка по складу" onclick="openCatalogHelpModal()">
+                <i class="fa-solid fa-question"></i>
+            </button>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">
+            Учет остатков, сканирование и отгрузка партий в магазин DACAR
+        </p>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary" onclick="openWarehouseScanner()" style="font-weight: 700; border: 1px solid var(--accent-cyan); color: var(--accent-cyan); background: rgba(2, 132, 199, 0.08);">
+            <i class="fa-solid fa-camera"></i> <span>Сканер</span>
+        </button>
+        <a href="{% url 'm_product_create' %}" class="btn btn-primary" style="font-weight: 700;">
+            <i class="fa-solid fa-plus-circle"></i> Новый товар
+        </a>
+    </div>
+</div>
+
+<!-- FILTERS -->
+<div class="dacar-card" style="margin-bottom: 1.25rem; padding: 1rem; border-radius: var(--radius-xl);">
+    <form method="GET" class="filter-bar-form" id="catalogFilterForm">
+        <div class="filter-search">
+            <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Поиск по названию, артикулу или штрихкоду..." autocomplete="off">
+        </div>
+
+        <div class="filter-select">
+            <select name="category" class="form-control" onchange="document.getElementById('catalogFilterForm').submit();">
+                <option value="">Все категории</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-select">
+            <select name="brand" class="form-control" onchange="document.getElementById('catalogFilterForm').submit();">
+                <option value="">Все бренды</option>
+                {% for b in brands %}
+                <option value="{{ b.id }}" {% if selected_brand == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;">
+            <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: var(--text-muted); cursor: pointer;">
+                <input type="checkbox" name="low_stock" value="1" {% if low_stock_filter == '1' %}checked{% endif %} onchange="document.getElementById('catalogFilterForm').submit();">
+                <span>Мало на складе</span>
+            </label>
+            <button type="submit" class="btn btn-secondary" style="padding: 7px 14px; font-weight: 700;">
+                <i class="fa-solid fa-filter"></i> Найти
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- TOTAL PRODUCTS BAR -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; font-size: 0.85rem; color: var(--text-muted);">
+    <div>Найдено позиций: <strong>{{ total_products }}</strong></div>
+    <div>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages|default:1 }}</div>
+</div>
+
+<!-- MOBILE PRODUCT CARDS -->
+<div class="catalog-cards-mobile">
+    {% for product in page_obj %}
+    <div class="product-list-card" id="card-product-{{ product.id }}">
+        <div class="product-list-card-header">
+            <div class="product-list-card-title">{{ product.name }}</div>
+            <a href="{% url 'm_product_edit' product.id %}" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-radius: var(--radius-sm);" title="Редактировать">
+                <i class="fa-solid fa-pen"></i>
+            </a>
+        </div>
+
+        <div class="product-list-card-badges">
+            <span class="badge badge-cyan">{{ product.category.name|default:"Автохимия" }}</span>
+            {% if product.brand %}
+            <span class="badge badge-orange">{{ product.brand.name }}</span>
+            {% endif %}
+        </div>
+
+        <div class="product-list-card-codes">
+            <span class="product-code-badge"><i class="fa-solid fa-barcode"></i> {{ product.barcode }}</span>
+            <span class="product-code-badge"><i class="fa-solid fa-hashtag"></i> {{ product.sku }}</span>
+        </div>
+
+        <div class="product-list-card-pricing">
+            <div>
+                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">ЦЕНА:</span>
+                <span class="product-card-price">{{ product.retail_price|floatformat:0 }} ₸</span>
+            </div>
+            <div>
+                <span style="font-size: 0.72rem; color: var(--text-muted); display: block; text-align: right;">ОСТАТОК:</span>
+                {% if product.stock_qty <= 0 %}
+                <span class="product-card-stock-pill stock-danger" id="stock-pill-{{ product.id }}">
+                    <i class="fa-solid fa-circle-xmark"></i> 0 {{ product.unit }}
+                </span>
+                {% elif product.is_low_stock %}
+                <span class="product-card-stock-pill stock-warn" id="stock-pill-{{ product.id }}">
+                    <i class="fa-solid fa-triangle-exclamation"></i> {{ product.stock_qty|floatformat:0 }} {{ product.unit }}
+                </span>
+                {% else %}
+                <span class="product-card-stock-pill stock-ok" id="stock-pill-{{ product.id }}">
+                    <i class="fa-solid fa-circle-check"></i> {{ product.stock_qty|floatformat:0 }} {{ product.unit }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="product-list-card-actions">
+            <button type="button" class="btn btn-success" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty }}, 'IN')" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.35);">
+                <i class="fa-solid fa-plus"></i> Принять
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty }}, 'TRANSFER_TO_SHOP')" style="background: rgba(234, 88, 12, 0.12); color: var(--accent-orange); border: 1px solid rgba(234, 88, 12, 0.35);">
+                <i class="fa-solid fa-truck"></i> В магазин
+            </button>
+        </div>
+    </div>
+    {% empty %}
+    <div class="dacar-card" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); border-radius: var(--radius-xl);">
+        <i class="fa-solid fa-box-open" style="font-size: 2.5rem; margin-bottom: 0.75rem; color: var(--text-secondary);"></i>
+        <p style="font-weight: 700; font-size: 1rem; margin-bottom: 0.35rem;">Товары не найдены</p>
+        <p style="font-size: 0.82rem;">Попробуйте изменить запрос поиска или добавьте новый товар.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- DESKTOP TABLE -->
+<div class="catalog-table-wrapper dacar-card" style="padding: 0; overflow: hidden; border-radius: var(--radius-xl);">
+    <table class="dacar-table">
+        <thead>
+            <tr>
+                <th>Наименование товара</th>
+                <th>Штрихкод / Артикул</th>
+                <th>Категория / Бренд</th>
+                <th>Цена продажи</th>
+                <th>Остаток</th>
+                <th style="text-align: right;">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in page_obj %}
+            <tr id="row-product-{{ product.id }}">
+                <td style="font-weight: 700; color: var(--text-main);">{{ product.name }}</td>
+                <td>
+                    <div style="font-weight: 700; color: var(--accent-cyan);"><i class="fa-solid fa-barcode"></i> {{ product.barcode }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ product.sku }}</div>
+                </td>
+                <td>
+                    <span class="badge badge-cyan">{{ product.category.name|default:"Автохимия" }}</span>
+                    {% if product.brand %}<span class="badge badge-orange">{{ product.brand.name }}</span>{% endif %}
+                </td>
+                <td style="font-weight: 800; font-size: 1.05rem; color: var(--text-main);">{{ product.retail_price|floatformat:0 }} ₸</td>
+                <td>
+                    {% if product.stock_qty <= 0 %}
+                    <span class="badge badge-red">Нет (0 {{ product.unit }})</span>
+                    {% elif product.is_low_stock %}
+                    <span class="badge badge-orange">Мало ({{ product.stock_qty|floatformat:0 }} {{ product.unit }})</span>
+                    {% else %}
+                    <span class="badge badge-green">{{ product.stock_qty|floatformat:0 }} {{ product.unit }}</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: right;">
+                    <button type="button" class="btn btn-success" style="padding: 4px 10px; font-size: 0.78rem;" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty }}, 'IN')">
+                        <i class="fa-solid fa-plus"></i> Принять
+                    </button>
+                    <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem; border-color: var(--accent-orange); color: var(--accent-orange);" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty }}, 'TRANSFER_TO_SHOP')">
+                        <i class="fa-solid fa-truck"></i> В магазин
+                    </button>
+                    <a href="{% url 'm_product_edit' product.id %}" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.78rem;">
+                        <i class="fa-solid fa-pen"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">Товары не найдены</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- PAGINATION -->
+{% if page_obj.has_other_pages %}
+<div style="display: flex; justify-content: center; gap: 0.4rem; margin-top: 1.25rem;">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}&q={{ search|default:'' }}" class="btn btn-secondary">&laquo;</a>
+    {% endif %}
+    <span class="btn btn-primary" style="pointer-events: none;">{{ page_obj.number }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}&q={{ search|default:'' }}" class="btn btn-secondary">&raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- STOCK ACTION BOTTOM SHEET -->
+<div class="sheet-backdrop" id="stockActionBackdrop" onclick="closeStockModal()"></div>
+<div class="bottom-sheet" id="stockActionModal">
+    <div class="bottom-sheet-handle"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.75rem;">
+        <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 0.5rem;" id="stockModalTitle">
+            <i class="fa-solid fa-boxes-packing" id="stockModalIcon"></i>
+            <span id="stockModalTitleText">Операция со складом</span>
+        </h3>
+        <button type="button" style="background: rgba(255, 255, 255, 0.1); border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="closeStockModal()">&times;</button>
+    </div>
+
+    <!-- 409 CONFLICT WARNING BANNER -->
+    <div id="stockConflictAlert" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: var(--accent-red); padding: 10px 14px; border-radius: var(--radius-md); font-size: 0.82rem; margin-bottom: 0.85rem;">
+        <div style="font-weight: 800; margin-bottom: 2px; display: flex; align-items: center; gap: 5px;">
+            <i class="fa-solid fa-triangle-exclamation"></i> <span id="conflictAlertTitle">Недостаточно товара</span>
+        </div>
+        <div id="conflictAlertMsg">Остаток товара изменился в магазине.</div>
+        <button type="button" class="btn btn-secondary" id="conflictApplyMaxBtn" style="margin-top: 6px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700;">
+            Поставить доступный максимум
+        </button>
+    </div>
+
+    <form id="stockActionForm" onsubmit="submitStockAction(event)">
+        {% csrf_token %}
+        <input type="hidden" id="modalStockProductId">
+        <input type="hidden" id="modalStockActionType" value="IN">
+
+        <div style="margin-bottom: 0.75rem;">
+            <span style="color: var(--text-muted); font-size: 0.76rem; font-weight: 700; text-transform: uppercase;">Товар:</span>
+            <strong id="modalStockProductName" style="color: var(--text-main); font-size: 1rem; display: block; margin-top: 2px;"></strong>
+        </div>
+
+        <div style="margin-bottom: 0.85rem; background: var(--glass-card); padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-muted); font-size: 0.8rem;">Текущий остаток:</span>
+            <strong id="modalStockCurrentQty" style="color: var(--accent-cyan); font-size: 1.1rem;">0 шт</strong>
+        </div>
+
+        <div style="margin-bottom: 0.85rem;">
+            <label style="display: block; font-size: 0.82rem; color: var(--text-main); font-weight: 700; margin-bottom: 0.35rem;" id="stockQtyInputLabel">
+                Количество (шт) *
+            </label>
+            <input type="number" step="1" min="1" id="modalStockQtyInput" class="form-control" style="font-weight: 800; font-size: 1.25rem; height: 48px;" required placeholder="10" autofocus>
+        </div>
+
+        <!-- Quick Stepper Pills -->
+        <div style="display: flex; gap: 0.4rem; margin-bottom: 1rem;">
+            <button type="button" class="quick-qty-btn" onclick="addModalQty(1)">+1</button>
+            <button type="button" class="quick-qty-btn" onclick="addModalQty(5)">+5</button>
+            <button type="button" class="quick-qty-btn" onclick="addModalQty(10)">+10</button>
+            <button type="button" class="quick-qty-btn" onclick="addModalQty(50)">+50</button>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+            <label style="display: block; font-size: 0.76rem; color: var(--text-muted); font-weight: 600; margin-bottom: 0.3rem;">Заметка / Водитель (Необязательно)</label>
+            <input type="text" id="modalStockComment" class="form-control" placeholder="например: Отгрузка водителю в магазин">
+        </div>
+
+        <div style="display: flex; gap: 0.6rem;">
+            <button type="button" onclick="closeStockModal()" class="btn btn-secondary" style="flex: 1;">Отмена</button>
+            <button type="submit" class="btn btn-primary" id="modalStockSubmitBtn" style="flex: 1.6; font-weight: 800;">
+                Подтвердить
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- CAMERA BARCODE SCANNER MODAL -->
+<div class="modal-overlay" id="warehouseScannerModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #0F172A; color: #F8FAFC; width: 100%; max-width: 440px; border-radius: var(--radius-xl); box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.25rem; position: relative;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.6rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-camera" style="color: var(--accent-cyan); font-size: 1.1rem;"></i>
+                <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: #FFF;">Сканер штрихкодов</h3>
+            </div>
+            <button type="button" style="background: rgba(255, 255, 255, 0.1); border: none; font-size: 1.2rem; color: #FFF; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="closeWarehouseScanner()">&times;</button>
+        </div>
+
+        <div style="width: 100%; min-height: 260px; background: #000; border-radius: var(--radius-lg); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(2, 132, 199, 0.4);">
+            <div id="warehouse-qr-reader" style="width: 100%;"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 0.85rem;">
+            <p style="font-size: 0.78rem; color: #94A3B8; margin: 0 0 0.65rem;">
+                Наведите камеру на штрихкод товара для моментального поиска
+            </p>
+            <button type="button" class="btn btn-secondary" style="background: rgba(255, 255, 255, 0.1); color: #FFF; border: 1px solid rgba(255, 255, 255, 0.15); font-size: 0.82rem; padding: 6px 16px;" onclick="closeWarehouseScanner()">
+                Отмена
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- HELP MODAL -->
+<div class="modal-overlay" id="catalogHelpModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: var(--card-bg, #ffffff); border-radius: var(--radius-xl); max-width: 500px; width: 100%; padding: 1.75rem; box-shadow: 0 25px 60px rgba(0,0,0,0.4); border: 1px solid var(--card-border); max-height: calc(100dvh - 3rem); overflow-y: auto;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border);">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan)); display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.1rem; font-weight: 900;">
+                    <i class="fa-solid fa-warehouse"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Справка по складу</h3>
+                    <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Приемка и отгрузка в магазин</p>
+                </div>
+            </div>
+            <button type="button" style="background: rgba(0, 0, 0, 0.05); border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="closeCatalogHelpModal()">&times;</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.85rem; color: var(--text-main); line-height: 1.5;">
+            <div>
+                <strong style="display: flex; align-items: center; gap: 0.4rem; color: var(--accent-green); margin-bottom: 0.2rem;">
+                    <i class="fa-solid fa-plus-circle"></i> Приемка товара (+):
+                </strong>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Нажмите «Принять», когда на склад поступила партия от поставщика.
+                </p>
+            </div>
+            <div>
+                <strong style="display: flex; align-items: center; gap: 0.4rem; color: var(--accent-orange); margin-bottom: 0.2rem;">
+                    <i class="fa-solid fa-truck"></i> Отгрузка в магазин (В магазин):
+                </strong>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.82rem;">
+                    Нажмите «В магазин», когда передаете товары водителю для доставки в магазин. Система защитит от списания в минус.
+                </p>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: right;">
+            <button type="button" class="btn btn-primary" style="padding: 0.55rem 1.5rem; font-size: 0.88rem; font-weight: 700; border-radius: var(--radius-md);" onclick="closeCatalogHelpModal()">
+                Понятно
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let currentModalStock = 0;
+
+    // Modal controls
+    function openCatalogHelpModal() {
+        document.getElementById('catalogHelpModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeCatalogHelpModal() {
+        document.getElementById('catalogHelpModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function openStockModal(productId, productName, currentStock, actionType) {
+        currentModalStock = parseFloat(currentStock) || 0;
+        document.getElementById('modalStockProductId').value = productId;
+        document.getElementById('modalStockActionType').value = actionType;
+        document.getElementById('modalStockProductName').textContent = productName;
+        document.getElementById('modalStockCurrentQty').textContent = `${currentModalStock} шт`;
+        document.getElementById('modalStockQtyInput').value = '';
+        document.getElementById('modalStockComment').value = '';
+        document.getElementById('stockConflictAlert').style.display = 'none';
+
+        const titleText = document.getElementById('stockModalTitleText');
+        const iconEl = document.getElementById('stockModalIcon');
+        const submitBtn = document.getElementById('modalStockSubmitBtn');
+        const qtyLabel = document.getElementById('stockQtyInputLabel');
+
+        if (actionType === 'TRANSFER_TO_SHOP') {
+            titleText.textContent = 'Отгрузка в магазин';
+            titleText.style.color = 'var(--accent-orange)';
+            iconEl.className = 'fa-solid fa-truck';
+            iconEl.style.color = 'var(--accent-orange)';
+            submitBtn.className = 'btn btn-primary';
+            submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), #C2410C)';
+            submitBtn.innerHTML = '<i class="fa-solid fa-truck"></i> Отгрузить водителю';
+            qtyLabel.textContent = `Сколько штук передать в магазин (макс: ${currentModalStock} шт) *`;
+        } else {
+            titleText.textContent = 'Приемка на склад';
+            titleText.style.color = 'var(--accent-green)';
+            iconEl.className = 'fa-solid fa-boxes-packing';
+            iconEl.style.color = 'var(--accent-green)';
+            submitBtn.className = 'btn btn-success';
+            submitBtn.style.background = 'linear-gradient(135deg, var(--accent-green), #047857)';
+            submitBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Принять на склад';
+            qtyLabel.textContent = 'Сколько штук поступило от поставщика *';
+        }
+
+        const modal = document.getElementById('stockActionModal');
+        const backdrop = document.getElementById('stockActionBackdrop');
+        if (backdrop) backdrop.classList.add('show');
+        if (modal) modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => {
+            const input = document.getElementById('modalStockQtyInput');
+            if (input) input.focus();
+        }, 200);
+    }
+
+    function closeStockModal() {
+        const modal = document.getElementById('stockActionModal');
+        const backdrop = document.getElementById('stockActionBackdrop');
+        if (backdrop) backdrop.classList.remove('show');
+        if (modal) modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    function addModalQty(val) {
+        const input = document.getElementById('modalStockQtyInput');
+        const current = parseInt(input.value, 10) || 0;
+        input.value = current + val;
+    }
+
+    function getCsrfToken() {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, 10) === ('csrftoken=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(10));
+                    break;
+                }
+            }
+        }
+        return cookieValue || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+    }
+
+    // Submit Stock Action via Atomic API
+    async function submitStockAction(e) {
+        e.preventDefault();
+        const productId = document.getElementById('modalStockProductId').value;
+        const action = document.getElementById('modalStockActionType').value;
+        const qty = parseFloat(document.getElementById('modalStockQtyInput').value);
+        const comment = document.getElementById('modalStockComment').value;
+        const submitBtn = document.getElementById('modalStockSubmitBtn');
+
+        if (!qty || qty <= 0) {
+            if (window.showToast) window.showToast('Введите корректное количество', 'warning');
+            return;
+        }
+
+        // Generate client UUID v4 for sync idempotency
+        const syncId = 'sync-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+        const csrfToken = getCsrfToken();
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Сохранение...';
+
+        try {
+            const res = await fetch('/catalog/api/stock-action/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    product_id: parseInt(productId, 10),
+                    action: action,
+                    quantity: qty,
+                    comment: comment,
+                    client_sync_id: syncId
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.status === 409 || data.error_code === 'INSUFFICIENT_STOCK') {
+                // 409 Conflict: Insufficient stock
+                if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+                const alertEl = document.getElementById('stockConflictAlert');
+                alertEl.style.display = 'block';
+                document.getElementById('conflictAlertMsg').textContent = `Доступно на складе: ${data.available_stock} шт (запрошено ${qty} шт).`;
+                
+                const applyMaxBtn = document.getElementById('conflictApplyMaxBtn');
+                applyMaxBtn.onclick = () => {
+                    document.getElementById('modalStockQtyInput').value = data.available_stock;
+                    alertEl.style.display = 'none';
+                };
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Повторить попытку';
+                return;
+            }
+
+            if (data.success) {
+                if ('vibrate' in navigator) navigator.vibrate([40, 30, 40]);
+                if (window.showToast) window.showToast(data.message, 'success', 3500);
+
+                // Update DOM Pill on Mobile card
+                const pill = document.getElementById(`stock-pill-${productId}`);
+                if (pill) {
+                    if (data.stock_qty <= 0) {
+                        pill.className = 'product-card-stock-pill stock-danger';
+                        pill.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 0 ${data.unit}`;
+                    } else if (data.is_low_stock) {
+                        pill.className = 'product-card-stock-pill stock-warn';
+                        pill.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${data.stock_qty} ${data.unit}`;
+                    } else {
+                        pill.className = 'product-card-stock-pill stock-ok';
+                        pill.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.stock_qty} ${data.unit}`;
+                    }
+                }
+
+                closeStockModal();
+            } else {
+                if (window.showToast) window.showToast(data.error || 'Ошибка при проведении операции', 'error');
+            }
+        } catch (err) {
+            console.error('Stock action error:', err);
+            if (window.showToast) window.showToast('Ошибка связи с сервером', 'error');
+        } finally {
+            submitBtn.disabled = false;
+        }
+    }
+
+    // Camera Scanner logic
+    let warehouseQrCode = null;
+
+    function openWarehouseScanner() {
+        const modal = document.getElementById('warehouseScannerModal');
+        if (modal) modal.style.display = 'flex';
+
+        if (typeof Html5Qrcode === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+            script.onload = () => startWarehouseScanner();
+            script.onerror = () => { if (window.showToast) window.showToast('Не удалось загрузить камеру', 'error'); };
+            document.head.appendChild(script);
+        } else {
+            startWarehouseScanner();
+        }
+    }
+
+    function startWarehouseScanner() {
+        try {
+            if (warehouseQrCode) {
+                warehouseQrCode.stop().then(() => initWarehouseScanner()).catch(() => initWarehouseScanner());
+            } else {
+                initWarehouseScanner();
+            }
+        } catch(e) {}
+    }
+
+    function initWarehouseScanner() {
+        warehouseQrCode = new Html5Qrcode("warehouse-qr-reader");
+        const config = { fps: 15, qrbox: (w, h) => ({ width: Math.floor(Math.min(w,h)*0.8), height: Math.floor(Math.min(w,h)*0.6) }) };
+
+        warehouseQrCode.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText) => {
+                if ('vibrate' in navigator) navigator.vibrate([50, 40, 50]);
+                closeWarehouseScanner();
+                const searchInput = document.querySelector('input[name="q"]');
+                if (searchInput) {
+                    searchInput.value = decodedText.trim();
+                    document.getElementById('catalogFilterForm').submit();
+                }
+            },
+            () => {}
+        ).catch(err => {
+            if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
+        });
+    }
+
+    function closeWarehouseScanner() {
+        const modal = document.getElementById('warehouseScannerModal');
+        if (modal) modal.style.display = 'none';
+        if (warehouseQrCode) warehouseQrCode.stop().catch(() => {});
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeStockModal();
+            closeWarehouseScanner();
+            closeCatalogHelpModal();
+        }
+    });
+</script>
+{% endblock %}

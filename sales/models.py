@@ -46,7 +46,8 @@ class SaleOrder(models.Model):
 
     @classmethod
     def generate_order_number(cls):
-        today_str = datetime.date.today().strftime('%Y%m%d')
+        from django.utils import timezone
+        today_str = timezone.localdate().strftime('%Y%m%d')
         prefix = f"DACAR-{today_str}-"
         last_order = cls.objects.filter(order_number__startswith=prefix).order_by('-id').first()
         if last_order:

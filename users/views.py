@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
+from config.rendering import render, is_mobile_request
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -6,9 +7,17 @@ from django.conf import settings
 from django.http import JsonResponse
 from users.models import User
 
+
+def _post_login_redirect(request):
+    """Redirect to mobile hub or desktop POS based on request context."""
+    if is_mobile_request(request):
+        return redirect('/m/')
+    return redirect('pos')
+
+
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('pos')
+        return _post_login_redirect(request)
 
     if request.method == 'POST':
         u_name = request.POST.get('username', '').strip()
@@ -21,7 +30,7 @@ def login_view(request):
             else:
                 login(request, user)
                 messages.success(request, f'Добро пожаловать, {user.first_name or user.username}!')
-                return redirect('pos')
+                return _post_login_redirect(request)
         else:
             messages.error(request, 'Неверное имя пользователя или пароль.')
 
@@ -31,8 +40,11 @@ def login_view(request):
 
 
 def logout_view(request):
+    mobile = is_mobile_request(request)
     logout(request)
     messages.info(request, 'Вы успешно вышли из системы.')
+    if mobile:
+        return redirect('/m/users/login/')
     return redirect('login')
 
 
@@ -65,7 +77,7 @@ def register_view(request):
             )
             login(request, user)
             messages.success(request, 'Профиль успешно зарегистрирован!')
-            return redirect('pos')
+            return _post_login_redirect(request)
 
     return render(request, 'users/register.html', {
         'roles': User.Role.choices

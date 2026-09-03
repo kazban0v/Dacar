@@ -3,15 +3,24 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <meta name="format-detection" content="telephone=no">
     <meta name="theme-color" content="#0284C7">
-    <title>{% block title %}DACAR Детейлинг Маркет — POS & Учет{% endblock %}</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DACAR POS">
+    <meta name="application-name" content="DACAR POS">
 
-    <!-- Favicon & Touch Icons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230284C7'/%3E%3Cstop offset='100%25' stop-color='%230369A1'/%3E%3C/linearGradient%3E%3ClinearGradient id='o' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23F97316'/%3E%3Cstop offset='100%25' stop-color='%23EA580C'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M12 50 C26 44 40 44 54 50' stroke='url(%23o)' stroke-width='4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M18 15 L33 15 C43.5 15 50 21.5 50 31.5 C50 41.5 43.5 48 33 48 L18 48 Z M27.5 23.5 L27.5 39.5 L32.5 39.5 C38 39.5 41 36.5 41 31.5 C41 26.5 38 23.5 32.5 23.5 Z' fill='%23FFFFFF'/%3E%3Ccircle cx='49' cy='16' r='4' fill='url(%23o)'/%3E%3C/svg%3E">
+    <!-- PWA Web App Manifest -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+
+    <!-- Favicon & Apple Touch Icons -->
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
-    <link rel="apple-touch-icon" href="{% static 'favicon.svg' %}">
+    <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'icons/apple-touch-icon-152.png' %}">
+    <link rel="apple-touch-icon" sizes="167x167" href="{% static 'icons/apple-touch-icon-167.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon-180.png' %}">
 
     <!-- FontAwesome 6 CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,27 +34,57 @@
     <style>
         /* ===== DESIGN SYSTEM TOKENS ===== */
         :root {
-            --bg-main: #F3F4F6;
-            --card-bg: #FFFFFF;
-            --card-border: #E5E7EB;
-            --text-main: #111827;
-            --text-muted: #6B7280;
-            --text-secondary: #9CA3AF;
+            /* Theme Backgrounds */
+            --bg-main: #0B0F19;
+            --card-bg: #131C2E;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --header-bg: rgba(11, 15, 25, 0.94);
+            --bottom-nav-bg: rgba(19, 28, 46, 0.96);
+
+            /* Typography */
+            --text-primary: #F8FAFC;
+            --text-main: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --text-muted: #94A3B8;
+            --text-tertiary: #64748B;
+
+            /* Inputs & Forms */
+            --input-bg: #131C2E;
+            --input-border: rgba(255, 255, 255, 0.12);
+            --input-text: #F8FAFC;
+            --input-placeholder: #94A3B8;
+            --select-option-bg: #131C2E;
+            --select-option-text: #F8FAFC;
+
+            /* Buttons */
+            --btn-secondary-bg: #1E293B;
+            --btn-secondary-border: rgba(255, 255, 255, 0.12);
+            --btn-secondary-text: #F8FAFC;
+            --btn-secondary-hover-bg: #334155;
+
+            /* Tables & Cards */
+            --table-header-bg: #0E1524;
+            --table-hover: rgba(255, 255, 255, 0.03);
+            --glass-card: rgba(19, 28, 46, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.08);
+
+            /* Accents */
             --accent-cyan: #0284C7;
             --accent-orange: #EA580C;
-            --accent-green: #059669;
-            --accent-red: #DC2626;
-            --accent-purple: #7C3AED;
+            --accent-green: #10B981;
+            --accent-red: #EF4444;
+            --accent-purple: #8B5CF6;
+            --glow-color: rgba(2, 132, 199, 0.15);
 
-            --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.04);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+            --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.35);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-lg: 0 16px 36px rgba(0,0,0,0.5);
 
-            --radius-sm: 6px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 22px;
             --radius-full: 9999px;
 
             --safe-top: env(safe-area-inset-top, 0px);
@@ -53,7 +92,56 @@
             --safe-left: env(safe-area-inset-left, 0px);
             --safe-right: env(safe-area-inset-right, 0px);
 
-            --header-h: 60px;
+            --header-h: 62px;
+        }
+
+        [data-theme="light"] {
+            /* Theme Backgrounds */
+            --bg-main: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --card-border: #E2E8F0;
+            --header-bg: rgba(255, 255, 255, 0.94);
+            --bottom-nav-bg: rgba(255, 255, 255, 0.96);
+
+            /* Typography */
+            --text-primary: #0F172A;
+            --text-main: #0F172A;
+            --text-secondary: #64748B;
+            --text-muted: #64748B;
+            --text-tertiary: #94A3B8;
+
+            /* Inputs & Forms */
+            --input-bg: #FFFFFF;
+            --input-border: #CBD5E1;
+            --input-text: #0F172A;
+            --input-placeholder: #94A3B8;
+            --select-option-bg: #FFFFFF;
+            --select-option-text: #0F172A;
+
+            /* Buttons */
+            --btn-secondary-bg: #FFFFFF;
+            --btn-secondary-border: #CBD5E1;
+            --btn-secondary-text: #0F172A;
+            --btn-secondary-hover-bg: #F1F5F9;
+
+            /* Tables & Cards */
+            --table-header-bg: #F1F5F9;
+            --table-hover: #F8FAFC;
+            --glass-card: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(0, 0, 0, 0.06);
+
+            /* Accents */
+            --accent-cyan: #0284C7;
+            --accent-orange: #EA580C;
+            --accent-green: #059669;
+            --accent-red: #DC2626;
+            --accent-purple: #7C3AED;
+            --glow-color: rgba(2, 132, 199, 0.08);
+
+            --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -2px rgba(0,0,0,0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.07), 0 4px 6px -4px rgba(0,0,0,0.03);
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -63,7 +151,7 @@
         body {
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-main);
-            color: var(--text-main);
+            color: var(--text-primary);
             font-size: 0.9rem;
             line-height: 1.5;
             min-height: 100vh;
@@ -76,7 +164,7 @@
 
         /* ===== HEADER / NAVIGATION ===== */
         .header-nav {
-            background: rgba(255,255,255,0.92);
+            background: var(--header-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--card-border);
@@ -169,8 +257,9 @@
         }
 
         .user-badge {
-            background: #F9FAFB;
+            background: var(--btn-secondary-bg);
             border: 1px solid var(--card-border);
+            color: var(--text-primary);
             padding: 5px 12px;
             border-radius: var(--radius-full);
             font-size: 0.82rem;
@@ -186,13 +275,96 @@
             white-space: nowrap;
         }
 
-        .status-dot {
-            width: 7px;
-            height: 7px;
+        .status-dot, .live-dot, .hub-status-dot {
+            position: relative;
+            width: 8px;
+            height: 8px;
             background-color: var(--accent-green);
             border-radius: 50%;
             flex-shrink: 0;
-            box-shadow: 0 0 6px var(--accent-green);
+            display: inline-block;
+        }
+
+        .status-dot::after, .live-dot::after, .hub-status-dot::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1.5px solid var(--accent-green);
+            animation: radarPing 1.8s cubic-bezier(0.2, 0.7, 0.4, 1) infinite;
+            pointer-events: none;
+        }
+
+        @keyframes radarPing {
+            0% { transform: scale(0.6); opacity: 0.9; }
+            100% { transform: scale(2.1); opacity: 0; }
+        }
+
+        /* Staggered Rise Animations */
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        /* Bottom Sheet & Backdrop Global System */
+        .sheet-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .sheet-backdrop.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 560px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-top: 1px solid var(--card-border);
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 1.35rem 1.25rem calc(1.5rem + var(--safe-bottom));
+            box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.55);
+            z-index: 9999;
+            transform: translateY(100%);
+            transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+            max-height: 90vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .bottom-sheet.show {
+            transform: translateY(0);
+        }
+
+        /* Bottom Sheet Drag Handle */
+        .bottom-sheet-handle {
+            width: 38px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+            margin: -0.25rem auto 1rem;
+        }
+        [data-theme="light"] .bottom-sheet-handle {
+            background: rgba(0, 0, 0, 0.15);
         }
 
         /* Hamburger button (hidden on desktop) */
@@ -319,24 +491,112 @@
             padding-right: calc(1.5rem + var(--safe-right));
         }
 
-        /* ===== ALERTS ===== */
-        .messages-container { margin-bottom: 1rem; }
-
-        .alert {
-            padding: 11px 1rem;
-            border-radius: var(--radius-md);
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
+        /* ===== GLOBAL FLOATING TOAST SYSTEM ===== */
+        .dacar-toast-container {
+            position: fixed;
+            top: calc(1.25rem + var(--safe-top, 0px));
+            right: calc(1.25rem + var(--safe-right, 0px));
+            z-index: 99999;
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 0.75rem;
+            flex-direction: column;
+            gap: 0.65rem;
+            max-width: 420px;
+            width: calc(100vw - 2.5rem);
+            pointer-events: none;
         }
 
-        .alert-success { background: rgba(5,150,105,0.1);  border: 1px solid var(--accent-green);  color: #065f46; }
-        .alert-error   { background: rgba(220,38,38,0.1);  border: 1px solid var(--accent-red);    color: #991b1b; }
-        .alert-warning { background: rgba(234,88,12,0.1);  border: 1px solid var(--accent-orange); color: #9a3412; }
-        .alert-info    { background: rgba(2,132,199,0.1);  border: 1px solid var(--accent-cyan);   color: #075985; }
+        .dacar-toast {
+            background: rgba(15, 23, 42, 0.95);
+            color: #F8FAFC;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 0.85rem 1rem 0.85rem 0.95rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            font-size: 0.86rem;
+            line-height: 1.42;
+            pointer-events: auto;
+            position: relative;
+            overflow: hidden;
+            animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.25s ease, transform 0.25s ease, max-height 0.25s ease, margin 0.25s ease;
+            border-left: 4px solid var(--accent-cyan);
+        }
+
+        .dacar-toast.toast-success { border-left-color: #10B981; }
+        .dacar-toast.toast-error, .dacar-toast.toast-danger { border-left-color: #EF4444; }
+        .dacar-toast.toast-warning { border-left-color: #F59E0B; }
+        .dacar-toast.toast-info { border-left-color: #0284C7; }
+
+        .dacar-toast-icon {
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .toast-success .dacar-toast-icon { color: #10B981; }
+        .toast-error .dacar-toast-icon, .toast-danger .dacar-toast-icon { color: #EF4444; }
+        .toast-warning .dacar-toast-icon { color: #F59E0B; }
+        .toast-info .dacar-toast-icon { color: #0284C7; }
+
+        .dacar-toast-content {
+            flex: 1;
+            color: #E2E8F0;
+            font-weight: 500;
+        }
+        .dacar-toast-content strong {
+            color: #FFFFFF;
+            font-weight: 700;
+        }
+
+        .dacar-toast-close {
+            background: none;
+            border: none;
+            color: #64748B;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0 4px;
+            margin-left: 0.25rem;
+            transition: color 0.15s;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dacar-toast-close:hover { color: #F1F5F9; }
+
+        .dacar-toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.25);
+            width: 100%;
+            transform-origin: left;
+            animation: toastProgress linear forwards;
+        }
+
+        @keyframes toastSlideIn {
+            from { transform: translateX(100%) scale(0.9); opacity: 0; }
+            to   { transform: translateX(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes toastProgress {
+            from { transform: scaleX(1); }
+            to   { transform: scaleX(0); }
+        }
+
+        @media (max-width: 600px) {
+            .dacar-toast-container {
+                top: calc(0.75rem + var(--safe-top, 0px));
+                right: 0.75rem;
+                left: 0.75rem;
+                width: auto;
+                max-width: none;
+            }
+        }
 
         /* ===== CARDS ===== */
         .dacar-card {
@@ -377,12 +637,12 @@
         .btn-primary:active { transform: scale(0.97); }
 
         .btn-secondary {
-            background: #FFFFFF;
-            color: var(--text-main);
-            border: 1px solid var(--card-border);
+            background: var(--btn-secondary-bg);
+            color: var(--btn-secondary-text);
+            border: 1px solid var(--btn-secondary-border);
             box-shadow: var(--shadow-xs);
         }
-        .btn-secondary:hover  { background: #F9FAFB; border-color: #D1D5DB; }
+        .btn-secondary:hover  { background: var(--btn-secondary-hover-bg); color: var(--btn-secondary-text); border-color: var(--accent-cyan); }
 
         .btn-danger {
             background: rgba(220,38,38,0.08);
@@ -413,11 +673,11 @@
         }
 
         .dacar-table th {
-            background: #F9FAFB;
-            color: var(--text-muted);
+            background: var(--table-header-bg);
+            color: var(--text-secondary);
             padding: 10px 1rem;
             font-weight: 600;
-            border-bottom: 2px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
             text-transform: uppercase;
             font-size: 0.72rem;
             letter-spacing: 0.05em;
@@ -428,38 +688,63 @@
             padding: 10px 1rem;
             border-bottom: 1px solid var(--card-border);
             vertical-align: middle;
+            color: var(--text-primary);
         }
 
-        .dacar-table tbody tr:hover { background: #FAFAFA; }
+        .dacar-table tbody tr:hover { background: var(--table-hover); }
 
-        /* ===== FORMS ===== */
-        .form-control {
+        /* ===== FORMS & INPUTS ===== */
+        .form-control, input[type="text"], input[type="number"], input[type="password"], input[type="search"], select, textarea {
             width: 100%;
-            background: #FFFFFF;
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-            padding: 10px 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--input-text);
+            padding: 10px 14px;
             border-radius: var(--radius-md);
-            font-size: 0.9rem;
+            font-size: 0.92rem;
             font-family: inherit;
             outline: none;
-            transition: border-color 0.18s, box-shadow 0.18s;
-            min-height: 42px;
+            transition: border-color 0.18s, box-shadow 0.18s, background-color 0.18s, color 0.18s;
+            min-height: 44px;
             -webkit-appearance: none;
             appearance: none;
         }
 
-        .form-control:focus {
+        .form-control:focus, input:focus, select:focus, textarea:focus {
             border-color: var(--accent-cyan);
-            box-shadow: 0 0 0 3px rgba(2,132,199,0.12);
+            box-shadow: 0 0 0 3px rgba(2,132,199,0.18);
+            background: var(--input-bg);
+            color: var(--input-text);
         }
 
-        select.form-control {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3e%3cpath d='m6 8 4 4 4-4' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+        /* High-visibility placeholders across all themes */
+        ::placeholder,
+        ::-webkit-input-placeholder,
+        ::-moz-placeholder,
+        :-ms-input-placeholder,
+        .form-control::placeholder,
+        .form-control::-webkit-input-placeholder,
+        .form-control::-moz-placeholder,
+        .form-control:-ms-input-placeholder {
+            color: var(--text-secondary) !important;
+            opacity: 1 !important;
+        }
+
+        select.form-control, select {
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3e%3cpath d='m6 8 4 4 4-4' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
             background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 18px;
-            padding-right: 34px;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 36px;
+            cursor: pointer;
+        }
+
+        select.form-control option, select option {
+            background-color: var(--select-option-bg);
+            color: var(--select-option-text);
+            padding: 8px 12px;
         }
 
         /* ===== BADGES ===== */
@@ -531,25 +816,86 @@
             .user-badge { max-width: 130px; }
         }
 
-        @media (max-width: 480px) {
-            .main-container {
-                padding: 0.625rem 0.5rem;
-                padding-left: calc(0.5rem + var(--safe-left));
-                padding-right: calc(0.5rem + var(--safe-right));
-                padding-bottom: calc(1rem + var(--safe-bottom));
-                width: 100%;
-                max-width: 100%;
-                min-width: 0;
-                overflow-x: hidden;
-                box-sizing: border-box;
-            }
-            .dacar-card { padding: 0.85rem; }
-            .brand-badge { display: none; }
-            .user-badge { display: none; }
+        /* ===== MOBILE BOTTOM NAVIGATION BAR ===== */
+        .dacar-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bottom-nav-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid var(--card-border);
+            z-index: 1000;
+            padding: 6px 8px calc(6px + var(--safe-bottom));
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            justify-content: space-around;
+            align-items: center;
         }
 
-        @media (max-width: 359px) {
-            .brand-logo span:not(.brand-badge) { display: none; }
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 4px 2px;
+            border-radius: var(--radius-md);
+            transition: all 0.16s ease;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            position: relative;
+        }
+
+        .bottom-nav-item .nav-icon-wrap {
+            width: 32px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            border-radius: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--accent-cyan);
+            font-weight: 800;
+        }
+
+        .bottom-nav-item.active .nav-icon-wrap {
+            background: rgba(2, 132, 199, 0.12);
+            color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .bottom-nav-item:active {
+            transform: scale(0.92);
+        }
+
+        /* Show Bottom Nav on Mobile and Standalone App */
+        @media (max-width: 900px) {
+            .dacar-bottom-nav {
+                display: flex;
+            }
+            .main-container {
+                padding-bottom: calc(72px + var(--safe-bottom)) !important;
+            }
+        }
+
+        @media all and (display-mode: standalone) {
+            .dacar-bottom-nav {
+                display: flex;
+            }
+            .main-container {
+                padding-bottom: calc(72px + var(--safe-bottom)) !important;
+            }
         }
     </style>
     {% block extra_head %}{% endblock %}
@@ -623,6 +969,9 @@
         </nav>
 
         <div class="user-menu">
+            <button type="button" class="btn btn-secondary theme-toggle-btn" id="themeToggleBtn" onclick="toggleDacarTheme()" title="Переключить тему (Тёмная / Светлая)" aria-label="Переключить тему" style="padding: 7px 11px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.2s, background 0.2s;">
+                <i class="fa-solid fa-moon" id="themeIcon" style="font-size: 0.95rem; color: #F59E0B;"></i>
+            </button>
             <div class="user-badge">
                 <span class="status-dot"></span>
                 <span class="user-name">{{ user.first_name|default:user.username }}</span>
@@ -638,24 +987,153 @@
     </header>
     {% endif %}
 
-    <main class="main-container" id="mainContent" role="main">
+    <!-- GLOBAL FLOATING TOASTS CONTAINER -->
+    <div class="dacar-toast-container" id="dacarToastContainer" aria-live="polite">
         {% if messages %}
-        <div class="messages-container" role="alert" aria-live="polite">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                <span>{{ message }}</span>
-                <i class="fa-solid fa-xmark" style="cursor: pointer; flex-shrink: 0; opacity: 0.7;" onclick="this.parentElement.remove()" aria-label="Закрыть"></i>
+            <div class="dacar-toast toast-{{ message.tags|default:'info' }}" role="alert" data-auto-dismiss="4500">
+                <div class="dacar-toast-icon">
+                    {% if message.tags == 'success' %}
+                        <i class="fa-solid fa-circle-check"></i>
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    {% else %}
+                        <i class="fa-solid fa-circle-info"></i>
+                    {% endif %}
+                </div>
+                <div class="dacar-toast-content">{{ message }}</div>
+                <button type="button" class="dacar-toast-close" onclick="dismissToast(this.closest('.dacar-toast'))" aria-label="Закрыть">&times;</button>
+                <div class="dacar-toast-progress" style="animation-duration: 4.5s;"></div>
             </div>
             {% endfor %}
-        </div>
         {% endif %}
+    </div>
 
+    <main class="main-container" id="mainContent" role="main">
         {% block content %}{% endblock %}
     </main>
+
+    {% if user.is_authenticated %}
+    <!-- 4-TAB PREMIUM MOBILE BOTTOM NAVIGATION BAR -->
+    <nav class="dacar-bottom-nav no-print" aria-label="Мобильная навигация">
+        <a href="{% url 'dashboard' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'dashboard' or request.path == '/' %}active{% endif %}">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-chart-pie"></i></div>
+            <span>Обзор</span>
+        </a>
+        <a href="{% url 'product_list' %}" class="bottom-nav-item {% if 'catalog' in request.path %}active{% endif %}">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <span>Склад</span>
+        </a>
+        <a href="{% url 'sales_orders_list' %}" class="bottom-nav-item {% if 'orders' in request.path or 'sales' in request.path and 'pos' not in request.path %}active{% endif %}">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-receipt"></i></div>
+            <span>Чеки</span>
+        </a>
+        {% if user.is_admin_user or user.role == 'MANAGER' %}
+        <a href="{% url 'users_list' %}" class="bottom-nav-item {% if 'staff' in request.path or 'audit-log' in request.path or 'users' in request.path %}active{% endif %}">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-users-gear"></i></div>
+            <span>Штат</span>
+        </a>
+        {% else %}
+        <a href="{% url 'logout' %}" class="bottom-nav-item">
+            <div class="nav-icon-wrap"><i class="fa-solid fa-right-from-bracket"></i></div>
+            <span>Выход</span>
+        </a>
+        {% endif %}
+    </nav>
+    {% endif %}
 
     {% block extra_scripts %}{% endblock %}
 
     <script>
+        // ===== THEME CONTROLLER (Dark Luxe / Light Clean) =====
+        function initDacarTheme() {
+            const savedTheme = localStorage.getItem('dacar_theme') || 'dark';
+            applyDacarTheme(savedTheme);
+        }
+
+        function applyDacarTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('dacar_theme', theme);
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                if (theme === 'dark') {
+                    icon.className = 'fa-solid fa-moon';
+                    icon.style.color = '#F59E0B';
+                } else {
+                    icon.className = 'fa-solid fa-sun';
+                    icon.style.color = '#EA580C';
+                }
+            }
+        }
+
+        function toggleDacarTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            applyDacarTheme(next);
+            if (window.showToast) {
+                window.showToast(next === 'dark' ? 'Включена Тёмная тема' : 'Включена Светлая тема', 'info', 2000);
+            }
+        }
+
+        // Initialize theme immediately
+        initDacarTheme();
+
+        // ===== GLOBAL TOAST NOTIFICATION SYSTEM =====
+        window.showToast = function(message, type = 'success', duration = 4000) {
+            let container = document.getElementById('dacarToastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'dacarToastContainer';
+                container.className = 'dacar-toast-container';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `dacar-toast toast-${type}`;
+            toast.setAttribute('role', 'alert');
+
+            let iconHtml = '<i class="fa-solid fa-circle-info"></i>';
+            if (type === 'success') iconHtml = '<i class="fa-solid fa-circle-check"></i>';
+            else if (type === 'error' || type === 'danger') iconHtml = '<i class="fa-solid fa-circle-xmark"></i>';
+            else if (type === 'warning') iconHtml = '<i class="fa-solid fa-triangle-exclamation"></i>';
+
+            toast.innerHTML = `
+                <div class="dacar-toast-icon">${iconHtml}</div>
+                <div class="dacar-toast-content">${message}</div>
+                <button type="button" class="dacar-toast-close" onclick="dismissToast(this.closest('.dacar-toast'))" aria-label="Закрыть">&times;</button>
+                <div class="dacar-toast-progress" style="animation-duration: ${duration}ms;"></div>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                dismissToast(toast);
+            }, duration);
+        };
+
+        window.dismissToast = function(toast) {
+            if (!toast || toast.classList.contains('dismissing')) return;
+            toast.classList.add('dismissing');
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%) scale(0.9)';
+            setTimeout(() => {
+                if (toast.parentElement) toast.remove();
+            }, 260);
+        };
+
+        // Auto-dismiss initial Django server toasts
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.dacar-toast[data-auto-dismiss]').forEach(toast => {
+                const duration = parseInt(toast.dataset.autoDismiss, 10) || 4500;
+                setTimeout(() => {
+                    dismissToast(toast);
+                }, duration);
+            });
+        });
+
+        // ===== MOBILE DRAWER CONTROLS =====
         function openMobileNav() {
             const overlay = document.getElementById('mobileNavOverlay');
             const drawer = document.getElementById('mobileNavDrawer');
@@ -683,6 +1161,91 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeMobileNav();
         });
+
+        // ===== LIVE KPI STREAM & SALE SOUND ALERTS =====
+        let lastKnownOrderId = null;
+        let isSyncingLiveKpi = false;
+
+        async function syncLiveKPI() {
+            if (document.hidden || isSyncingLiveKpi) return;
+            isSyncingLiveKpi = true;
+            try {
+                const res = await fetch('/api/analytics/live-kpi/');
+                if (res.ok) {
+                    const data = await res.json();
+                    window.dispatchEvent(new CustomEvent('dacar:live_kpi', { detail: data }));
+
+                    if (lastKnownOrderId !== null && data.last_order && data.last_order.id > lastKnownOrderId) {
+                        if ('vibrate' in navigator) navigator.vibrate([40, 30, 40]);
+                        playLiveSaleChime();
+                        if (window.showToast) {
+                            window.showToast(`Новая продажа в магазине! Чек № ${data.last_order.order_number} на ${Number(data.last_order.total_amount).toLocaleString('ru-RU')} ₸ (${data.last_order.cashier_name})`, 'success', 5000);
+                        }
+                    }
+                    if (data.last_order) {
+                        lastKnownOrderId = data.last_order.id;
+                    }
+                }
+            } catch (e) {
+                // Silently handle network errors
+            } finally {
+                isSyncingLiveKpi = false;
+            }
+        }
+
+        // Global Number Count-Up Animation Helper (ease-out cubic ~900ms)
+        window.animateNumber = function(el, to, dur = 900, suffix = '') {
+            if (!el) return;
+            const target = typeof to === 'number' ? to : (parseFloat(String(to).replace(/\s/g, '').replace('₸', '')) || 0);
+            const startVal = parseFloat(String(el.textContent).replace(/\s/g, '').replace('₸', '')) || 0;
+            const startTime = performance.now();
+
+            function frame(now) {
+                const elapsed = now - startTime;
+                const p = Math.min(1, elapsed / dur);
+                const eased = 1 - Math.pow(1 - p, 3);
+                const current = Math.round(startVal + (target - startVal) * eased);
+                el.textContent = current.toLocaleString('ru-RU') + (suffix ? suffix : '');
+                if (p < 1) requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        };
+
+        function playLiveSaleChime() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+                gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.35);
+            } catch(e) {}
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) syncLiveKPI();
+        });
+
+        // Start Live KPI polling loop (every 5 sec)
+        setInterval(syncLiveKPI, 5000);
+        setTimeout(syncLiveKPI, 1000);
+
+        // Register PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('{% static "sw.js" %}')
+                    .then(reg => console.log('DACAR PWA ServiceWorker active:', reg.scope))
+                    .catch(err => console.log('DACAR PWA ServiceWorker failed:', err));
+            });
+        }
     </script>
 </body>
 </html>
