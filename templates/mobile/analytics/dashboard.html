@@ -239,18 +239,12 @@
         font-weight: 800;
         color: var(--text-primary);
         line-height: 1.15;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .hub-kpi-label {
         font-size: clamp(0.68rem, 1.3vw, 0.76rem);
         color: var(--text-secondary);
         font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     /* 3. LOW STOCK WARNING BANNER */
@@ -410,7 +404,7 @@
         font-size: 0.82rem;
     }
 
-    /* ===== TABLET / DESKTOP COCKPIT GRID (>= 960px) ===== */
+    /* ===== TABLET / DESKTOP COCKPIT GRID ===== */
     .hub-tablet-grid {
         display: flex;
         flex-direction: column;
@@ -427,34 +421,91 @@
         box-sizing: border-box;
     }
 
-    /* Tablet & Desktop Horizontal Card Optimization (>= 680px) */
-    @media (min-width: 680px) {
+    /* ===== PORTRAIT TABLET (560px - 899px) ===== */
+    @media (min-width: 560px) and (max-width: 899px) {
+        .hub-dashboard-container {
+            max-width: 100%;
+            padding: 0 0.5rem;
+            gap: 1rem;
+        }
+
+        .hub-mini-kpi-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.65rem;
+        }
 
         .hub-mini-kpi-card {
-            flex-direction: row !important;
-            align-items: center !important;
-            gap: 0.75rem !important;
-            padding: 0.85rem 1rem !important;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.85rem 0.75rem;
         }
 
         .hub-kpi-icon-box {
-            width: 38px !important;
-            height: 38px !important;
-            border-radius: 11px !important;
-            font-size: 1.05rem !important;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            font-size: 1rem;
         }
 
         .hub-kpi-value {
-            font-size: 1.25rem !important;
+            font-size: 1.1rem;
         }
 
         .hub-kpi-label {
-            font-size: 0.74rem !important;
+            font-size: 0.72rem;
         }
     }
 
-    /* Tablet Cockpit Grid (>= 860px) */
-    @media (min-width: 860px) {
+    /* ===== LANDSCAPE TABLET (900px - 1199px) ===== */
+    @media (min-width: 900px) and (max-width: 1199px) {
+        .hub-dashboard-container {
+            max-width: 100%;
+            padding: 0 0.5rem;
+            gap: 1.15rem;
+        }
+
+        /* Keep single column but wider */
+        .hub-tablet-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .hub-mini-kpi-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.85rem;
+        }
+
+        .hub-mini-kpi-card {
+            flex-direction: row;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 1rem 1.15rem;
+        }
+
+        .hub-kpi-icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+        }
+
+        .hub-kpi-value {
+            font-size: 1.3rem;
+        }
+
+        .hub-kpi-label {
+            font-size: 0.78rem;
+        }
+
+        .hub-hero-amount {
+            font-size: 2.5rem;
+        }
+    }
+
+    /* ===== DESKTOP 2-COLUMN GRID (>= 1200px only) ===== */
+    @media (min-width: 1200px) {
         .hub-dashboard-container {
             max-width: 1120px;
             margin: 0 auto;
@@ -479,8 +530,31 @@
             height: 145px !important;
             max-height: 155px !important;
         }
+
+        .hub-mini-kpi-card {
+            flex-direction: row;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+        }
+
+        .hub-kpi-icon-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            font-size: 1.05rem;
+        }
+
+        .hub-kpi-value {
+            font-size: 1.25rem;
+        }
+
+        .hub-kpi-label {
+            font-size: 0.74rem;
+        }
     }
 
+    /* ===== SMALL PHONE (<= 480px) ===== */
     @media (max-width: 480px) {
         .hub-mini-kpi-grid {
             gap: 0.45rem;
