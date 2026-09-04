@@ -308,29 +308,40 @@
     }
 
     function initFormScannerInstance() {
-        const readerEl = document.getElementById('form-qr-reader');
+        var readerEl = document.getElementById('form-qr-reader');
         if (!readerEl) return;
 
         try {
-            formHtml5QrCode = new Html5Qrcode("form-qr-reader");
-            const config = { 
-                fps: 15, 
+            // Only scan barcode formats (NOT QR/DataMatrix) for much faster detection
+            var barcodeFormats = [
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E,
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.CODE_93,
+                Html5QrcodeSupportedFormats.ITF,
+                Html5QrcodeSupportedFormats.CODABAR
+            ];
+            formHtml5QrCode = new Html5Qrcode("form-qr-reader", { formatsToSupport: barcodeFormats });
+            var config = { 
+                fps: 30, 
                 qrbox: function(w, h) {
-                    const min = Math.min(w, h);
-                    return { width: Math.floor(min * 0.8), height: Math.floor(min * 0.6) };
+                    return { width: Math.floor(w * 0.92), height: Math.floor(h * 0.7) };
                 },
-                aspectRatio: 1.0 
+                aspectRatio: 1.333,
+                disableFlip: false
             };
 
-            const onScanSuccess = function(decodedText) {
+            var onScanSuccess = function(decodedText) {
                 if ('vibrate' in navigator) navigator.vibrate([50, 40, 50]);
                 closeCameraScannerModal();
                 applyScannedBarcode(decodedText.trim());
             };
 
             formHtml5QrCode.start({ facingMode: formCurrentFacingMode }, config, onScanSuccess, function() {}).catch(function(err) {
-                // If requested mode fails, try the opposite mode as a fallback
-                const fallbackMode = (formCurrentFacingMode === "environment") ? "user" : "environment";
+                var fallbackMode = (formCurrentFacingMode === "environment") ? "user" : "environment";
                 formHtml5QrCode.start({ facingMode: fallbackMode }, config, onScanSuccess, function() {}).catch(function(e2) {
                     if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
                 });

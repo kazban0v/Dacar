@@ -3028,22 +3028,32 @@
     }
 
     function initScannerInstance() {
-        const readerEl = document.getElementById('qr-reader');
+        var readerEl = document.getElementById('qr-reader');
         if (!readerEl) return;
 
         try {
-            html5QrCode = new Html5Qrcode("qr-reader");
-            const config = { 
-                fps: 15, 
+            var barcodeFormats = [
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E,
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.CODE_93,
+                Html5QrcodeSupportedFormats.ITF,
+                Html5QrcodeSupportedFormats.CODABAR
+            ];
+            html5QrCode = new Html5Qrcode("qr-reader", { formatsToSupport: barcodeFormats });
+            var config = { 
+                fps: 30, 
                 qrbox: function(viewfinderWidth, viewfinderHeight) {
-                    const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                    const qrboxSize = Math.floor(minEdge * 0.8);
-                    return { width: qrboxSize, height: Math.floor(qrboxSize * 0.65) };
+                    return { width: Math.floor(viewfinderWidth * 0.92), height: Math.floor(viewfinderHeight * 0.7) };
                 }, 
-                aspectRatio: 1.0 
+                aspectRatio: 1.333,
+                disableFlip: false
             };
 
-            const onScanSuccess = function(decodedText) {
+            var onScanSuccess = function(decodedText) {
                 if ('vibrate' in navigator) navigator.vibrate([50, 40, 50]);
                 playScanBeep();
                 closeCameraScannerModal();
@@ -3051,7 +3061,7 @@
             };
 
             html5QrCode.start({ facingMode: posCurrentFacingMode }, config, onScanSuccess, function() {}).catch(function(err) {
-                const fallbackMode = (posCurrentFacingMode === "environment") ? "user" : "environment";
+                var fallbackMode = (posCurrentFacingMode === "environment") ? "user" : "environment";
                 html5QrCode.start({ facingMode: fallbackMode }, config, onScanSuccess, function() {}).catch(function(e2) {
                     if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
                 });
