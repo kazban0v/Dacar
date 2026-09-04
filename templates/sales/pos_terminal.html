@@ -3014,6 +3014,19 @@
         }
     }
 
+    let posCurrentFacingMode = "environment";
+
+    function switchPosCameraMode() {
+        posCurrentFacingMode = (posCurrentFacingMode === "environment") ? "user" : "environment";
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                initScannerInstance();
+            }).catch(() => {
+                initScannerInstance();
+            });
+        }
+    }
+
     function initScannerInstance() {
         const readerEl = document.getElementById('qr-reader');
         if (!readerEl) return;
@@ -3022,7 +3035,7 @@
             html5QrCode = new Html5Qrcode("qr-reader");
             const config = { 
                 fps: 15, 
-                qrbox: (viewfinderWidth, viewfinderHeight) => {
+                qrbox: function(viewfinderWidth, viewfinderHeight) {
                     const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
                     const qrboxSize = Math.floor(minEdge * 0.8);
                     return { width: qrboxSize, height: Math.floor(qrboxSize * 0.65) };
@@ -3030,43 +3043,17 @@
                 aspectRatio: 1.0 
             };
 
-            const onScanSuccess = (decodedText) => {
+            const onScanSuccess = function(decodedText) {
                 if ('vibrate' in navigator) navigator.vibrate([50, 40, 50]);
                 playScanBeep();
                 closeCameraScannerModal();
                 processScannedBarcode(decodedText.trim());
             };
 
-            // Huawei EMUI / Android 10 tablet resilient device discovery
-            Html5Qrcode.getCameras().then(devices => {
-                if (devices && devices.length) {
-                    let chosenCameraId = devices[0].id;
-                    for (let d of devices) {
-                        const lbl = (d.label || '').toLowerCase();
-                        if (lbl.includes('back') || lbl.includes('rear') || lbl.includes('environment')) {
-                            chosenCameraId = d.id;
-                            break;
-                        }
-                    }
-                    html5QrCode.start(chosenCameraId, config, onScanSuccess, () => {}).catch(() => {
-                        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(() => {
-                            html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e3 => {
-                                if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
-                            });
-                        });
-                    });
-                } else {
-                    html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(() => {
-                        html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e2 => {
-                            if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
-                        });
-                    });
-                }
-            }).catch(err => {
-                html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(() => {
-                    html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e2 => {
-                        if (window.showToast) window.showToast('Камера недоступна: ' + (e2.message || err.message), 'warning');
-                    });
+            html5QrCode.start({ facingMode: posCurrentFacingMode }, config, onScanSuccess, function() {}).catch(function(err) {
+                const fallbackMode = (posCurrentFacingMode === "environment") ? "user" : "environment";
+                html5QrCode.start({ facingMode: fallbackMode }, config, onScanSuccess, function() {}).catch(function(e2) {
+                    if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
                 });
             });
         } catch(e) {
