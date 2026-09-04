@@ -68,9 +68,9 @@ public class MainActivity extends AppCompatActivity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         settings.setLoadsImagesAutomatically(true);
-        // Disable wide viewport zooming so responsive layout doesn't get minified/squeezed on tablets
-        settings.setUseWideViewPort(false);
-        settings.setLoadWithOverviewMode(false);
+        // Enable wide viewport so responsive layout correctly reads the viewport meta tag on tablets
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
         settings.setTextZoom(100);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);

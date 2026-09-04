@@ -664,7 +664,7 @@
                 }
             }
         }
-        return cookieValue || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        return cookieValue || (document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '') || '';
     }
 
     // Submit Stock Action via Atomic API

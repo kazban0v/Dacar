@@ -2555,7 +2555,8 @@
         const floatingItemsCount = document.getElementById('floatingCartItemsCount');
         const floatingTotal = document.getElementById('floatingCartTotal');
         const isMobile = window.matchMedia('(max-width: 900px)').matches;
-        const isCatalogActive = document.getElementById('tabBtnCatalog')?.classList.contains('active');
+        const tabBtnCat = document.getElementById('tabBtnCatalog');
+        const isCatalogActive = tabBtnCat ? tabBtnCat.classList.contains('active') : false;
 
         if (floatingBar) {
             if (isMobile && totalItems > 0 && isCatalogActive) {

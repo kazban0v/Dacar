@@ -165,14 +165,14 @@
 {% block extra_scripts %}
 <script>
     // 1. Quick Category Creation right from dropdown
-    let prevCatVal = document.getElementById('productCategorySelect')?.value || '';
+    let prevCatVal = (document.getElementById('productCategorySelect') ? document.getElementById('productCategorySelect').value : '') || '';
 
     async function handleCategoryChange(select) {
         if (select.value === '__NEW__') {
             const catName = prompt('Введите название новой категории:');
             if (catName && catName.trim()) {
                 try {
-                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                    const csrfToken = (document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '') || '';
                     const res = await fetch('/catalog/api/categories/create/', {
                         method: 'POST',
                         headers: {

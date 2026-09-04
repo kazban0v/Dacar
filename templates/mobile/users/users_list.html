@@ -692,7 +692,8 @@
 
     // Filter Staff rows (in both Desktop table and Mobile cards)
     function filterStaffList() {
-        const query = (document.getElementById('staffSearchInput')?.value || '').toLowerCase().trim();
+        const searchInput = document.getElementById('staffSearchInput');
+        const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
         const rows = document.querySelectorAll('.staff-row');
         let visibleCount = 0;
 
