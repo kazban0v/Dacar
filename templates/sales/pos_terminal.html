@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}DACAR Кассовый Терминал (POS){% endblock %}
 
@@ -2983,10 +2984,16 @@
         // Dynamically load html5-qrcode if not present
         if (typeof Html5Qrcode === 'undefined') {
             const script = document.createElement('script');
-            script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+            script.src = "{% static 'js/html5-qrcode.min.js' %}";
             script.onload = () => startCameraScanner();
             script.onerror = () => {
-                if (window.showToast) window.showToast('Не удалось загрузить библиотеку камеры', 'error');
+                const cdnScript = document.createElement('script');
+                cdnScript.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+                cdnScript.onload = () => startCameraScanner();
+                cdnScript.onerror = () => {
+                    if (window.showToast) window.showToast('Не удалось загрузить библиотеку камеры', 'error');
+                };
+                document.head.appendChild(cdnScript);
             };
             document.head.appendChild(script);
         } else {
@@ -3002,39 +3009,69 @@
                 initScannerInstance();
             }
         } catch (e) {
-            console.error(e);
+            initScannerInstance();
         }
     }
 
     function initScannerInstance() {
-        html5QrCode = new Html5Qrcode("qr-reader");
-        const config = { 
-            fps: 15, 
-            qrbox: (viewfinderWidth, viewfinderHeight) => {
-                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                const qrboxSize = Math.floor(minEdge * 0.8);
-                return { width: qrboxSize, height: Math.floor(qrboxSize * 0.65) };
-            }, 
-            aspectRatio: 1.0 
-        };
+        const readerEl = document.getElementById('qr-reader');
+        if (!readerEl) return;
 
-        html5QrCode.start(
-            { facingMode: "environment" },
-            config,
-            (decodedText) => {
-                // Success Scan
+        try {
+            html5QrCode = new Html5Qrcode("qr-reader");
+            const config = { 
+                fps: 15, 
+                qrbox: (viewfinderWidth, viewfinderHeight) => {
+                    const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                    const qrboxSize = Math.floor(minEdge * 0.8);
+                    return { width: qrboxSize, height: Math.floor(qrboxSize * 0.65) };
+                }, 
+                aspectRatio: 1.0 
+            };
+
+            const onScanSuccess = (decodedText) => {
                 if ('vibrate' in navigator) navigator.vibrate([50, 40, 50]);
                 playScanBeep();
                 closeCameraScannerModal();
                 processScannedBarcode(decodedText.trim());
-            },
-            (errorMessage) => {
-                // Frame miss, continue scanning
-            }
-        ).catch(err => {
-            console.warn('Camera permission error:', err);
-            if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
-        });
+            };
+
+            // Huawei EMUI / Android 10 tablet resilient device discovery
+            Html5Qrcode.getCameras().then(devices => {
+                if (devices && devices.length) {
+                    let chosenCameraId = devices[0].id;
+                    for (let d of devices) {
+                        const lbl = (d.label || '').toLowerCase();
+                        if (lbl.includes('back') || lbl.includes('rear') || lbl.includes('environment')) {
+                            chosenCameraId = d.id;
+                            break;
+                        }
+                    }
+                    html5QrCode.start(chosenCameraId, config, onScanSuccess, () => {}).catch(() => {
+                        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(() => {
+                            html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e3 => {
+                                if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
+                            });
+                        });
+                    });
+                } else {
+                    html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(() => {
+                        html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e2 => {
+                            if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
+                        });
+                    });
+                }
+            }).catch(err => {
+                html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(() => {
+                    html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e2 => {
+                        if (window.showToast) window.showToast('Камера недоступна: ' + (e2.message || err.message), 'warning');
+                    });
+                });
+            });
+        } catch(e) {
+            console.error('POS camera init error:', e);
+            if (window.showToast) window.showToast('Ошибка запуска камеры', 'error');
+        }
     }
 
     function closeCameraScannerModal() {

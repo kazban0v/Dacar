@@ -187,19 +187,19 @@
     .hub-mini-kpi-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: clamp(0.45rem, 1.5vw, 0.85rem);
+        gap: clamp(0.45rem, 1.2vw, 0.75rem);
     }
 
     .hub-mini-kpi-card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
         border-radius: 16px;
-        padding: clamp(0.75rem, 1.5vw, 1rem) clamp(0.6rem, 1.2vw, 0.85rem);
+        padding: clamp(0.75rem, 1.4vw, 0.95rem) clamp(0.6rem, 1vw, 0.85rem);
         display: flex;
         flex-direction: column;
         gap: 0.45rem;
         box-shadow: var(--shadow-sm);
-        transition: transform 0.15s ease;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
         box-sizing: border-box;
         min-width: 0;
         overflow: hidden;
@@ -207,16 +207,17 @@
 
     .hub-mini-kpi-card:hover {
         transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
     }
 
     .hub-kpi-icon-box {
-        width: 30px;
-        height: 30px;
-        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.88rem;
+        font-size: 0.9rem;
         flex-shrink: 0;
     }
 
@@ -224,9 +225,17 @@
     .hub-kpi-icon-box.purple { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
     .hub-kpi-icon-box.green  { background: rgba(16, 185, 129, 0.15); color: #34D399; }
 
+    .hub-kpi-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        overflow: hidden;
+    }
+
     .hub-kpi-value {
         font-family: 'Outfit', sans-serif;
-        font-size: clamp(0.95rem, 2.5vw, 1.35rem);
+        font-size: clamp(0.95rem, 2.2vw, 1.25rem);
         font-weight: 800;
         color: var(--text-primary);
         line-height: 1.15;
@@ -236,7 +245,7 @@
     }
 
     .hub-kpi-label {
-        font-size: clamp(0.68rem, 1.5vw, 0.78rem);
+        font-size: clamp(0.68rem, 1.3vw, 0.76rem);
         color: var(--text-secondary);
         font-weight: 500;
         white-space: nowrap;
@@ -418,22 +427,60 @@
         box-sizing: border-box;
     }
 
-    @media (min-width: 960px) {
+    /* Tablet & Desktop Horizontal Card Optimization (>= 680px) */
+    @media (min-width: 680px) {
+        .hub-header, .hub-status-row {
+            display: none !important;
+        }
+
+        .hub-mini-kpi-card {
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 0.75rem !important;
+            padding: 0.85rem 1rem !important;
+        }
+
+        .hub-kpi-icon-box {
+            width: 38px !important;
+            height: 38px !important;
+            border-radius: 11px !important;
+            font-size: 1.05rem !important;
+        }
+
+        .hub-kpi-value {
+            font-size: 1.25rem !important;
+        }
+
+        .hub-kpi-label {
+            font-size: 0.74rem !important;
+        }
+    }
+
+    /* Tablet Cockpit Grid (>= 860px) */
+    @media (min-width: 860px) {
         .hub-dashboard-container {
-            max-width: 1100px;
+            max-width: 1120px;
             margin: 0 auto;
+            gap: 1.15rem;
         }
         .hub-tablet-grid {
             display: grid;
-            grid-template-columns: 1.12fr 1fr;
+            grid-template-columns: 1.06fr 1fr;
             gap: 1.25rem;
             align-items: start;
         }
         .hub-hero-card, .hub-chart-card, .hub-payment-card, .hub-warning-banner {
             margin-bottom: 0;
         }
+        .hub-hero-card {
+            padding: 1.15rem 1.35rem;
+        }
+        .hub-hero-amount {
+            font-size: 2.15rem;
+        }
         .hub-chart-card canvas {
-            min-height: 190px !important;
+            height: 145px !important;
+            max-height: 155px !important;
         }
     }
 
@@ -524,8 +571,10 @@
                     <div class="hub-kpi-icon-box blue">
                         <i class="fa-solid fa-receipt"></i>
                     </div>
-                    <div class="hub-kpi-value" id="kpiChecksCount">{{ today_count }}</div>
-                    <div class="hub-kpi-label">Чеков сегодня</div>
+                    <div class="hub-kpi-info">
+                        <div class="hub-kpi-value" id="kpiChecksCount">{{ today_count }}</div>
+                        <div class="hub-kpi-label">Чеков сегодня</div>
+                    </div>
                 </div>
 
                 <!-- Средний чек -->
@@ -533,10 +582,12 @@
                     <div class="hub-kpi-icon-box purple">
                         <i class="fa-solid fa-bullseye"></i>
                     </div>
-                    <div class="hub-kpi-value">
-                        <span id="kpiAvgCheck">{{ today_avg_check|floatformat:0 }}</span> ₸
+                    <div class="hub-kpi-info">
+                        <div class="hub-kpi-value">
+                            <span id="kpiAvgCheck">{{ today_avg_check|floatformat:0 }}</span> ₸
+                        </div>
+                        <div class="hub-kpi-label">Средний чек</div>
                     </div>
-                    <div class="hub-kpi-label">Средний чек</div>
                 </div>
 
                 <!-- Валовая прибыль -->
@@ -544,10 +595,12 @@
                     <div class="hub-kpi-icon-box green">
                         <i class="fa-solid fa-arrow-trend-up"></i>
                     </div>
-                    <div class="hub-kpi-value">
-                        <span id="kpiProfit">{{ today_profit|floatformat:0 }}</span> ₸
+                    <div class="hub-kpi-info">
+                        <div class="hub-kpi-value">
+                            <span id="kpiProfit">{{ today_profit|floatformat:0 }}</span> ₸
+                        </div>
+                        <div class="hub-kpi-label">Валовая прибыль</div>
                     </div>
-                    <div class="hub-kpi-label">Валовая прибыль</div>
                 </div>
             </div>
 
@@ -595,6 +648,7 @@
         <!-- RIGHT COLUMN: Warning Banner, Hourly Chart, Recent Sale -->
         <div class="hub-tablet-col">
             <!-- 3. INVENTORY WARNING BANNER -->
+            {% if low_stock_count > 0 %}
             <div class="hub-warning-banner" id="hubWarningBanner">
                 <div class="hub-warning-left">
                     <div class="hub-warning-icon-box">
@@ -611,6 +665,24 @@
                     Склад &rarr;
                 </a>
             </div>
+            {% else %}
+            <div class="hub-warning-banner hub-stock-ok" id="hubWarningBanner" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25);">
+                <div class="hub-warning-left">
+                    <div class="hub-warning-icon-box" style="background: rgba(16, 185, 129, 0.18); color: #10B981;">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <div class="hub-warning-title" style="color: #10B981;">
+                            Все товары в наличии
+                        </div>
+                        <div class="hub-warning-subtitle">Критичных остатков нет</div>
+                    </div>
+                </div>
+                <a href="{% url 'm_product_list' %}" class="hub-warning-link" style="color: #10B981; background: rgba(16, 185, 129, 0.15);">
+                    Склад &rarr;
+                </a>
+            </div>
+            {% endif %}
 
             <!-- 4. HOURLY SALES CHART CARD -->
             <div class="hub-chart-card">

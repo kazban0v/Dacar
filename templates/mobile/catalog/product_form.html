@@ -1,4 +1,5 @@
 {% extends 'mobile/base.html' %}
+{% load static %}
 
 {% block title %}{% if product %}Редактировать {{ product.name }}{% else %}Добавить новый товар{% endif %} — DACAR{% endblock %}
 
@@ -263,10 +264,17 @@
 
         if (typeof Html5Qrcode === 'undefined') {
             const script = document.createElement('script');
-            script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+            script.src = "{% static 'js/html5-qrcode.min.js' %}";
             script.onload = () => startFormCameraScanner();
             script.onerror = () => {
-                if (window.showToast) window.showToast('Не удалось загрузить библиотеку камеры', 'error');
+                // Fallback to CDN if static fails
+                const cdnScript = document.createElement('script');
+                cdnScript.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+                cdnScript.onload = () => startFormCameraScanner();
+                cdnScript.onerror = () => {
+                    if (window.showToast) window.showToast('Не удалось загрузить библиотеку камеры', 'error');
+                };
+                document.head.appendChild(cdnScript);
             };
             document.head.appendChild(script);
         } else {
@@ -282,34 +290,67 @@
                 initFormScannerInstance();
             }
         } catch (e) {
-            console.error(e);
+            initFormScannerInstance();
         }
     }
 
     function initFormScannerInstance() {
-        formHtml5QrCode = new Html5Qrcode("form-qr-reader");
-        const config = { 
-            fps: 15, 
-            qrbox: (w, h) => {
-                const min = Math.min(w, h);
-                return { width: Math.floor(min * 0.8), height: Math.floor(min * 0.6) };
-            },
-            aspectRatio: 1.0 
-        };
+        const readerEl = document.getElementById('form-qr-reader');
+        if (!readerEl) return;
 
-        formHtml5QrCode.start(
-            { facingMode: "environment" },
-            config,
-            (decodedText) => {
+        try {
+            formHtml5QrCode = new Html5Qrcode("form-qr-reader");
+            const config = { 
+                fps: 15, 
+                qrbox: (w, h) => {
+                    const min = Math.min(w, h);
+                    return { width: Math.floor(min * 0.8), height: Math.floor(min * 0.6) };
+                },
+                aspectRatio: 1.0 
+            };
+
+            const onScanSuccess = (decodedText) => {
                 if ('vibrate' in navigator) navigator.vibrate([50, 40, 50]);
                 closeCameraScannerModal();
                 applyScannedBarcode(decodedText.trim());
-            },
-            (errorMessage) => {}
-        ).catch(err => {
-            console.warn('Form camera scan start error:', err);
-            if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
-        });
+            };
+
+            // Huawei EMUI / Android 10 tablet resilient device discovery
+            Html5Qrcode.getCameras().then(devices => {
+                if (devices && devices.length) {
+                    let chosenCameraId = devices[0].id;
+                    for (let d of devices) {
+                        const lbl = (d.label || '').toLowerCase();
+                        if (lbl.includes('back') || lbl.includes('rear') || lbl.includes('environment')) {
+                            chosenCameraId = d.id;
+                            break;
+                        }
+                    }
+                    formHtml5QrCode.start(chosenCameraId, config, onScanSuccess, () => {}).catch(() => {
+                        formHtml5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(() => {
+                            formHtml5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e3 => {
+                                if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
+                            });
+                        });
+                    });
+                } else {
+                    formHtml5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(() => {
+                        formHtml5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e2 => {
+                            if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
+                        });
+                    });
+                }
+            }).catch(err => {
+                formHtml5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {}).catch(() => {
+                    formHtml5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {}).catch(e2 => {
+                        if (window.showToast) window.showToast('Камера недоступна: ' + (e2.message || err.message), 'warning');
+                    });
+                });
+            });
+        } catch(e) {
+            console.error('Camera form init error:', e);
+            if (window.showToast) window.showToast('Ошибка запуска камеры', 'error');
+        }
     }
 
     function closeCameraScannerModal() {
