@@ -90,6 +90,8 @@ def users_list_view(request):
         messages.error(request, 'Доступ ограничен. Только для администраторов.')
         return redirect('pos')
 
+    redirect_url = 'm_users_list' if is_mobile_request(request) else 'users_list'
+
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'create':
@@ -112,20 +114,26 @@ def users_list_view(request):
                     role=role
                 )
                 messages.success(request, f'Пользователь {username} успешно создан!')
-                return redirect('users_list')
+                return redirect(redirect_url)
                 
         elif action == 'toggle_status':
             target_id = request.POST.get('user_id')
             target_user = get_object_or_404(User, id=target_id)
+            if target_user.is_superuser or target_user.username == 'beybit':
+                messages.error(request, 'Нельзя изменить статус главного администратора.')
+                return redirect(redirect_url)
             if target_user != request.user:
                 target_user.is_active = not target_user.is_active
                 target_user.save()
                 messages.info(request, f'Статус пользователя {target_user.username} изменен.')
-            return redirect('users_list')
+            return redirect(redirect_url)
 
         elif action == 'delete':
             target_id = request.POST.get('user_id')
             target_user = get_object_or_404(User, id=target_id)
+            if target_user.is_superuser or target_user.username == 'beybit':
+                messages.error(request, 'Нельзя удалить главного администратора!')
+                return redirect(redirect_url)
             if target_user == request.user:
                 messages.error(request, 'Вы не можете удалить свой собственный аккаунт!')
             else:
@@ -153,11 +161,14 @@ def users_list_view(request):
                         request,
                         f'Пользователь "{uname}" проводил чеки в кассе. Для сохранения отчетов продаж аккаунт деактивирован и заблокирован.'
                     )
-            return redirect('users_list')
+            return redirect(redirect_url)
 
-    users = User.objects.all().order_by('-date_joined')
+    # Exclude chief administrator (superuser / beybit) from the staff list
+    # so the admin only monitors employees (cashiers and other administrators)
+    users = User.objects.exclude(is_superuser=True).exclude(username='beybit').order_by('-date_joined')
     return render(request, 'users/users_list.html', {
         'users_list': users,
         'roles': User.Role.choices,
         'ALLOW_REGISTRATION': getattr(settings, 'ALLOW_REGISTRATION', True)
     })
+
