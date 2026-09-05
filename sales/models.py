@@ -71,7 +71,7 @@ class SaleOrder(models.Model):
 
 class SaleOrderItem(models.Model):
     order = models.ForeignKey(SaleOrder, on_delete=models.CASCADE, related_name='items', verbose_name="Чек")
-    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='sale_items', verbose_name="Товар")
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name='sale_items', verbose_name="Товар")
     quantity = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Количество")
     
     # Financial snapshot at time of checkout
@@ -89,4 +89,5 @@ class SaleOrderItem(models.Model):
         return self.total_amount - (self.quantity * self.purchase_price_snapshot)
 
     def __str__(self):
-        return f"{self.product.name} x {self.quantity} = {self.total_amount} ₸"
+        product_name = self.product.name if self.product else "Удалённый товар"
+        return f"{product_name} x {self.quantity} = {self.total_amount} ₸"

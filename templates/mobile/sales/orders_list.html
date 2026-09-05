@@ -406,7 +406,7 @@
                 <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">Товары в чеке:</div>
                 {% for it in order.items.all %}
                 <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 2px;">
-                    <span style="color: var(--text-main);">{{ it.product.name }} &times; {{ it.quantity|floatformat:0 }} {{ it.product.unit }}</span>
+                    <span style="color: var(--text-main);">{{ it.product.name|default:"Удалённый товар" }} &times; {{ it.quantity|floatformat:0 }} {{ it.product.unit|default:"шт" }}</span>
                     <strong style="color: var(--accent-cyan);">{{ it.total_amount|floatformat:0 }} ₸</strong>
                 </div>
                 {% endfor %}
