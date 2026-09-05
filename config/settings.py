@@ -131,3 +131,7 @@ SHOP_TAGLINE = ''
 SHOP_ADDRESS = 'г. Актобе, ул. Алтын Орда 19д'
 SHOP_PHONE = '+7 (706) 806-66-36'
 
+# Reverse Proxy headers support (Nginx -> Gunicorn)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+

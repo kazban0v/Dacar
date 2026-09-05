@@ -26,7 +26,16 @@ class AuditLog(models.Model):
     @classmethod
     def log(cls, request, action_type, description):
         user = request.user if request and request.user.is_authenticated else None
-        ip = request.META.get('REMOTE_ADDR', '') if request else ''
+        ip = ''
+        if request:
+            # When behind Nginx reverse proxy, client IP is in X-Forwarded-For or X-Real-IP
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(',')[0].strip()
+            elif request.META.get('HTTP_X_REAL_IP'):
+                ip = request.META.get('HTTP_X_REAL_IP').strip()
+            else:
+                ip = request.META.get('REMOTE_ADDR', '')
         return cls.objects.create(
             user=user,
             action_type=action_type,
