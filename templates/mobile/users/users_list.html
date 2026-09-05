@@ -430,7 +430,6 @@
             <div class="staff-filter-pills">
                 <button class="staff-pill active" onclick="filterStaffRole('all', this)">Все ({{ users_list.count }})</button>
                 <button class="staff-pill" onclick="filterStaffRole('ADMIN', this)">Админы</button>
-                <button class="staff-pill" onclick="filterStaffRole('MANAGER', this)">Менеджеры</button>
                 <button class="staff-pill" onclick="filterStaffRole('CASHIER', this)">Кассиры</button>
             </div>
         </div>
@@ -453,7 +452,7 @@
                     <tr class="staff-row" data-name="{{ u.get_full_name|default:'' }}" data-username="{{ u.username }}" data-phone="{{ u.phone|default:'' }}" data-role="{{ u.role }}" data-active="{{ u.is_active|yesno:'true,false' }}">
                         <td>
                             <div style="display: flex; align-items: center; gap: 0.65rem;">
-                                <div class="user-avatar-circle {% if u.role == 'ADMIN' %}avatar-admin{% elif u.role == 'MANAGER' %}avatar-manager{% else %}avatar-cashier{% endif %}">
+                                <div class="user-avatar-circle {% if u.role == 'ADMIN' %}avatar-admin{% else %}avatar-cashier{% endif %}">
                                     {{ u.first_name|default:u.username|slice:":1"|upper }}
                                 </div>
                                 <div>
@@ -470,8 +469,6 @@
                         <td>
                             {% if u.role == 'ADMIN' %}
                             <span class="badge badge-orange"><i class="fa-solid fa-crown"></i> Администратор</span>
-                            {% elif u.role == 'MANAGER' %}
-                            <span class="badge badge-cyan"><i class="fa-solid fa-user-tie"></i> Менеджер</span>
                             {% else %}
                             <span class="badge badge-green"><i class="fa-solid fa-cash-register"></i> Кассир</span>
                             {% endif %}
@@ -541,7 +538,7 @@
                 <!-- Card Header -->
                 <div class="staff-card-header">
                     <div class="staff-card-user-info">
-                        <div class="user-avatar-circle {% if u.role == 'ADMIN' %}avatar-admin{% elif u.role == 'MANAGER' %}avatar-manager{% else %}avatar-cashier{% endif %}">
+                        <div class="user-avatar-circle {% if u.role == 'ADMIN' %}avatar-admin{% else %}avatar-cashier{% endif %}">
                             {{ u.first_name|default:u.username|slice:":1"|upper }}
                         </div>
                         <div style="min-width: 0;">
@@ -570,8 +567,6 @@
                         <div class="staff-detail-value">
                             {% if u.role == 'ADMIN' %}
                             <span class="badge badge-orange" style="font-size: 0.75rem;"><i class="fa-solid fa-crown"></i> Админ</span>
-                            {% elif u.role == 'MANAGER' %}
-                            <span class="badge badge-cyan" style="font-size: 0.75rem;"><i class="fa-solid fa-user-tie"></i> Менеджер</span>
                             {% else %}
                             <span class="badge badge-green" style="font-size: 0.75rem;"><i class="fa-solid fa-cash-register"></i> Кассир</span>
                             {% endif %}
