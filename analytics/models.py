@@ -25,7 +25,7 @@ class AuditLog(models.Model):
 
     @classmethod
     def log(cls, request, action_type, description):
-        user = request.user if request and request.user.is_authenticated else None
+        user = request.user if request and hasattr(request, 'user') and request.user.is_authenticated else None
         ip = ''
         if request:
             # When behind Nginx reverse proxy, client IP is in X-Forwarded-For or X-Real-IP
