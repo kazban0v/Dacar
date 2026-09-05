@@ -366,12 +366,15 @@
     </a>
 </div>
 <script>
-    if (localStorage.getItem('hidePosUpdateBanner') === 'true') {
+    const bannerVersionMobile = "v1.1";
+    const hideKeyMobile = 'hidePosUpdateBanner_' + bannerVersionMobile;
+    
+    if (localStorage.getItem(hideKeyMobile) === 'true') {
         document.getElementById('posUpdateBannerMobile').style.display = 'none';
     }
     function closePosBannerMobile() {
         document.getElementById('posUpdateBannerMobile').style.display = 'none';
-        localStorage.setItem('hidePosUpdateBanner', 'true');
+        localStorage.setItem(hideKeyMobile, 'true');
     }
 </script>
 {% endif %}

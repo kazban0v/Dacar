@@ -284,12 +284,15 @@
     </a>
 </div>
 <script>
-    if (localStorage.getItem('hidePosUpdateBanner') === 'true') {
+    const bannerVersion = "v1.1";
+    const hideKey = 'hidePosUpdateBanner_' + bannerVersion;
+    
+    if (localStorage.getItem(hideKey) === 'true') {
         document.getElementById('posUpdateBanner').style.display = 'none';
     }
     function closePosBanner() {
         document.getElementById('posUpdateBanner').style.display = 'none';
-        localStorage.setItem('hidePosUpdateBanner', 'true');
+        localStorage.setItem(hideKey, 'true');
     }
 </script>
 {% endif %}
