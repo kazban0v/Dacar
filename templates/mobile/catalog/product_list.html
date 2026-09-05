@@ -755,9 +755,21 @@
     }
 
     // Camera Scanner logic with Huawei EMUI compatibility
-    let warehouseQrCode = null;
+    // Global handler for Android ML Kit scanner result
+    window.onAndroidBarcodeScanned = function(barcode) {
+        const searchInput = document.querySelector('input[name="q"]');
+        if (searchInput) searchInput.value = barcode.trim();
+        const form = document.getElementById('catalogFilterForm');
+        if (form) form.submit();
+    };
 
     function openWarehouseScanner() {
+        // Native Android Scanner check
+        if (window.AndroidApp && typeof window.AndroidApp.startScanner === 'function') {
+            window.AndroidApp.startScanner();
+            return;
+        }
+
         const modal = document.getElementById('warehouseScannerModal');
         if (modal) modal.style.display = 'flex';
 

@@ -256,9 +256,18 @@
     });
 
     // 3. Camera Barcode Scanner Logic
-    let formHtml5QrCode = null;
+    // Global handler for Android ML Kit scanner result
+    window.onAndroidBarcodeScanned = function(barcode) {
+        applyScannedBarcode(barcode.trim());
+    };
 
     async function openCameraScannerModal() {
+        // Native Android Scanner check
+        if (window.AndroidApp && typeof window.AndroidApp.startScanner === 'function') {
+            window.AndroidApp.startScanner();
+            return;
+        }
+
         const modal = document.getElementById('cameraScannerModal');
         if (modal) modal.style.display = 'flex';
 

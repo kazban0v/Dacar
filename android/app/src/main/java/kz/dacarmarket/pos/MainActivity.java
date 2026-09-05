@@ -27,6 +27,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
 public class MainActivity extends AppCompatActivity {
 
     // Server URLs — Production dacar-market.kz
@@ -40,18 +43,36 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private ValueCallback<Uri[]> fileUploadCallback;
     private PermissionRequest pendingPermissionRequest;
+    
+    private ActivityResultLauncher<Intent> scannerLauncher;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        scannerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    String barcode = result.getData().getStringExtra("SCAN_RESULT");
+                    if (barcode != null && webView != null) {
+                        webView.evaluateJavascript("if(window.onAndroidBarcodeScanned){window.onAndroidBarcodeScanned('" + barcode + "');}", null);
+                    }
+                }
+            }
+        );
 
         webView = findViewById(R.id.webView);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         progressBar = findViewById(R.id.progressBar);
 
         setupWebView();
+        
+        // Register JS interface
+        webView.addJavascriptInterface(new WebAppInterface(), "AndroidApp");
+        
         setupSwipeRefresh();
         checkAppPermissions();
 
@@ -251,6 +272,13 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Для сканирования требуется доступ к камере", Toast.LENGTH_SHORT).show();
             }
+        } else if (requestCode == 1003) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Intent intent = new Intent(MainActivity.this, ScannerActivity.class);
+                scannerLauncher.launch(intent);
+            } else {
+                Toast.makeText(this, "Для сканирования требуется доступ к камере", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -278,6 +306,24 @@ public class MainActivity extends AppCompatActivity {
             webView.goBack();
         } else {
             super.onBackPressed();
+        }
+    }
+    
+    // JS Interface for interacting with Web
+    public class WebAppInterface {
+        @android.webkit.JavascriptInterface
+        public void startScanner() {
+            String currentUrl = webView.getUrl();
+            if (currentUrl != null && (currentUrl.contains("dacar-market.kz") || currentUrl.contains("10.0.2.2") || currentUrl.contains("localhost"))) {
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                    Intent intent = new Intent(MainActivity.this, ScannerActivity.class);
+                    scannerLauncher.launch(intent);
+                } else {
+                    MainActivity.this.runOnUiThread(() -> 
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, 1003)
+                    );
+                }
+            }
         }
     }
 }

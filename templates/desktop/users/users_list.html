@@ -264,6 +264,23 @@
     </div>
 </div>
 
+{% if request.user.is_admin_user %}
+<div class="dacar-card" style="margin-bottom: 1.5rem; border: 1px solid var(--accent-cyan); background: rgba(6, 182, 212, 0.05); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="font-size: 2rem; color: var(--accent-cyan);">
+            <i class="fa-brands fa-android"></i>
+        </div>
+        <div>
+            <h3 style="font-size: 1.1rem; font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--text-main); margin-bottom: 0.2rem;">Приложение POS обновлено!</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Вшит нативный высокоскоростной сканер штрихкодов. Установите этот файл на кассовые терминалы.</p>
+        </div>
+    </div>
+    <a href="{% static 'app/DACAR_POS.apk' %}" download class="btn btn-primary" style="white-space: nowrap; padding: 0.6rem 1rem;">
+        <i class="fa-solid fa-download"></i> Скачать APK
+    </a>
+</div>
+{% endif %}
+
 <div class="users-grid-layout">
     <!-- CREATE USER CARD -->
     <div class="dacar-card add-user-card" id="addUserCard">

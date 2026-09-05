@@ -891,13 +891,29 @@
             transform: scale(0.92);
         }
 
-        /* Show Bottom Nav on Mobile, Tablets and Standalone App */
-        @media (max-width: 1200px) {
+        /* Show Bottom Nav on Mobile and Portrait Tablets */
+        @media (max-width: 960px) and (orientation: portrait), (max-width: 768px) {
             .dacar-bottom-nav {
                 display: flex;
             }
             .main-container {
                 padding-bottom: calc(76px + var(--safe-bottom)) !important;
+            }
+        }
+        
+        /* Hide Bottom Nav on Tablet Landscape, ensure Top Nav is visible */
+        @media (min-width: 768px) and (orientation: landscape) {
+            .dacar-bottom-nav {
+                display: none !important;
+            }
+            .main-container {
+                padding-bottom: var(--safe-bottom) !important;
+            }
+            .nav-links { 
+                display: flex !important; 
+            }
+            .hamburger-btn { 
+                display: none !important; 
             }
         }
 
@@ -946,7 +962,8 @@
             }
         }
 
-        @media all and (display-mode: standalone) {
+        @media all and (display-mode: standalone) and (max-width: 960px) and (orientation: portrait), 
+               all and (display-mode: standalone) and (max-width: 768px) {
             .dacar-bottom-nav {
                 display: flex;
             }
