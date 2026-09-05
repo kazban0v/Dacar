@@ -161,21 +161,25 @@ def order_refund_view(request, pk):
     """
     order = get_object_or_404(SaleOrder, pk=pk)
 
+    # Determine if we're on mobile based on URL path
+    is_mobile = request.path.startswith('/m/')
+    orders_list_url = 'm_sales_orders_list' if is_mobile else 'sales_orders_list'
+
     # Permission check: ADMIN and MANAGER can refund. CASHIER cannot.
     is_mgr_or_admin = request.user.is_admin_user or getattr(request.user, 'role', '') == 'MANAGER'
     if not is_mgr_or_admin:
         messages.error(request, 'Оформление возврата разрешено только Управляющему или Администратору.')
-        return redirect('sales_orders_list')
+        return redirect(orders_list_url)
 
     if order.status == SaleOrder.Status.REFUNDED:
         messages.warning(request, f'Чек № {order.order_number} уже был возвращен ранее.')
-        return redirect('sales_orders_list')
+        return redirect(orders_list_url)
 
     if request.method == 'POST':
         refund_reason = request.POST.get('refund_reason', '').strip()
         if not refund_reason or len(refund_reason) < 5:
             messages.error(request, 'Пожалуйста, укажите подробную причину возврата (не менее 5 символов).')
-            return redirect('sales_orders_list')
+            return redirect(orders_list_url)
 
         with transaction.atomic():
             order.status = SaleOrder.Status.REFUNDED
@@ -210,7 +214,7 @@ def order_refund_view(request, pk):
             cache.delete('dacar_live_kpi')
 
         messages.success(request, f'Возврат по чеку № {order.order_number} на сумму {order.total_amount} ₸ успешно оформлен. Остатки товаров восстановлены.')
-        return redirect('sales_orders_list')
+        return redirect(orders_list_url)
 
     return render(request, 'sales/refund_confirm.html', {
         'order': order

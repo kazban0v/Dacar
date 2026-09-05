@@ -626,7 +626,7 @@
     function openRefundModal(orderId, orderNum, totalSum) {
         document.getElementById('refundModalOrderNum').innerText = orderNum;
         document.getElementById('refundModalSum').innerText = totalSum;
-        document.getElementById('refundForm').action = '/sales/orders/' + orderId + '/refund/';
+        document.getElementById('refundForm').action = '/m/sales/orders/' + orderId + '/refund/';
         document.getElementById('refundModal').style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
