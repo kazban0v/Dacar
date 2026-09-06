@@ -435,7 +435,47 @@
         <span>· обновлено только что</span>
     </div>
 
-    <!-- 1. HERO REVENUE CARD (Выручка сегодня + Semicircle Gauge) -->
+    <!-- MARQUEE TICKER (Бегущая строка событий) -->
+    <div class="marquee-container" id="marqueeTicker" style="border-radius: var(--radius-md); background: rgba(2,132,199,0.07); border: 1px solid rgba(2,132,199,0.18); padding: 0.4rem 0; margin-bottom: 0.25rem;">
+        <div class="marquee-track" id="marqueeTrack">
+            <!-- 1я половина -->
+            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
+                <i class="fa-solid fa-chart-line" style="color:var(--accent-cyan);"></i>
+                <span id="marqueeLastSale">{% if last_sale %}✅ Чек №{{ last_sale.order_number }} — {{ last_sale.total_amount|floatformat:0 }} ₸{% else %}Ждём первой продажи...{% endif %}</span>
+            </span>
+            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
+                <i class="fa-solid fa-box" style="color:var(--accent-orange);"></i>
+                {% if low_stock_count > 0 %}
+                <span>⚠️ Товаров на исходе: <strong>{{ low_stock_count }}</strong> позиций</span>
+                {% else %}
+                <span>Склад в порядке ✓</span>
+                {% endif %}
+            </span>
+            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
+                <i class="fa-solid fa-receipt" style="color:var(--accent-green);"></i>
+                <span>Чеков сегодня: <strong>{{ today_count }}</strong> &middot; Ср. чек: <strong>{{ today_avg_check|floatformat:0 }} ₸</strong></span>
+            </span>
+            <!-- Дубликат для бесшовной петли -->
+            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
+                <i class="fa-solid fa-chart-line" style="color:var(--accent-cyan);"></i>
+                <span>{% if last_sale %}✅ Чек №{{ last_sale.order_number }} — {{ last_sale.total_amount|floatformat:0 }} ₸{% else %}Ждём первой продажи...{% endif %}</span>
+            </span>
+            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
+                <i class="fa-solid fa-box" style="color:var(--accent-orange);"></i>
+                {% if low_stock_count > 0 %}
+                <span>⚠️ Товаров на исходе: <strong>{{ low_stock_count }}</strong> позиций</span>
+                {% else %}
+                <span>Склад в порядке ✓</span>
+                {% endif %}
+            </span>
+            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
+                <i class="fa-solid fa-receipt" style="color:var(--accent-green);"></i>
+                <span>Чеков сегодня: <strong>{{ today_count }}</strong> &middot; Ср. чек: <strong>{{ today_avg_check|floatformat:0 }} ₸</strong></span>
+            </span>
+        </div>
+    </div>
+
+    <!-- 1. HERO REVENUE CARD -->
     <div class="hub-hero-card">
         <div class="hub-hero-label">Выручка сегодня</div>
         <div class="hub-hero-body">
@@ -472,8 +512,8 @@
         </div>
     </div>
 
-    <!-- 2. 3-COLUMN COMPACT KPI GRID -->
-    <div class="hub-mini-kpi-grid">
+    <!-- 2. 3-COLUMN COMPACT KPI GRID (Horizontal Snap Scroll on mobile) -->
+    <div class="hub-mini-kpi-grid snap-row" role="region" aria-label="Ключевые показатели">
         <!-- Чеков сегодня -->
         <div class="hub-mini-kpi-card">
             <div class="hub-kpi-icon-box blue">
