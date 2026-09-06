@@ -146,6 +146,11 @@ def dashboard_view(request):
     # Recent sales
     recent_orders = SaleOrder.objects.select_related('cashier').all()[:10]
 
+    # Last completed sale (для Marquee-тикера)
+    last_sale = SaleOrder.objects.filter(
+        status='COMPLETED'
+    ).select_related('cashier').order_by('-id').first()
+
     return render(request, 'analytics/dashboard.html', {
         'today_revenue': today_revenue,
         'yesterday_revenue': yesterday_rev,
@@ -162,6 +167,7 @@ def dashboard_view(request):
         'hourly_sales': hourly_data,
         'cashier_stats': cashier_stats,
         'recent_orders': recent_orders,
+        'last_sale': last_sale,
     })
 
 

@@ -549,6 +549,45 @@
         <span>· обновлено только что</span>
     </div>
 
+    <!-- MARQUEE TICKER (Бегущая строка событий) -->
+    <div class="marquee-container" id="marqueeTicker" style="border-radius: var(--radius-md); background: rgba(2,132,199,0.07); border: 1px solid rgba(2,132,199,0.18); padding: 0.4rem 0; margin-bottom: 0.25rem;">
+        <div class="marquee-track" id="marqueeTrack">
+            <span class="marquee-item" style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
+                <i class="fa-solid fa-chart-line" style="color:var(--accent-cyan);"></i>
+                <span id="marqueeLastSale">{% if last_sale %}✅ Чек №{{ last_sale.order_number }} — {{ last_sale.total_amount|floatformat:0 }} ₸{% else %}Ждём первой продажи...{% endif %}</span>
+            </span>
+            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
+                <i class="fa-solid fa-box" style="color:var(--accent-orange);"></i>
+                {% if low_stock_count > 0 %}
+                <span>⚠️ Товаров на исходе: <strong>{{ low_stock_count }}</strong> позиций</span>
+                {% else %}
+                <span>Склад в порядке ✓</span>
+                {% endif %}
+            </span>
+            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
+                <i class="fa-solid fa-receipt" style="color:var(--accent-green);"></i>
+                <span>Чеков сегодня: <strong>{{ today_count }}</strong> · Ср. чек: <strong>{{ today_avg_check|floatformat:0 }} ₸</strong></span>
+            </span>
+            <!-- Дублируем для бесшовной петли -->
+            <span class="marquee-item" style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
+                <i class="fa-solid fa-chart-line" style="color:var(--accent-cyan);"></i>
+                <span>{% if last_sale %}✅ Чек №{{ last_sale.order_number }} — {{ last_sale.total_amount|floatformat:0 }} ₸{% else %}Ждём первой продажи...{% endif %}</span>
+            </span>
+            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
+                <i class="fa-solid fa-box" style="color:var(--accent-orange);"></i>
+                {% if low_stock_count > 0 %}
+                <span>⚠️ Товаров на исходе: <strong>{{ low_stock_count }}</strong> позиций</span>
+                {% else %}
+                <span>Склад в порядке ✓</span>
+                {% endif %}
+            </span>
+            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
+                <i class="fa-solid fa-receipt" style="color:var(--accent-green);"></i>
+                <span>Чеков сегодня: <strong>{{ today_count }}</strong> · Ср. чек: <strong>{{ today_avg_check|floatformat:0 }} ₸</strong></span>
+            </span>
+        </div>
+    </div>
+
     <!-- RESPONSIVE TABLET COCKPIT WRAPPER -->
     <div class="hub-tablet-grid">
         
@@ -591,8 +630,8 @@
                 </div>
             </div>
 
-            <!-- 2. 3-COLUMN COMPACT KPI GRID -->
-            <div class="hub-mini-kpi-grid">
+            <!-- 2. 3-COLUMN COMPACT KPI GRID (Horizontal Snap Scroll on mobile) -->
+            <div class="hub-mini-kpi-grid snap-row" role="region" aria-label="Ключевые показатели">
                 <!-- Чеков сегодня -->
                 <div class="hub-mini-kpi-card">
                     <div class="hub-kpi-icon-box blue">
@@ -986,6 +1025,12 @@
         const lastSaleEl = document.getElementById('hubLastSaleText');
         if (lastSaleEl && data.last_order) {
             lastSaleEl.textContent = `№${data.last_order.order_number} • ${Math.round(data.last_order.total_amount).toLocaleString('ru-RU')} ₸ (${data.last_order.payment_method_display})`;
+        }
+
+        // Marquee ticker last sale update
+        const marqueeLastSaleEl = document.getElementById('marqueeLastSale');
+        if (marqueeLastSaleEl && data.last_order) {
+            marqueeLastSaleEl.textContent = `✅ Чек №${data.last_order.order_number} — ${Math.round(data.last_order.total_amount).toLocaleString('ru-RU')} ₸`;
         }
 
         // Charts
