@@ -1,11 +1,12 @@
 // DACAR POS Service Worker
-const CACHE_NAME = 'dacar-pos-v1';
+const CACHE_NAME = 'dacar-pos-v1.1';
 const STATIC_ASSETS = [
     '/static/favicon.svg',
     '/static/icons/icon-192.png',
     '/static/icons/icon-512.png',
     '/static/icons/apple-touch-icon.png',
-    '/static/manifest.json'
+    '/static/manifest.json',
+    '/static/manifest-mobile.json'
 ];
 
 self.addEventListener('install', (event) => {
