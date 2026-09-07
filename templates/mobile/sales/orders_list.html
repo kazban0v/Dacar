@@ -1,479 +1,150 @@
 {% extends 'mobile/base.html' %}
 
 {% block title %}{% if user.is_admin_user %}Все чеки и продажи{% else %}Моя история продаж{% endif %} — DACAR{% endblock %}
+{% block body_class %}receipts-page{% endblock %}
 
 {% block extra_head %}
 <style>
-    .orders-page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.25rem;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .orders-filter-form {
-        display: flex;
-        gap: 0.625rem;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-
-    .orders-filter-search { flex: 2; min-width: 220px; }
-    .orders-filter-select { flex: 1; min-width: 150px; }
-
-    /* Desktop Table vs Mobile Cards */
-    .orders-table-wrapper {
-        display: block;
-    }
-
-    .orders-cards-mobile {
-        display: none;
-    }
-
-    /* Mobile Order Card */
-    .order-mobile-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: var(--radius-lg);
-        padding: 1rem;
-        margin-bottom: 0.75rem;
-        box-shadow: var(--shadow-xs);
-        display: flex;
-        flex-direction: column;
-        gap: 0.65rem;
-        animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    }
-
-    .orders-cards-mobile > *:nth-child(1) { animation-delay: 0.03s; }
-    .orders-cards-mobile > *:nth-child(2) { animation-delay: 0.07s; }
-    .orders-cards-mobile > *:nth-child(3) { animation-delay: 0.11s; }
-    .orders-cards-mobile > *:nth-child(4) { animation-delay: 0.15s; }
-    .orders-cards-mobile > *:nth-child(5) { animation-delay: 0.19s; }
-    .orders-cards-mobile > *:nth-child(6) { animation-delay: 0.23s; }
-    .orders-cards-mobile > *:nth-child(7) { animation-delay: 0.27s; }
-    .orders-cards-mobile > *:nth-child(8) { animation-delay: 0.31s; }
-
-    .order-card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid var(--card-border);
-    }
-
-    .order-card-num {
-        font-weight: 800;
-        font-family: monospace;
-        font-size: 0.95rem;
-        color: var(--accent-cyan);
-    }
-
-    .order-card-details {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.5rem 0.75rem;
-        font-size: 0.8rem;
-    }
-
-    .order-detail-label {
-        font-size: 0.7rem;
-        color: var(--text-muted);
-        text-transform: uppercase;
-    }
-
-    .order-card-total-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.4rem 0;
-        border-top: 1px dashed var(--card-border);
-        border-bottom: 1px dashed var(--card-border);
-    }
-
-    .order-card-total-sum {
-        font-size: 1.2rem;
-        font-weight: 900;
-        color: var(--text-main);
-    }
-
-    .order-card-actions {
-        display: flex;
-        gap: 0.4rem;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .order-card-actions .btn {
-        flex: 1;
-        padding: 8px 10px;
-        font-size: 0.8rem;
-        min-height: 36px;
-    }
-
-    .modal-box-responsive {
-        width: 100%;
-        max-width: min(480px, calc(100vw - 32px));
-        margin: 1rem;
-        max-height: calc(100dvh - 2rem);
-        overflow-y: auto;
-        border-radius: var(--radius-xl);
-    }
-
-    @media (max-width: 1200px) {
-        .orders-table-wrapper {
-            display: none !important;
-        }
-
-        .orders-cards-mobile {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .orders-list-card {
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-        }
-    }
-
-    @media (min-width: 560px) and (max-width: 1200px) {
-        .orders-cards-mobile {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)) !important;
-            gap: 0.85rem !important;
-        }
-        .order-mobile-card {
-            margin-bottom: 0 !important;
-            box-sizing: border-box !important;
-            min-width: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: space-between !important;
-        }
-        .orders-filter-form {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 0.65rem !important;
-        }
-        .orders-filter-search { flex: 2 !important; min-width: 200px !important; }
-        .orders-filter-select { flex: 1 !important; min-width: 140px !important; }
-    }
-
-        .orders-filter-card {
-            border-radius: var(--radius-xl) !important;
-            padding: 0.85rem !important;
-            margin-bottom: 0.75rem !important;
-        }
-
-        .order-mobile-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius-xl);
-            padding: 1.15rem;
-            margin-bottom: 0;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .orders-page-header h1 {
-            font-size: 1.2rem !important;
-        }
-
-        .orders-filter-search { min-width: 100%; flex: none; }
-        .orders-filter-select { min-width: calc(50% - 0.35rem); flex: 1; }
-    }
-
-    /* Help (?) Button */
-    .pos-help-btn {
-        width: 30px;
-        height: 30px;
-        border-radius: var(--radius-md);
-        background: rgba(2, 132, 199, 0.08);
-        border: 1px solid var(--accent-cyan);
-        color: var(--accent-cyan);
-        font-weight: 800;
-        font-size: 0.8rem;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        flex-shrink: 0;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    .pos-help-btn:hover {
-        background: var(--accent-cyan);
-        color: #FFF;
-        transform: scale(1.08);
-        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
-    }
+    body.receipts-page .header-nav { display: none; }
+    body.receipts-page .main-container { max-width: 760px; padding-top: 1rem; }
+    .receipts-shell { max-width: 680px; margin: 0 auto; padding-bottom: calc(94px + var(--safe-bottom)); }
+    .receipts-topbar { display:flex; align-items:center; justify-content:space-between; gap:.75rem; margin-bottom:1rem; }
+    .receipts-title { display:flex; align-items:center; min-width:0; }
+    .receipts-title-icon { display:grid; width:43px; height:43px; flex:0 0 auto; place-items:center; border-radius:14px; background:linear-gradient(135deg,#0ea5e9,#075985); color:#fff; box-shadow:0 8px 18px rgba(2,132,199,.25); }
+    .receipts-title h1 { margin:0; color:var(--text-primary); font:800 1.35rem/1.15 'Outfit',sans-serif; }
+    .receipt-top-actions { display:flex; gap:.45rem; }
+    .receipt-icon-button { display:grid; width:39px; height:39px; padding:0; place-items:center; border:1px solid var(--card-border); border-radius:50%; background:var(--card-bg); color:var(--text-primary); }
+    .receipt-search { display:flex; align-items:center; gap:.5rem; padding:.5rem; margin-bottom:.7rem; border:1px solid var(--card-border); border-radius:16px; background:var(--card-bg); }
+    .receipt-search i { padding-left:.25rem; color:var(--text-muted); }
+    .receipt-search input { min-width:0; flex:1; min-height:36px; padding:0; border:0; outline:0; background:transparent; color:var(--text-primary); font:700 .86rem 'Outfit',sans-serif; }
+    .receipt-search input::placeholder { color:var(--text-muted); font-weight:500; }
+    .receipt-search button { display:grid; width:37px; height:37px; padding:0; place-items:center; border:0; border-radius:11px; background:var(--accent-cyan); color:#fff; }
+    .receipt-filter-row { display:flex; gap:.5rem; margin-bottom:.85rem; overflow-x:auto; scrollbar-width:none; }
+    .receipt-filter-row::-webkit-scrollbar { display:none; }
+    .receipt-filter-chip { display:inline-flex; min-height:34px; align-items:center; gap:.35rem; padding:0 .76rem; flex:0 0 auto; border:1px solid var(--card-border); border-radius:999px; background:var(--card-bg); color:var(--text-muted); text-decoration:none; font-size:.74rem; font-weight:800; white-space:nowrap; }
+    .receipt-filter-chip.is-active { border-color:var(--accent-cyan); background:rgba(2,132,199,.13); color:var(--accent-cyan); }
+    .receipt-filter-chip--refund.is-active { border-color:var(--accent-red); background:rgba(239,68,68,.1); color:var(--accent-red); }
+    .receipt-filter-button { margin-left:auto; }
+    .receipt-advanced { display:none; grid-template-columns:1fr 1fr; gap:.55rem; margin:-.1rem 0 .9rem; padding:.7rem; border:1px solid var(--card-border); border-radius:15px; background:var(--card-bg); }
+    .receipt-advanced.is-open { display:grid; }
+    .receipt-advanced select { min-width:0; min-height:41px; border-radius:12px; }
+    .receipt-advanced .btn { grid-column:span 2; min-height:39px; border-radius:12px; }
+    .receipts-list-head { display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin:.3rem 0 .65rem; }
+    .receipts-list-head h2 { margin:0; color:var(--text-primary); font:800 .95rem/1.2 'Outfit',sans-serif; }
+    .receipts-list-head span { color:var(--text-muted); font-size:.72rem; }
+    .receipt-list { display:flex; flex-direction:column; gap:.7rem; }
+    .receipt-card { position:relative; overflow:hidden; border:1px solid var(--card-border); border-radius:22px; background:var(--card-bg); box-shadow:var(--shadow-xs); animation:rise .35s ease both; }
+    .receipt-card.is-completed { border-color:rgba(56,189,248,.19); }
+    .receipt-card.is-refunded { border-color:rgba(239,68,68,.68); box-shadow:0 10px 24px rgba(127,29,29,.1); }
+    .receipt-card-head { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+    .receipt-number { overflow:hidden; color:var(--text-primary); font:900 clamp(.98rem,3.4vw,1.08rem)/1.2 'Outfit',sans-serif; letter-spacing:.01em; text-overflow:ellipsis; white-space:nowrap; }
+    .receipt-time { color:var(--text-muted); font:700 .75rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; white-space:nowrap; }
+    .receipt-summary-body { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.45rem .8rem; margin-top:.72rem; }
+    .receipt-meta { display:flex; min-width:0; align-items:center; gap:.45rem; margin:0; color:var(--text-muted); font-size:.84rem; font-weight:700; }
+    .receipt-cashier-avatar { display:grid; width:34px; height:34px; flex:0 0 auto; place-items:center; border-radius:50%; background:linear-gradient(135deg,#0ea5e9,#0284c7); color:#fff; font:900 .76rem/1 'Outfit',sans-serif; }
+    .receipt-meta-name { min-width:0; flex:1 1 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .receipt-payment { display:inline-flex; flex:0 0 auto; align-items:center; gap:.28rem; color:var(--text-muted); font-size:.78rem; font-weight:700; white-space:nowrap; }
+    .receipt-payment::before { color:#94a3b8; content:'·'; }
+    .receipt-total-row { display:flex; align-items:center; justify-content:flex-end; min-width:76px; padding:0; border:0; }
+    .receipt-positions { display:none; }
+    .receipt-total { color:var(--text-primary); font:900 clamp(1.1rem,4vw,1.3rem)/1 'Outfit',sans-serif; letter-spacing:.01em; white-space:nowrap; }
+    .receipt-card.is-refunded .receipt-total { color:var(--text-muted); text-decoration:line-through; text-decoration-thickness:2px; }
+    .receipt-status { display:inline-flex; grid-column:1 / -1; width:max-content; max-width:100%; align-items:center; gap:.3rem; overflow:hidden; padding:.27rem .65rem; border-radius:999px; background:rgba(16,185,129,.14); color:var(--accent-green); font-size:.69rem; font-weight:900; text-overflow:ellipsis; white-space:nowrap; }
+    .receipt-status.is-refunded { background:rgba(239,68,68,.14); color:#fb7171; }
+    .receipt-status.is-other { background:rgba(245,158,11,.1); color:var(--accent-orange); }
+    .receipt-discount { margin-top:.2rem; color:var(--accent-orange); font-size:.66rem; text-align:right; }
+    .receipt-items { margin-top:.68rem; border:1px solid var(--card-border); border-radius:11px; background:var(--glass-card); }
+    .receipt-items summary { display:flex; align-items:center; gap:.45rem; padding:.58rem .65rem; cursor:pointer; color:var(--text-secondary); font-size:.72rem; font-weight:800; list-style:none; }
+    .receipt-items summary::-webkit-details-marker { display:none; }
+    .receipt-items summary::after { margin-left:auto; content:'⌄'; color:var(--accent-cyan); font-size:1rem; }
+    .receipt-items[open] summary::after { transform:rotate(180deg); }
+    .receipt-item-lines { display:flex; flex-direction:column; gap:.35rem; padding:0 .65rem .65rem; color:var(--text-secondary); font-size:.71rem; }
+    .receipt-item-line { display:flex; justify-content:space-between; gap:.75rem; }
+    .receipt-item-line span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .receipt-item-line strong { flex:0 0 auto; color:var(--accent-cyan); }
+    .receipt-actions { display:flex; gap:.45rem; margin-top:.68rem; }
+    .receipt-actions .btn { min-height:37px; padding:.4rem .58rem; border-radius:11px; font-size:.72rem; }
+    .receipt-actions .receipt-print { flex:1; }
+    .receipt-delete { flex:0 0 auto; }
+    .receipts-empty { padding:2.8rem 1rem; border:1px dashed var(--card-border); border-radius:18px; color:var(--text-muted); text-align:center; }
+    .receipts-empty i { display:block; margin-bottom:.65rem; color:var(--accent-cyan); font-size:2rem; opacity:.55; }
+    .receipt-pagination { display:flex; align-items:center; justify-content:space-between; gap:.7rem; margin-top:.9rem; padding:.75rem; border:1px solid var(--card-border); border-radius:15px; background:var(--card-bg); color:var(--text-muted); font-size:.72rem; }
+    .receipt-pagination-links { display:flex; gap:.4rem; }
+    .receipt-pagination .btn { min-height:35px; padding:.35rem .6rem; font-size:.72rem; }
+    .receipt-hero { position:relative; overflow:hidden; min-height:154px; margin-bottom:.75rem; padding:1rem; border:1px solid rgba(56,189,248,.18); border-radius:21px; background:linear-gradient(135deg,#092a50 0%,#101d3b 52%,#24113e 100%); color:#fff; box-shadow:0 14px 30px rgba(2,132,199,.14); }
+    .receipt-hero::after { position:absolute; top:-65px; right:-46px; width:178px; height:178px; border:23px solid rgba(56,189,248,.12); border-radius:50%; content:''; }
+    .receipt-hero-label { position:relative; z-index:1; color:rgba(255,255,255,.64); font-size:.72rem; font-weight:700; }
+    .receipt-hero-total { position:relative; z-index:1; margin:.52rem 0 .25rem; font:900 clamp(1.65rem,8vw,2.2rem)/1 'Outfit',sans-serif; letter-spacing:-.04em; }
+    .receipt-hero-subtitle { position:relative; z-index:1; color:rgba(255,255,255,.68); font-size:.7rem; }
+    .receipt-metrics { position:absolute; z-index:2; right:.85rem; bottom:.8rem; display:flex; gap:.4rem; }
+    .receipt-metric { min-width:66px; padding:.45rem .52rem; border:1px solid rgba(255,255,255,.14); border-radius:11px; background:rgba(5,12,29,.38); backdrop-filter:blur(8px); }
+    .receipt-metric strong { display:block; font:800 .9rem/1 'Outfit',sans-serif; }
+    .receipt-metric span { display:block; margin-top:.22rem; color:rgba(255,255,255,.6); font-size:.58rem; font-weight:700; }
+    .receipt-expand > summary { display:block; padding:1rem 1.1rem .95rem; cursor:pointer; list-style:none; }
+    .receipt-expand > summary::-webkit-details-marker { display:none; }
+    .receipt-card-head { padding-right:0; }
+    .receipt-card-head::after { display:none; }
+    .receipt-expand[open] .receipt-card-head::after { transform:rotate(180deg); }
+    .receipt-expanded { padding:0 1.1rem 1rem; border-top:1px solid var(--card-border); }
+    .receipt-expanded .receipt-items { margin-top:.65rem; }
+    .receipt-items-head { display:flex; align-items:center; gap:.45rem; padding:.58rem .65rem; color:var(--text-secondary); font-size:.72rem; font-weight:800; }
+    .receipt-actions { margin-top:.6rem; }
+    .modal-box-responsive { width:100%; max-width:min(480px,calc(100vw - 32px)); margin:1rem; max-height:calc(100dvh - 2rem); overflow-y:auto; border-radius:var(--radius-xl); }
+    @media (min-width:560px) and (max-width:1200px) { body.receipts-page .dacar-bottom-nav { width:calc(100% - 2rem)!important; max-width:760px!important; } .receipt-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); } }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="orders-page-header">
-    <div>
-        <h1 style="font-size: 1.4rem; font-weight: 800; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-            {% if user.is_admin_user %}
-            <i class="fa-solid fa-receipt" style="color: var(--accent-cyan);"></i> Все чеки и продажи магазина
-            {% else %}
-            <i class="fa-solid fa-user-clock" style="color: var(--accent-orange);"></i> Моя история продаж
-            <span class="badge badge-orange"><i class="fa-solid fa-lock"></i> Изолировано</span>
-            {% endif %}
-            <button type="button" class="pos-help-btn" id="ordersHelpBtn" title="Справка по чекам и возвратам" onclick="openOrdersHelpModal()">
-                <i class="fa-solid fa-question"></i>
-            </button>
-        </h1>
-        <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 3px;">
-            {% if user.is_admin_user %}
-            Полный реестр операций всех кассиров, финансовый аудит и возвраты.
-            {% else %}
-            Отображаются проведенные вами чеки за текущий день.
-            {% endif %}
-        </p>
-    </div>
-    <a href="#" class="btn btn-primary" style="font-weight: 700;"><i class="fa-solid fa-cash-register"></i> <span>К кассе</span></a>
-</div>
+<div class="receipts-shell">
+    <header class="receipts-topbar">
+        <div class="receipts-title"><h1>{% if user.is_admin_user %}Чеки{% else %}Мои чеки{% endif %}</h1></div>
+        <div class="receipt-top-actions"><button type="button" class="receipt-icon-button haptic-press" onclick="toggleDacarTheme()" aria-label="Переключить тему"><i class="fa-solid fa-moon" data-dacar-theme-icon style="color:#f59e0b;"></i></button><button type="button" class="receipt-icon-button haptic-press" onclick="openOrdersHelpModal()" aria-label="Справка по чекам"><i class="fa-solid fa-question"></i></button></div>
+    </header>
 
-<!-- FILTERS -->
-<div class="dacar-card orders-filter-card" style="margin-bottom: 1rem;">
-    <form method="GET" class="orders-filter-form">
-        <div class="orders-filter-search">
-            <input type="text" name="q" value="{{ search|default:'' }}" class="form-control" placeholder="Поиск по № чека..." autocomplete="off">
-        </div>
-        <div class="orders-filter-select">
-            <select name="status" class="form-control" onchange="this.form.submit()">
-                <option value="">Все статусы</option>
-                {% for st_val, st_lbl in statuses %}
-                <option value="{{ st_val }}" {% if status_filter == st_val %}selected{% endif %}>{{ st_lbl }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="orders-filter-select">
-            <select name="payment_method" class="form-control" onchange="this.form.submit()">
-                <option value="">Все виды оплаты</option>
-                {% for pm_val, pm_lbl in payment_methods %}
-                <option value="{{ pm_val }}" {% if payment_filter == pm_val %}selected{% endif %}>{{ pm_lbl }}</option>
-                {% endfor %}
-            </select>
-        </div>
+    <section class="receipt-hero" aria-label="Сводка по чекам">
+        <div class="receipt-hero-label">Сумма чеков за выбранный период</div>
+        <div class="receipt-hero-total">{{ order_stats.total_amount|default:0|floatformat:0 }} ₸</div>
+        <div class="receipt-hero-subtitle">Обновляется после каждой продажи или возврата</div>
+        <div class="receipt-metrics"><div class="receipt-metric"><strong>{{ order_stats.receipt_count|default:0 }}</strong><span>чеков</span></div><div class="receipt-metric"><strong>{{ order_stats.refunded_count|default:0 }}</strong><span>возвратов</span></div></div>
+    </section>
 
-        <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> <span>Найти</span></button>
-        {% if search or status_filter or payment_filter %}
-        <a href="{% url 'm_sales_orders_list' %}" class="btn btn-secondary" title="Сбросить"><i class="fa-solid fa-xmark"></i> <span>Сброс</span></a>
-        {% endif %}
-    </form>
-</div>
+    <form method="GET" class="receipt-search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" name="q" value="{{ search|default:'' }}" placeholder="Номер чека, штрихкод или кассир" autocomplete="off"><input type="hidden" name="status" value="{{ status_filter|default:'' }}"><input type="hidden" name="payment_method" value="{{ payment_filter|default:'' }}"><button type="submit" class="haptic-press" aria-label="Найти"><i class="fa-solid fa-arrow-right"></i></button></form>
 
-<!-- ORDERS CONTAINER -->
-<div class="dacar-card orders-list-card">
-    <!-- DESKTOP TABLE VIEW (>= 768px) -->
-    <div class="table-responsive orders-table-wrapper">
-        <table class="dacar-table">
-            <thead>
-                <tr>
-                    <th>№ Чека</th>
-                    <th>Дата и время</th>
-                    <th>Кассир</th>
-                    <th>Оплата</th>
-                    <th>Поз.</th>
-                    <th>Сумма</th>
-                    <th>Скидка</th>
-                    {% if user.is_admin_user %}
-                    <th>Прибыль</th>
-                    {% endif %}
-                    <th>Статус</th>
-                    <th style="text-align: right;">Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for order in orders %}
-                <tr>
-                    <td style="font-weight: 800; color: var(--accent-cyan); font-family: monospace; font-size: 0.9rem;">{{ order.order_number }}</td>
-                    <td style="color: var(--text-muted); font-size: 0.8rem;">{{ order.created_at|date:"d.m.Y H:i" }}</td>
-                    <td style="font-weight: 600;">{% if order.cashier %}{{ order.cashier.get_full_name|default:order.cashier.username }}{% else %}Удален{% endif %}</td>
-                    <td><span class="badge badge-cyan">{{ order.get_payment_method_display }}</span></td>
-                    <td style="text-align: center;">{{ order.items.count }}</td>
-                    <td style="font-weight: 800; color: var(--text-main); font-size: 1rem;">{{ order.total_amount|floatformat:0 }} ₸</td>
-                    <td style="color: var(--text-muted);">{{ order.discount_amount|floatformat:0 }} ₸</td>
-                    
-                    {% if user.is_admin_user %}
-                    <td style="color: var(--accent-green); font-weight: 700;">+{{ order.gross_profit|floatformat:0 }} ₸</td>
-                    {% endif %}
+    <nav class="receipt-filter-row" aria-label="Статус чеков">
+        <a href="{% url 'm_sales_orders_list' %}" class="receipt-filter-chip {% if not status_filter and not payment_filter and not search %}is-active{% endif %}"><i class="fa-solid fa-layer-group"></i> Все</a>
+        <a href="?status=COMPLETED" class="receipt-filter-chip {% if status_filter == 'COMPLETED' %}is-active{% endif %}"><i class="fa-solid fa-check"></i> Проведённые</a>
+        <a href="?status=REFUNDED" class="receipt-filter-chip receipt-filter-chip--refund {% if status_filter == 'REFUNDED' %}is-active{% endif %}"><i class="fa-solid fa-rotate-left"></i> Возвраты</a>
+        <button type="button" class="receipt-filter-chip receipt-filter-button haptic-press" onclick="toggleReceiptFilters()"><i class="fa-solid fa-sliders"></i> Фильтр</button>
+    </nav>
 
-                    <td>
-                        {% if order.status == 'COMPLETED' %}
-                        <span class="badge badge-green"><i class="fa-solid fa-check"></i> Проведен</span>
-                        {% elif order.status == 'REFUNDED' %}
-                        <div style="display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
-                            <span class="badge badge-red"><i class="fa-solid fa-rotate-left"></i> Возвращен</span>
-                            <button type="button" class="btn btn-secondary" style="padding: 0.15rem 0.45rem; font-size: 0.7rem; border-color: var(--accent-orange); color: var(--accent-orange);" onclick="showRefundReasonModal('{{ order.order_number }}', '{{ order.refund_reason|default:"Причина не указана"|escapejs }}', '{% if order.refunded_by %}{{ order.refunded_by.get_full_name|default:order.refunded_by.username|escapejs }}{% else %}Удален{% endif %}', '{{ order.refunded_at|date:"d.m.Y H:i" }}', '{{ order.total_amount|floatformat:0 }}')">
-                                <i class="fa-solid fa-circle-info"></i> Причина
-                            </button>
-                        </div>
-                        {% else %}
-                        <span class="badge badge-orange">{{ order.get_status_display }}</span>
-                        {% endif %}
-                    </td>
-                    <td style="text-align: right;">
-                        <div style="display: inline-flex; gap: 0.35rem; align-items: center;">
-                            <a href="{% url 'm_order_print' order.id %}" target="_blank" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" title="Распечатать чек">
-                                <i class="fa-solid fa-print"></i> Печать
-                            </a>
+    <form method="GET" id="receiptAdvancedFilters" class="receipt-advanced {% if payment_filter %}is-open{% endif %}"><input type="hidden" name="q" value="{{ search|default:'' }}"><select name="status" class="form-control"><option value="">Все статусы</option>{% for st_val, st_lbl in statuses %}<option value="{{ st_val }}" {% if status_filter == st_val %}selected{% endif %}>{{ st_lbl }}</option>{% endfor %}</select><select name="payment_method" class="form-control"><option value="">Все виды оплаты</option>{% for pm_val, pm_lbl in payment_methods %}<option value="{{ pm_val }}" {% if payment_filter == pm_val %}selected{% endif %}>{{ pm_lbl }}</option>{% endfor %}</select><button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Применить</button></form>
 
-                            {% if order.status == 'COMPLETED' %}
-                            <button type="button" onclick="openRefundModal({{ order.id }}, '{{ order.order_number }}', '{{ order.total_amount|floatformat:0 }}')" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" title="Оформить возврат">
-                                <i class="fa-solid fa-rotate-left"></i> Возврат
-                            </button>
-                            {% endif %}
-
-                            {% if user.is_admin_user %}
-                            <form method="POST" action="{% url 'm_order_delete' order.id %}" style="display: inline;" onsubmit="return confirm('ВНИМАНИЕ! Вы собираетесь навсегда аннулировать чек {{ order.order_number }}. Это действие запишется в журнал аудита.')">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: rgba(239, 68, 68, 0.1);" title="Удалить чек (Только админ)">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            </form>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="{% if user.is_admin_user %}10{% else %}9{% endif %}" style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                        <i class="fa-solid fa-receipt" style="font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.4;"></i>
-                        <p style="font-weight: 600;">Чеки не найдены</p>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- MOBILE CARDS VIEW (< 768px) -->
-    <div class="orders-cards-mobile">
+    <div class="receipts-list-head"><h2>Список чеков</h2><span>{{ page_obj.paginator.count }} всего{% if page_obj.paginator.num_pages > 1 %} · стр. {{ page_obj.number }}{% endif %}</span></div>
+    <section class="receipt-list">
         {% for order in orders %}
-        <div class="order-mobile-card">
-            <!-- Card Header -->
-            <div class="order-card-header">
-                <div>
-                    <div class="order-card-num">{{ order.order_number }}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
-                        <i class="fa-regular fa-clock"></i> {{ order.created_at|date:"d.m.Y H:i" }}
+        <article class="receipt-card {% if order.status == 'REFUNDED' %}is-refunded{% elif order.status == 'COMPLETED' %}is-completed{% endif %}">
+            <details class="receipt-expand">
+                <summary>
+                    <div class="receipt-card-head"><div class="receipt-number">{{ order.order_number }}</div><div class="receipt-time">{{ order.created_at|date:"H:i" }}</div></div>
+                    <div class="receipt-summary-body">
+                        <div class="receipt-meta">
+                            <span class="receipt-cashier-avatar">{% if order.cashier %}{{ order.cashier.first_name|default:order.cashier.username|slice:":1"|upper }}{{ order.cashier.last_name|slice:":1"|upper }}{% else %}?{% endif %}</span>
+                            <span class="receipt-meta-name">{% if order.cashier %}{{ order.cashier.get_full_name|default:order.cashier.username }}{% else %}Удален{% endif %}</span>
+                            <span class="receipt-payment"><i class="fa-solid {% if order.payment_method == 'CASH' %}fa-money-bill-wave{% elif order.payment_method == 'CARD' %}fa-credit-card{% else %}fa-qrcode{% endif %}"></i> {{ order.get_payment_method_display }}</span>
+                        </div>
+                        <div class="receipt-total-row"><div><div class="receipt-total">{{ order.total_amount|floatformat:0 }} ₸</div>{% if order.discount_amount > 0 and order.status != 'REFUNDED' %}<div class="receipt-discount">Скидка −{{ order.discount_amount|floatformat:0 }} ₸</div>{% endif %}</div></div>
+                        {% if order.status == 'COMPLETED' %}<span class="receipt-status"><i class="fa-solid fa-check"></i> Проведён</span>{% elif order.status == 'REFUNDED' %}<span class="receipt-status is-refunded"><i class="fa-solid fa-rotate-left"></i> Возврат · {{ order.refund_reason|default:"Причина не указана" }}</span>{% else %}<span class="receipt-status is-other">{{ order.get_status_display }}</span>{% endif %}
                     </div>
-                </div>
-                <div>
-                    {% if order.status == 'COMPLETED' %}
-                    <span class="badge badge-green" style="font-size: 0.75rem;"><i class="fa-solid fa-check"></i> Проведен</span>
-                    {% elif order.status == 'REFUNDED' %}
-                    <span class="badge badge-red" style="font-size: 0.75rem;"><i class="fa-solid fa-rotate-left"></i> Возврат</span>
-                    {% else %}
-                    <span class="badge badge-orange" style="font-size: 0.75rem;">{{ order.get_status_display }}</span>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Details Grid -->
-            <div class="order-card-details">
-                <div>
-                    <div class="order-detail-label">Кассир:</div>
-                    <div style="font-weight: 600; color: var(--text-main);">{% if order.cashier %}{{ order.cashier.get_full_name|default:order.cashier.username }}{% else %}Удален{% endif %}</div>
-                </div>
-                <div>
-                    <div class="order-detail-label">Оплата:</div>
-                    <div><span class="badge badge-cyan" style="font-size: 0.75rem;">{{ order.get_payment_method_display }}</span></div>
-                </div>
-            </div>
-
-            <!-- Total Sum Row -->
-            <div class="order-card-total-row">
-                <div>
-                    <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Итого ({{ order.items.count }} поз):</span>
-                    {% if order.discount_amount > 0 %}
-                    <div style="font-size: 0.72rem; color: var(--accent-orange);">Скидка: -{{ order.discount_amount|floatformat:0 }} ₸</div>
-                    {% endif %}
-                </div>
-                <div class="order-card-total-sum">{{ order.total_amount|floatformat:0 }} ₸</div>
-            </div>
-
-            <!-- Items Breakdown Accordion/Box -->
-            <div style="background: var(--glass-card); padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--card-border);">
-                <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">Товары в чеке:</div>
-                {% for it in order.items.all %}
-                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 2px;">
-                    <span style="color: var(--text-main);">{{ it.product.name|default:"Удалённый товар" }} &times; {{ it.quantity|floatformat:0 }} {{ it.product.unit|default:"шт" }}</span>
-                    <strong style="color: var(--accent-cyan);">{{ it.total_amount|floatformat:0 }} ₸</strong>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="order-card-actions">
-                {% if order.status == 'COMPLETED' and user.is_admin_user or order.status == 'COMPLETED' and user.role == 'MANAGER' %}
-                <button type="button" onclick="openRefundModal({{ order.id }}, '{{ order.order_number }}', '{{ order.total_amount|floatformat:0 }}')" class="btn btn-danger" style="font-weight: 700;">
-                    <i class="fa-solid fa-rotate-left"></i> Оформить возврат
-                </button>
-                {% elif order.status == 'REFUNDED' %}
-                <button type="button" class="btn btn-secondary" style="border-color: var(--accent-orange); color: var(--accent-orange); font-weight: 700;" onclick="showRefundReasonModal('{{ order.order_number }}', '{{ order.refund_reason|default:"Причина не указана"|escapejs }}', '{% if order.refunded_by %}{{ order.refunded_by.get_full_name|default:order.refunded_by.username|escapejs }}{% else %}Удален{% endif %}', '{{ order.refunded_at|date:"d.m.Y H:i" }}', '{{ order.total_amount|floatformat:0 }}')">
-                    <i class="fa-solid fa-circle-info"></i> Причина возврата
-                </button>
-                {% endif %}
-
-                {% if user.is_admin_user %}
-                <form method="POST" action="{% url 'm_order_delete' order.id %}" style="flex: 0 0 auto;" onsubmit="return confirm('ВНИМАНИЕ! Вы собираетесь навсегда аннулировать чек {{ order.order_number }}. Это действие запишется в журнал аудита.')">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-secondary" style="color: var(--accent-red); padding: 8px 12px;" title="Аннулировать чек (Только админ)">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </form>
-                {% endif %}
-            </div>
-        </div>
+                </summary>
+                <div class="receipt-expanded"><div class="receipt-items"><div class="receipt-items-head"><i class="fa-solid fa-basket-shopping"></i> Состав чека</div><div class="receipt-item-lines">{% for it in order.items.all %}<div class="receipt-item-line"><span>{{ it.product.name|default:"Удалённый товар" }} × {{ it.quantity|floatformat:0 }} {{ it.product.unit|default:"шт" }}</span><strong>{{ it.total_amount|floatformat:0 }} ₸</strong></div>{% endfor %}</div></div><div class="receipt-actions"><a href="{% url 'm_order_print' order.id %}" target="_blank" class="btn btn-secondary receipt-print"><i class="fa-solid fa-print"></i> Печать</a>{% if order.status == 'COMPLETED' and user.is_admin_user or order.status == 'COMPLETED' and user.role == 'MANAGER' %}<button type="button" onclick="openRefundModal({{ order.id }}, '{{ order.order_number }}', '{{ order.total_amount|floatformat:0 }}')" class="btn btn-danger"><i class="fa-solid fa-rotate-left"></i> Возврат</button>{% elif order.status == 'REFUNDED' %}<button type="button" class="btn btn-secondary" onclick="showRefundReasonModal('{{ order.order_number }}', '{{ order.refund_reason|default:"Причина не указана"|escapejs }}', '{% if order.refunded_by %}{{ order.refunded_by.get_full_name|default:order.refunded_by.username|escapejs }}{% else %}Удален{% endif %}', '{{ order.refunded_at|date:"d.m.Y H:i" }}', '{{ order.total_amount|floatformat:0 }}')"><i class="fa-solid fa-circle-info"></i> Причина</button>{% endif %}{% if user.is_admin_user %}<form method="POST" action="{% url 'm_order_delete' order.id %}" class="receipt-delete" onsubmit="return confirm('ВНИМАНИЕ! Вы собираетесь навсегда аннулировать чек {{ order.order_number }}. Это действие запишется в журнал аудита.')">{% csrf_token %}<button type="submit" class="btn btn-secondary" style="color:var(--accent-red);" title="Аннулировать чек"><i class="fa-solid fa-trash-can"></i></button></form>{% endif %}</div></div>
+            </details>
+        </article>
         {% empty %}
-        <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
-            <i class="fa-solid fa-receipt" style="font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.4;"></i>
-            <p style="font-weight: 600;">Чеки не найдены</p>
-        </div>
+        <div class="receipts-empty"><i class="fa-solid fa-receipt"></i><strong>Чеки не найдены</strong><p style="margin:.35rem 0 0; font-size:.78rem;">Измените поиск или выберите другой фильтр.</p></div>
         {% endfor %}
-    </div>
+    </section>
 
-    <!-- PAGINATION -->
-    {% if page_obj.has_other_pages %}
-    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--card-border); margin-top: 1rem; flex-wrap: wrap; gap: 0.75rem;">
-        <div style="font-size: 0.82rem; color: var(--text-muted);">
-            Стр. <strong>{{ page_obj.number }}</strong> из <strong>{{ page_obj.paginator.num_pages }}</strong> (Всего: <strong>{{ page_obj.paginator.count }}</strong>)
-        </div>
-
-        <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap;">
-            {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&q={{ search|default:'' }}&status={{ status_filter|default:'' }}&payment_method={{ payment_filter|default:'' }}" class="btn btn-secondary" style="padding: 0.35rem 0.7rem; font-size: 0.82rem;">
-                &laquo; Назад
-            </a>
-            {% endif %}
-
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                <span class="btn btn-primary" style="padding: 0.35rem 0.7rem; font-size: 0.82rem; pointer-events: none;">{{ num }}</span>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?page={{ num }}&q={{ search|default:'' }}&status={{ status_filter|default:'' }}&payment_method={{ payment_filter|default:'' }}" class="btn btn-secondary" style="padding: 0.35rem 0.7rem; font-size: 0.82rem;">
-                    {{ num }}
-                </a>
-                {% endif %}
-            {% endfor %}
-
-            {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&q={{ search|default:'' }}&status={{ status_filter|default:'' }}&payment_method={{ payment_filter|default:'' }}" class="btn btn-secondary" style="padding: 0.35rem 0.7rem; font-size: 0.82rem;">
-                Вперед &raquo;
-            </a>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
+    {% if page_obj.has_other_pages %}<nav class="receipt-pagination"><span>Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span><span class="receipt-pagination-links">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&q={{ search|default:'' }}&status={{ status_filter|default:'' }}&payment_method={{ payment_filter|default:'' }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i></a>{% endif %}{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&q={{ search|default:'' }}&status={{ status_filter|default:'' }}&payment_method={{ payment_filter|default:'' }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-right"></i></a>{% endif %}</span></nav>{% endif %}
 </div>
 
 <!-- REFUND CREATION MODAL -->
@@ -497,7 +168,7 @@
 
             <div style="margin-bottom: 1.25rem;">
                 <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Причина возврата (Обязательно) *</label>
-                <input type="text" name="refund_reason" class="form-control" required placeholder="Например: Ошибка кассира / Брак товара / Отказ клиента">
+                <input type="text" name="refund_reason" class="form-control" required minlength="4" placeholder="Например: Ошибка кассира / Брак товара / Отказ клиента">
             </div>
 
             <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
@@ -607,6 +278,11 @@
 
 {% block extra_scripts %}
 <script>
+    function toggleReceiptFilters() {
+        const filters = document.getElementById('receiptAdvancedFilters');
+        if (filters) filters.classList.toggle('is-open');
+    }
+
     function openOrdersHelpModal() {
         const modal = document.getElementById('ordersHelpModal');
         if (modal) {

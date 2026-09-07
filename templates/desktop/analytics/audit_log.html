@@ -1,158 +1,50 @@
 {% extends 'desktop/base.html' %}
 
-{% block title %}Журнал аудита (Audit Trail) — DACAR{% endblock %}
+{% block title %}Журнал аудита — DACAR{% endblock %}
 
 {% block extra_head %}
 <style>
-    .audit-page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 1.25rem;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-    .audit-filter-form {
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-    .audit-filter-search { flex: 1; min-width: 220px; }
-    .audit-filter-select { width: 200px; }
-    
-    @media (max-width: 768px) {
-        .col-ip { display: none; }
-        .audit-page-header h1 { font-size: 1.2rem; }
-    }
-    @media (max-width: 480px) {
-        .col-user { display: none; }
-        .audit-filter-search { min-width: 100%; flex: none; }
-        .audit-filter-select { width: 100%; }
-    }
+    .audit-v2 { max-width:1240px; margin:0 auto; }
+    .audit-v2-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin:.1rem 0 .85rem; }
+    .audit-v2-title { margin:0; color:var(--text-main); font:800 1.3rem/1.15 'Outfit',sans-serif; letter-spacing:-.025em; }
+    .audit-v2-subtitle { margin:.22rem 0 0; color:var(--text-muted); font-size:.8rem; font-weight:600; }
+    .audit-date { display:flex; align-items:center; gap:.45rem; min-height:40px; padding:0 .72rem; border:1px solid var(--card-border); border-radius:11px; background:var(--card-bg); color:var(--text-muted); font-size:.8rem; font-weight:700; }
+    .audit-date input { width:122px; border:0; outline:0; background:transparent; color:var(--text-main); font:inherit; }
+
+    .audit-filter-bar { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.42rem .5rem; margin-bottom:.7rem; border:1px solid var(--card-border); border-radius:14px; background:var(--card-bg); box-shadow:var(--shadow-xs); }
+    .audit-search-form { display:flex; align-items:center; gap:.5rem; flex:1; min-width:0; }.audit-search-form input { min-width:205px; width:min(320px,100%); }.audit-search-form select { width:150px; }
+    .audit-search-form .form-control,.audit-search-form .btn { height:42px; min-height:42px; padding-top:.35rem; padding-bottom:.35rem; font-size:.8rem; }
+    .audit-tabs { display:flex; align-items:center; gap:.4rem; overflow-x:auto; white-space:nowrap; }.audit-tab { display:inline-flex; align-items:center; gap:.35rem; padding:.5rem .74rem; border:1px solid var(--card-border); border-radius:999px; background:var(--card-bg); color:var(--text-muted); text-decoration:none; font-size:.75rem; font-weight:800; }.audit-tab:hover { border-color:var(--accent-cyan); color:var(--accent-cyan); }.audit-tab.is-active { border-color:#111827; background:#111827; color:#fff; }.audit-tab.sale i { color:var(--accent-green); }.audit-tab.refund i { color:var(--accent-red); }.audit-tab.in i { color:var(--accent-cyan); }.audit-tab.out i { color:var(--accent-orange); }.audit-tab.user i { color:var(--accent-purple); }.audit-tab.is-active i { color:#fff; }
+
+    .audit-timeline { position:relative; padding:0 0 0 4.2rem; }.audit-timeline::before { position:absolute; top:1.15rem; bottom:1.15rem; left:1.82rem; width:2px; border-radius:99px; background:var(--card-border); content:''; }
+    .audit-event { position:relative; margin-bottom:.62rem; }.audit-dot { position:absolute; top:1.02rem; left:-3.15rem; display:grid; width:38px; height:38px; place-items:center; border-radius:50%; color:var(--accent-cyan); background:color-mix(in srgb,var(--accent-cyan) 10%,var(--card-bg)); font-size:.88rem; z-index:1; }.audit-event.sale .audit-dot { color:var(--accent-green); background:color-mix(in srgb,var(--accent-green) 11%,var(--card-bg)); }.audit-event.refund .audit-dot { color:var(--accent-red); background:color-mix(in srgb,var(--accent-red) 11%,var(--card-bg)); }.audit-event.in .audit-dot { color:var(--accent-cyan); background:color-mix(in srgb,var(--accent-cyan) 11%,var(--card-bg)); }.audit-event.out .audit-dot { color:var(--accent-orange); background:color-mix(in srgb,var(--accent-orange) 11%,var(--card-bg)); }.audit-event.user .audit-dot { color:var(--accent-purple); background:color-mix(in srgb,var(--accent-purple) 11%,var(--card-bg)); }
+    .audit-event-card { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.7rem; min-height:70px; padding:.82rem 1rem; border:1px solid var(--card-border); border-radius:15px; background:var(--card-bg); box-shadow:var(--shadow-xs); transition:border-color .15s ease,transform .15s ease; }.audit-event-card:hover { border-color:color-mix(in srgb,var(--accent-cyan) 55%,var(--card-border)); transform:translateX(2px); }.audit-event.refund .audit-event-card { border-left:3px solid var(--accent-red); padding-left:calc(1rem - 2px); }
+    .audit-event-description { overflow:hidden; color:var(--text-main); font-size:.84rem; font-weight:800; line-height:1.3; text-overflow:ellipsis; white-space:nowrap; }.audit-event-meta { display:flex; align-items:center; gap:.45rem; margin-top:.28rem; overflow:hidden; color:var(--text-muted); font-size:.69rem; font-weight:600; white-space:nowrap; }.audit-event-meta span { overflow:hidden; text-overflow:ellipsis; }.audit-event-meta i { opacity:.8; }.audit-event-time { align-self:start; color:var(--text-muted); font-size:.7rem; font-weight:650; white-space:nowrap; }
+    .audit-empty { margin-left:-4.2rem; padding:4rem 1rem; text-align:center; color:var(--text-muted); }.audit-empty i { color:var(--accent-cyan); font-size:2rem; opacity:.5; }.audit-empty p { margin:.65rem 0 .15rem; color:var(--text-main); font-weight:800; }
+    .audit-pagination { display:flex; justify-content:space-between; align-items:center; gap:.75rem; margin:.8rem 0 0 4.2rem; padding:.7rem .9rem; border:1px solid var(--card-border); border-radius:12px; background:var(--card-bg); color:var(--text-muted); font-size:.75rem; }.audit-pages { display:flex; gap:.3rem; }.audit-pages a,.audit-pages span { min-width:28px; padding:.28rem .42rem; border:1px solid var(--card-border); border-radius:7px; color:var(--text-muted); text-align:center; text-decoration:none; font-weight:750; }.audit-pages span { color:#fff; background:var(--accent-cyan); border-color:var(--accent-cyan); }
+    html[data-theme="dark"] .audit-date,html[data-theme="dark"] .audit-search-form .form-control,html[data-theme="dark"] .audit-search-form .btn.btn-secondary { background:#121C2E; border-color:#2A3B55; color:#E2E8F0; } html[data-theme="dark"] .audit-search-form .form-control::placeholder { color:#8EA0BA; } html[data-theme="dark"] .audit-search-form select option { background:#121C2E; color:#F1F5F9; } html[data-theme="dark"] .audit-tab.is-active { background:#E2E8F0; border-color:#E2E8F0; color:#111827; }
+    @media (max-width:980px) { .audit-filter-bar { align-items:stretch; flex-direction:column; }.audit-tabs { justify-content:flex-end; } }
+    @media (max-width:650px) { .audit-v2-header { flex-direction:column; }.audit-date { width:100%; justify-content:center; }.audit-search-form { flex-wrap:wrap; }.audit-search-form input,.audit-search-form select { width:100%; }.audit-search-form .btn { flex:1; }.audit-tabs { justify-content:flex-start; }.audit-timeline { padding-left:3.25rem; }.audit-timeline::before { left:1.38rem; }.audit-dot { left:-2.55rem; width:34px; height:34px; }.audit-event-card { padding:.72rem .8rem; }.audit-event-description { white-space:normal; }.audit-event-meta { gap:.3rem; }.audit-event-time { font-size:.64rem; }.audit-pagination { align-items:flex-start; flex-direction:column; margin-left:3.25rem; }.audit-empty { margin-left:-3.25rem; } }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="audit-page-header">
-    <div>
-        <h1 style="font-size: 1.4rem; font-weight: 800; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-            <i class="fa-solid fa-shield-halved" style="color: var(--accent-cyan);"></i> Журнал аудита действий
-        </h1>
-        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 3px;">
-            Неудаляемая история всех ключевых операций. Защищено от редактирования.
-        </p>
-    </div>
-</div>
+<main class="audit-v2">
+    <header class="audit-v2-header"><div><h1 class="audit-v2-title">Журнал аудита</h1><p class="audit-v2-subtitle">Неизменяемая история всех критичных действий в системе</p></div><form method="get"><label class="audit-date"><i class="fa-regular fa-calendar"></i><input type="date" name="date" value="{{ date_filter }}" onchange="this.form.submit()" aria-label="Дата событий"></label></form></header>
 
-<!-- Filters -->
-<div class="dacar-card" style="margin-bottom: 1rem;">
-    <form method="GET" class="audit-filter-form">
-        <div class="audit-filter-search">
-            <input type="text" name="q" class="form-control" placeholder="Поиск по описанию..." value="{{ search|default:'' }}">
-        </div>
+    <section class="audit-filter-bar" aria-label="Фильтры аудита">
+        <form method="get" class="audit-search-form">{% if date_filter %}<input type="hidden" name="date" value="{{ date_filter }}">{% endif %}<input type="search" class="form-control" name="q" value="{{ search }}" placeholder="Поиск по описанию или сотруднику"><select class="form-control" name="user_id" aria-label="Сотрудник"><option value="">Все сотрудники</option>{% for audit_user in audit_users %}<option value="{{ audit_user.id }}" {% if user_filter == audit_user.id|stringformat:'i' %}selected{% endif %}>{{ audit_user.get_full_name|default:audit_user.username }}</option>{% endfor %}</select><button class="btn btn-secondary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Найти</button>{% if search or user_filter or action_type or date_filter %}<a href="{% url 'audit_log' %}" class="btn btn-secondary" title="Сбросить"><i class="fa-solid fa-xmark"></i></a>{% endif %}</form>
+        <nav class="audit-tabs" aria-label="Типы событий"><a href="{% url 'audit_log' %}" class="audit-tab {% if not action_type %}is-active{% endif %}">Все</a><a href="?action_type=SALE" class="audit-tab sale {% if action_type == 'SALE' %}is-active{% endif %}"><i class="fa-solid fa-money-bill-wave"></i>Продажи</a><a href="?action_type=REFUND" class="audit-tab refund {% if action_type == 'REFUND' %}is-active{% endif %}"><i class="fa-solid fa-receipt"></i>Возвраты</a><a href="?action_type=STOCK_IN" class="audit-tab in {% if action_type == 'STOCK_IN' %}is-active{% endif %}"><i class="fa-solid fa-arrow-down"></i>Приход</a><a href="?action_type=STOCK_OUT" class="audit-tab out {% if action_type == 'STOCK_OUT' %}is-active{% endif %}"><i class="fa-solid fa-triangle-exclamation"></i>Списание</a><a href="?action_type=USER_ACTION" class="audit-tab user {% if action_type == 'USER_ACTION' %}is-active{% endif %}"><i class="fa-solid fa-user-gear"></i>Персонал</a></nav>
+    </section>
 
-        <div class="audit-filter-select">
-            <select name="action_type" class="form-control" onchange="this.form.submit()">
-                <option value="">Все типы действий</option>
-                {% for code, label in action_types %}
-                <option value="{{ code }}" {% if action_type == code %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> <span>Найти</span></button>
-        {% if search or action_type %}
-        <a href="{% url 'audit_log' %}" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i></a>
-        {% endif %}
-    </form>
-</div>
-
-<!-- Table -->
-<div class="dacar-card">
-    <div class="table-responsive">
-        <table class="dacar-table">
-            <thead>
-                <tr>
-                    <th>Дата и время</th>
-                    <th class="col-user">Сотрудник</th>
-                    <th>Действие</th>
-                    <th>Описание операции</th>
-                    <th class="col-ip">IP адрес</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for log in logs %}
-                <tr>
-                    <td style="font-family: monospace; color: var(--text-muted); font-size: 0.8rem;">
-                        {{ log.created_at|date:"d.m.Y H:i" }}
-                    </td>
-                    <td class="col-user">
-                        <strong style="color: var(--text-main);">
-                            {% if log.user %}{{ log.user.get_full_name|default:log.user.username }}{% else %}Удаленный пользователь{% endif %}
-                        </strong>
-                        {% if log.user %}
-                        <span style="font-size: 0.7rem; color: var(--text-muted); display: block;">{{ log.user.get_role_display }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if log.action_type == 'SALE' %}
-                            <span class="badge badge-green"><i class="fa-solid fa-cart-shopping"></i> Продажа</span>
-                        {% elif log.action_type == 'REFUND' %}
-                            <span class="badge badge-orange"><i class="fa-solid fa-rotate-left"></i> Возврат</span>
-                        {% elif log.action_type == 'STOCK_IN' or log.action_type == 'STOCK_OUT' %}
-                            <span class="badge badge-cyan"><i class="fa-solid fa-boxes-stacked"></i> Склад</span>
-                        {% else %}
-                            <span class="badge badge-secondary"><i class="fa-solid fa-circle-info"></i> {{ log.get_action_type_display }}</span>
-                        {% endif %}
-                    </td>
-                    <td style="color: var(--text-main); font-size: 0.9rem;">
-                        {{ log.description }}
-                    </td>
-                    <td class="col-ip" style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">
-                        {{ log.ip_address|default:"—" }}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                        Записи в журнале аудита не найдены.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    {% if page_obj.has_other_pages %}
-    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--card-border); margin-top: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-        <div style="font-size: 0.85rem; color: var(--text-muted);">
-            Страница <strong>{{ page_obj.number }}</strong> из <strong>{{ page_obj.paginator.num_pages }}</strong> (Всего <strong>{{ page_obj.paginator.count }}</strong> записей)
-        </div>
-
-        <div style="display: flex; gap: 0.35rem; align-items: center;">
-            {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&q={{ search|default:'' }}&action_type={{ action_type|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
-                &laquo; Назад
-            </a>
-            {% endif %}
-
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                <span class="btn btn-primary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem; pointer-events: none;">{{ num }}</span>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?page={{ num }}&q={{ search|default:'' }}&action_type={{ action_type|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
-                    {{ num }}
-                </a>
-                {% endif %}
-            {% endfor %}
-
-            {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&q={{ search|default:'' }}&action_type={{ action_type|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
-                Вперед &raquo;
-            </a>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
-</div>{% endblock %}
+    <section class="audit-timeline" aria-label="События аудита">
+        {% for log in logs %}
+        <article class="audit-event {% if log.action_type == 'SALE' %}sale{% elif log.action_type == 'REFUND' %}refund{% elif log.action_type == 'STOCK_IN' %}in{% elif log.action_type == 'STOCK_OUT' or log.action_type == 'STOCK_ADJUST' %}out{% else %}user{% endif %}">
+            <span class="audit-dot">{% if log.action_type == 'SALE' %}<i class="fa-solid fa-money-bill-wave"></i>{% elif log.action_type == 'REFUND' %}<i class="fa-solid fa-receipt"></i>{% elif log.action_type == 'STOCK_IN' %}<i class="fa-solid fa-arrow-down"></i>{% elif log.action_type == 'STOCK_OUT' or log.action_type == 'STOCK_ADJUST' %}<i class="fa-solid fa-triangle-exclamation"></i>{% elif log.action_type == 'PRODUCT_CREATE' or log.action_type == 'PRODUCT_UPDATE' %}<i class="fa-solid fa-box"></i>{% else %}<i class="fa-solid fa-user-gear"></i>{% endif %}</span>
+            <div class="audit-event-card"><div><div class="audit-event-description" title="{{ log.description }}">{{ log.description }}</div><div class="audit-event-meta"><span><i class="fa-regular fa-user"></i> {% if log.user %}{{ log.user.get_full_name|default:log.user.username }}{% else %}Удалённый пользователь{% endif %}</span>{% if log.user %}<span>· {{ log.user.get_role_display }}</span>{% endif %}<span><i class="fa-solid fa-location-dot"></i> {{ log.ip_address|default:'—' }}</span></div></div><time class="audit-event-time">{{ log.created_at|date:'d.m · H:i' }}</time></div>
+        </article>
+        {% empty %}<div class="audit-empty"><i class="fa-solid fa-shield-halved"></i><p>Записей не найдено</p><small>Измените период или параметры поиска.</small></div>{% endfor %}
+    </section>
+    {% if page_obj.has_other_pages %}<div class="audit-pagination"><span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }} · всего {{ page_obj.paginator.count }} записей</span><div class="audit-pages">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&q={{ search }}&action_type={{ action_type|default:'' }}&user_id={{ user_filter|default:'' }}&date={{ date_filter }}">‹</a>{% endif %}{% for n in page_obj.paginator.page_range %}{% if n == page_obj.number %}<span>{{ n }}</span>{% elif n > page_obj.number|add:'-3' and n < page_obj.number|add:'3' %}<a href="?page={{ n }}&q={{ search }}&action_type={{ action_type|default:'' }}&user_id={{ user_filter|default:'' }}&date={{ date_filter }}">{{ n }}</a>{% endif %}{% endfor %}{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&q={{ search }}&action_type={{ action_type|default:'' }}&user_id={{ user_filter|default:'' }}&date={{ date_filter }}">›</a>{% endif %}</div></div>{% endif %}
+</main>
+{% endblock %}

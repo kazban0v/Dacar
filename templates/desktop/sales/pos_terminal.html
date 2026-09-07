@@ -1304,6 +1304,75 @@
         .products-grid { gap: 0.35rem !important; }
         #quickCashContainer { grid-template-columns: repeat(3, 1fr) !important; }
     }
+    /* ===== DACAR DESKTOP POS 2026 ===== */
+    .main-container:has(.pos-terminal) { max-width:none; padding:0; }
+    .pos-terminal { display:grid; grid-template-rows:66px minmax(0,1fr); width:min(1440px,calc(100% - 2.5rem)); height:calc(100dvh - var(--header-h) - 2.5rem); min-height:620px; margin:1.25rem auto; overflow:hidden; border:1px solid #DDE4EC; border-radius:18px; background:#F7F8FA; box-shadow:0 18px 44px rgba(15,23,42,.12); }
+    .pos-terminal-top { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0 1.4rem; border-bottom:1px solid #DDE4EC; background:#fff; }
+    .pos-terminal-brand,.pos-terminal-meta { display:flex; align-items:center; gap:.75rem; min-width:0; }.pos-terminal-brand i { display:grid; width:34px; height:34px; place-items:center; border-radius:10px; background:#0284C7; color:#fff; }.pos-terminal-brand strong { font:800 1.05rem 'Outfit',sans-serif; color:#0F172A; }
+    .pos-terminal-meta { color:#6B7280; font-size:.84rem; font-weight:700; }.pos-terminal-meta > span { white-space:nowrap; }.pos-shortcut { padding:.32rem .62rem; border:1px solid #DDE4EC; border-radius:9px; background:#F8FAFC; color:#687386; font:800 .78rem 'Inter',sans-serif; cursor:pointer; white-space:nowrap; }.pos-shortcut.pay { border-color:#B9DFF4; background:#EAF7FF; color:#027EBA; }
+    .pos-grid { grid-template-columns:minmax(0,1fr) 430px; gap:0; height:100%; max-height:none; background:#F7F8FA; }
+    .catalog-panel { gap:1rem; padding:1.35rem; overflow:hidden; }.search-bar-container { gap:.65rem; }.search-bar-container .form-control { height:54px!important; border:1px solid #DDE4EC; border-radius:16px; background:#fff; box-shadow:none; font-size:1rem!important; }.scanner-badge { width:auto; height:40px; justify-content:center; padding:0 .8rem; border:0; border-radius:11px; background:#0284C7; color:#fff; font-size:.82rem; }.scanner-badge span { display:inline; }
+    .category-pills { gap:1rem; padding:.1rem .15rem .3rem; overflow-x:auto; scrollbar-width:none; }.category-pills::-webkit-scrollbar { display:none; }.cat-pill { display:flex; flex:0 0 76px; min-height:92px; flex-direction:column; align-items:center; justify-content:flex-start; gap:.45rem; padding:0; border:0; border-radius:0; background:transparent; color:#4B5563; font-size:.76rem; font-weight:800; white-space:normal; }.cat-pill::before { display:grid; width:62px; height:62px; place-items:center; border:3px solid #C95D29; border-top-color:#597A9C; border-radius:50%; color:#334155; font-family:'Font Awesome 6 Free'; font-size:1.25rem; font-weight:900; content:'\f02b'; }.cat-pill:nth-child(3)::before { content:'\f043'; }.cat-pill:nth-child(4)::before { content:'\f0ad'; }.cat-pill:nth-child(5)::before { content:'\f07a'; }.cat-pill.active { background:transparent; color:#0284C7; border:0; }.cat-pill.active::before { border-color:#0284C7; content:'\f00a'; }
+    .pos-catalog-toolbar { margin:.05rem 0 .25rem; }.pos-catalog-toolbar > span { color:#6B7280!important; font-size:.88rem!important; }.pos-catalog-toolbar > span::before { content:''; }.pos-view-mode-toggle { display:none; }
+    .products-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:.9rem; padding:.15rem .1rem 1rem; }.product-card { min-height:174px; padding:1.05rem; border:1px solid #DDE4EC; border-radius:18px; background:#fff; box-shadow:0 1px 2px rgba(15,23,42,.03); }.product-card:hover { border-color:#78BFE5; box-shadow:0 7px 18px rgba(2,132,199,.12); }.product-card-top { padding-right:0; }.product-title { min-height:0; margin-top:2.75rem; font-size:.94rem; }.product-sku-row { display:none; }.product-card-bottom { flex-direction:row; align-items:flex-end; justify-content:space-between; padding-top:0; border:0; }.product-price { color:#0F172A; font-size:1.1rem; }.product-stock { position:absolute; top:4.9rem; left:1.05rem; color:#94A3B8; font-size:.76rem; }.product-add-btn { display:grid; width:32px; height:32px; place-items:center; border-radius:9px; background:#0284C7; color:#fff; font-size:1rem; }.product-card::before { position:absolute; top:1rem; left:1rem; display:grid; width:44px; height:44px; place-items:center; border-radius:13px; background:#E7F3FD; color:#0284C7; font-family:'Font Awesome 6 Free'; font-weight:900; content:'\f043'; }.product-card:nth-child(2n)::before { background:#FFF0E9; color:#F05C16; content:'\f0ad'; }.product-card:nth-child(3n)::before { background:#F0E9FF; color:#7C3AED; content:'\f07a'; }.product-card:nth-child(4n)::before { background:#E8F6EE; color:#059669; content:'\f06c'; }
+    .cart-panel { border:0; border-left:1px solid #DDE4EC; border-radius:0; background:#fff; box-shadow:none; }.cart-header { min-height:70px; padding:1rem 1.35rem; background:#fff; }.cart-header .btn-danger { width:30px; height:30px; min-height:0; padding:0; border:0; background:transparent; color:#EF4444; font-size:0; }.cart-header .btn-danger i { font-size:1rem; }.cart-items-container { padding:.25rem 1.35rem; }.cart-item { position:relative; min-height:80px; margin:0; padding:.85rem 0 .8rem 3.65rem; border:0; border-bottom:1px solid #E8EDF2; border-radius:0; background:transparent; }.cart-item::before { position:absolute; top:.85rem; left:0; display:grid; width:42px; height:42px; place-items:center; border-radius:12px; background:#E7F3FD; color:#0284C7; font-family:'Font Awesome 6 Free'; font-weight:900; content:'\f043'; }.cart-item:nth-child(2n)::before { background:#FFF0E9; color:#F05C16; content:'\f0ad'; }.cart-item:nth-child(3n)::before { background:#F0E9FF; color:#7C3AED; content:'\f07a'; }.cart-item-name { max-width:205px; font-size:.91rem; }.cart-item-remove { position:absolute; top:.4rem; right:0; color:#EF4444; }.cart-item-controls { gap:.35rem; justify-content:flex-start; }.qty-group { border:0; overflow:visible; }.qty-btn { width:25px; height:25px; border:1px solid #DDE4EC; border-radius:8px; font-size:.9rem; }.qty-input { width:27px; height:25px; border:0; }.cart-item-controls > span:nth-last-child(2) { display:none; }.cart-item-total { position:absolute; right:0; top:1.15rem; color:#0F172A; font-size:.95rem; }.cart-summary { gap:.72rem; padding:1rem 1.35rem 1.15rem; background:#fff; }.summary-row { font-size:.86rem; }.summary-total { font-size:1.55rem; }.payment-grid { padding:4px; gap:2px; border-radius:13px; background:#F1F3F6; }.pay-method-btn { min-height:38px; padding:6px 3px; border:0; border-radius:9px; background:transparent; font-size:.74rem; flex-direction:row; }.pay-method-btn i { display:none; }.pay-method-btn.active { background:#0284C7; color:#fff; }.cart-summary .btn-primary { border-radius:14px!important; background:linear-gradient(135deg,#0EA5E9,#0284C7)!important; box-shadow:0 8px 18px rgba(2,132,199,.24); }
+    @media (max-width:1120px) { .pos-terminal { width:calc(100% - 1.5rem); }.pos-grid { grid-template-columns:minmax(0,1fr) 380px; }.pos-terminal-meta > span:nth-child(-n+2) { display:none; } }
+    @media (max-width:900px) { .pos-terminal { display:block; width:100%; height:auto; min-height:0; margin:0; border:0; border-radius:0; box-shadow:none; }.pos-terminal-top { display:none; }.pos-grid { display:grid; grid-template-columns:1fr; height:auto; }.catalog-panel { padding:1rem; }.cart-panel { border-left:0; }.products-grid { overflow:visible; }.pos-mobile-tabs { margin:1rem; }.pos-terminal .pos-grid { max-height:none; } }
+    @media (min-width:901px) {
+        .pos-terminal { width:min(1540px,calc(100% - 2rem)); height:calc(100dvh - var(--header-h) - 1.5rem); min-height:0; margin:.75rem auto; grid-template-rows:minmax(0,1fr); }
+        .pos-terminal-top { display:none; }
+        .pos-terminal-top { padding:0 1.15rem; }.pos-terminal-brand i { width:31px; height:31px; border-radius:9px; }.pos-terminal-brand strong { font-size:1rem; }
+        .pos-grid { grid-template-columns:minmax(0,1fr) 460px; }.catalog-panel { gap:.7rem; padding:1rem 1.15rem; }
+        .search-bar-container .form-control { height:48px!important; border-radius:14px; }.scanner-badge { height:38px; padding:0 .65rem; }
+        .category-pills { gap:.55rem; padding:.05rem 0; }.cat-pill { flex-basis:78px; min-height:76px; gap:.28rem; font-size:.7rem; }.cat-pill::before { width:52px; height:52px; border-width:3px; font-size:1rem; }
+        .cat-pill:hover { border:0; background:transparent; color:#0284C7; transform:translateY(-2px); }.cat-pill:hover::before { border-color:#0284C7; }
+        .pos-catalog-toolbar { margin:0; }.products-grid { grid-template-columns:repeat(auto-fill,minmax(170px,1fr))!important; grid-auto-rows:132px; gap:.65rem; align-content:start; }
+        .product-card { min-height:132px; height:132px; padding:.72rem; border-radius:14px; }.product-card::before { top:.72rem; left:.72rem; width:34px; height:34px; border-radius:10px; font-size:.82rem; }.product-title { display:block; overflow:hidden; margin-top:2.12rem; font-size:.8rem; text-overflow:ellipsis; white-space:nowrap; }.product-sku-row { position:absolute; right:.72rem; bottom:2.15rem; left:.72rem; display:flex; gap:.35rem; overflow:hidden; color:#94A3B8; font-size:.64rem; white-space:nowrap; }.product-sku-item { overflow:hidden; text-overflow:ellipsis; }.product-stock-inline { display:inline!important; flex:0 0 auto; color:#94A3B8; }.product-stock { display:none; }.product-card-bottom { position:absolute; right:.72rem; bottom:.72rem; left:.72rem; }.product-price { font-size:.92rem; }.product-add-btn { width:28px; height:28px; border-radius:8px; }
+        .cart-header { min-height:58px; padding:.8rem 1rem; }.cart-items-container { min-height:150px; padding:.15rem 1rem; }.cart-item { min-height:70px; padding:.7rem 0 .65rem 3.2rem; }.cart-item::before { top:.7rem; width:36px; height:36px; border-radius:11px; }.cart-item-name { max-width:240px; font-size:.85rem; }.cart-item-total { top:.95rem; font-size:.9rem; }.cart-summary { gap:.5rem; padding:.75rem 1rem .85rem; }.summary-total { font-size:1.35rem; }.cart-summary .btn-primary { min-height:46px!important; padding:.7rem!important; }
+    }
+    html[data-theme="dark"] .pos-terminal,
+    html[data-theme="dark"] .pos-grid,
+    html[data-theme="dark"] .catalog-panel { background:#0B1220!important; border-color:#26344A!important; color:#F1F5F9; }
+    html[data-theme="dark"] .cart-panel,
+    html[data-theme="dark"] .cart-header,
+    html[data-theme="dark"] .cart-summary,
+    html[data-theme="dark"] .product-card,
+    html[data-theme="dark"] .search-bar-container .form-control { background:#121C2E!important; border-color:#26344A!important; }
+    html[data-theme="dark"] .cart-item { background:transparent!important; border-color:#26344A!important; }
+    html[data-theme="dark"] .product-card:active { background:#172235; }
+    html[data-theme="dark"] .payment-grid { background:#1A2638!important; }
+    html[data-theme="dark"] .qty-group,
+    html[data-theme="dark"] .qty-btn,
+    html[data-theme="dark"] .form-control { background:#121C2E!important; border-color:#334155!important; color:#F1F5F9!important; }
+    html[data-theme="dark"] .cart-item-remove { background:#351C27; border-color:#6B2938; color:#FF8E96; }
+    html[data-theme="dark"] .product-price,
+    html[data-theme="dark"] .cart-item-total { color:#34D399!important; }
+    html[data-theme="dark"] .cat-pill { color:#B7C4D7; }
+    html[data-theme="dark"] .cat-pill::before { color:#CBD5E1; }
+    html[data-theme="dark"] .cart-panel .btn-secondary,
+    html[data-theme="dark"] #quickCashContainer .btn { border-color:#334155!important; background:#172235!important; color:#E2E8F0!important; }
+    html[data-theme="dark"] .cart-panel .btn-secondary:hover,
+    html[data-theme="dark"] #quickCashContainer .btn:hover { background:#22324A!important; color:#FFFFFF!important; }
+    html[data-theme="dark"] #paidAmountInput { color:#34D399!important; }
+    .cart-header .btn-danger > span { display:none; }
+    @media (min-width:901px) {
+        .cart-panel { display:grid; grid-template-rows:58px minmax(210px,1fr) auto; overflow:hidden; }
+        .cart-items-container { min-height:0; padding:.2rem 1rem; }
+        #emptyCartMessage { align-self:center; margin:auto; padding:1.1rem!important; }
+        #emptyCartMessage > i { font-size:1.65rem!important; margin-bottom:.2rem!important; }
+        #emptyCartMessage p:first-of-type { font-size:.9rem!important; }
+        #emptyCartMessage p:last-of-type { font-size:.72rem!important; }
+        #emptyCartMessage .btn { margin-top:.35rem!important; }
+        .cart-summary { gap:.42rem; padding:.7rem 1rem .8rem; }
+        .cart-summary .summary-row { font-size:.8rem; }
+        .cart-summary .summary-total { padding-top:.35rem; font-size:1.2rem; }
+        .cart-summary > div[style*="margin-top"] { margin-top:0!important; }
+        .cart-summary label { margin-bottom:.2rem!important; }
+        #quickCashContainer { gap:.25rem!important; }
+        #quickCashContainer .btn { padding:.22rem .42rem!important; font-size:.7rem!important; }
+        .cart-item-remove { top:auto; right:0; bottom:.65rem; width:27px; height:27px; min-width:27px; min-height:27px; padding:0; border:1px solid #F9D5D5; border-radius:8px; background:#FFF5F5; color:#E5484D; font-size:.72rem; }
+        .cart-item-remove:hover { background:#FFE5E5; color:#C92A2A; }
+    }
 </style>
 {% endblock %}
 {% block content %}
@@ -1318,6 +1387,16 @@
     </button>
 </div>
 
+<div class="pos-terminal">
+    <header class="pos-terminal-top">
+        <div class="pos-terminal-brand"><i class="fa-solid fa-car-side"></i><strong>Касса</strong></div>
+        <div class="pos-terminal-meta">
+            <span><i class="fa-regular fa-user"></i> {{ user.get_full_name|default:user.username }}</span>
+            <span><i class="fa-regular fa-clock"></i> <time id="posClock">--:--</time></span>
+            <button type="button" class="pos-shortcut" onclick="clearCart()">Esc — очистить</button>
+            <button type="button" class="pos-shortcut pay" onclick="submitCheckout()">F9 — оплата</button>
+        </div>
+    </header>
 <div class="pos-grid">
     <!-- LEFT PANEL: CATALOG & SEARCH -->
     <div class="catalog-panel" id="posCatalogPanel">
@@ -1332,13 +1411,13 @@
                 <i class="fa-solid fa-circle-xmark" id="posSearchClearBtn" style="position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; display: none; font-size: 1.1rem;" onclick="clearPosSearch()" title="Очистить поиск"></i>
             </div>
             <div class="scanner-badge" id="scannerIndicator">
-                <i class="fa-solid fa-barcode"></i>
-                <span>Сканер готов</span>
+                <i class="fa-solid fa-qrcode"></i>
+                <span>Сканировать</span>
             </div>
         </div>
 
         <div class="category-pills">
-            <button class="cat-pill active" onclick="filterByCategory('all', this)">Все категории</button>
+            <button class="cat-pill active" onclick="filterByCategory('all', this)">Все</button>
             {% for cat in categories %}
             <button class="cat-pill" onclick="filterByCategory({{ cat.id }}, this)">{{ cat.name }}</button>
             {% endfor %}
@@ -1347,7 +1426,7 @@
         <!-- Catalog Toolbar: Item count and Grid/List switcher -->
         <div class="pos-catalog-toolbar">
             <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;" id="catalogItemsCount">
-                Всего товаров: {{ products|length }}
+                {{ products|length }} товаров
             </span>
             <div class="pos-view-mode-toggle">
                 <button type="button" class="pos-view-btn active" id="viewBtnGrid" onclick="setPosViewMode('grid')" title="Сетка 2 колонки">
@@ -1367,8 +1446,7 @@
                 <div class="product-card-top">
                     <div class="product-title">{{ p.name }}</div>
                     <div class="product-sku-row">
-                        <span class="product-sku-item">Арт: {{ p.sku }}</span>
-                        {% if p.barcode %}<span class="product-sku-item">ШК: {{ p.barcode }}</span>{% endif %}
+                        <span class="product-sku-item">ШК: {{ p.barcode|default:p.sku }}</span>
                         <span class="product-stock-inline">Ост: {{ p.stock_qty|floatformat:0 }} {{ p.unit }}</span>
                     </div>
                 </div>
@@ -1486,6 +1564,7 @@
             </button>
         </div>
     </div>
+</div>
 </div>
 
 <!-- FLOATING QUICK CART BAR FOR MOBILE -->
@@ -2089,7 +2168,7 @@
             div.innerHTML = `
                 <div class="cart-item-header">
                     <div class="cart-item-name">${item.name}</div>
-                    <i class="fa-solid fa-xmark cart-item-remove" onclick="removeFromCart(${idx})" title="Удалить"></i>
+                    <button type="button" class="cart-item-remove" onclick="removeFromCart(${idx})" title="Удалить товар" aria-label="Удалить товар"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <div class="cart-item-controls">
                     <div class="qty-group">
@@ -2568,5 +2647,16 @@
         }
         return cookieValue;
     }
+
+    function updatePosClock() {
+        const clock = document.getElementById('posClock');
+        if (clock) {
+            clock.textContent = new Intl.DateTimeFormat('ru-RU', {
+                hour: '2-digit', minute: '2-digit'
+            }).format(new Date());
+        }
+    }
+    updatePosClock();
+    window.setInterval(updatePosClock, 30000);
 </script>
 {% endblock %}

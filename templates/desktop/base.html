@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -9,7 +10,8 @@
     <title>{% block title %}DACAR Детейлинг Маркет — POS & Учет{% endblock %}</title>
 
     <!-- Favicon & Touch Icons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230284C7'/%3E%3Cstop offset='100%25' stop-color='%230369A1'/%3E%3C/linearGradient%3E%3ClinearGradient id='o' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23F97316'/%3E%3Cstop offset='100%25' stop-color='%23EA580C'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M12 50 C26 44 40 44 54 50' stroke='url(%23o)' stroke-width='4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M18 15 L33 15 C43.5 15 50 21.5 50 31.5 C50 41.5 43.5 48 33 48 L18 48 Z M27.5 23.5 L27.5 39.5 L32.5 39.5 C38 39.5 41 36.5 41 31.5 C41 26.5 38 23.5 32.5 23.5 Z' fill='%23FFFFFF'/%3E%3Ccircle cx='49' cy='16' r='4' fill='url(%23o)'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230284C7'/%3E%3Cstop offset='100%25' stop-color='%230369A1'/%3E%3C/linearGradient%3E%3ClinearGradient id='o' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23F97316'/%3E%3Cstop offset='100%25' stop-color='%23EA580C'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M12 50 C26 44 40 44 54 50' stroke='url(%23o)' stroke-width='4' stroke-linecap='round' fill='none'/%3E%3Cpath d='M18 15 L33 15 C43.5 15 50 21.5 50 31.5 C50 41.5 43.5 48 33 48 L18 48 Z M27.5 23.5 L27.5 39.5 L32.5 39.5 C38 39.5 41 36.5 41 31.5 C41 26.5 38 23.5 32.5 23.5 Z' fill='%23FFFFFF'/%3E%3Ccircle cx='49' cy='16' r='4' fill='url(%23o)'/%3E%3C/svg%3E">
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
     <link rel="apple-touch-icon" href="{% static 'favicon.svg' %}">
 
@@ -18,11 +20,11 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- DACAR Core Design System (токены, анимации, утилиты) -->
-    <link rel="stylesheet" href="{% static 'css/dacar-core.css' %}">
 
     <style>
         /* ===== DESIGN SYSTEM TOKENS ===== */
@@ -39,10 +41,10 @@
             --accent-red: #DC2626;
             --accent-purple: #7C3AED;
 
-            --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.04);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
 
             --radius-sm: 6px;
             --radius-md: 8px;
@@ -56,24 +58,20 @@
             --safe-right: env(safe-area-inset-right, 0px);
 
             --header-h: 60px;
-
-            /* Input & Button tokens (для совместимости с mobile) */
-            --input-bg: #FFFFFF;
-            --input-border: #CBD5E1;
-            --input-text: #111827;
-            --input-placeholder: #9CA3AF;
-            --btn-secondary-bg: #FFFFFF;
-            --btn-secondary-border: #CBD5E1;
-            --btn-secondary-text: #111827;
-            --btn-secondary-hover-bg: #F1F5F9;
-            --glass-card: rgba(255,255,255,0.9);
-            --glass-border: rgba(0,0,0,0.06);
-            --glow-color: rgba(2,132,199,0.08);
         }
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
 
         body {
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -91,7 +89,7 @@
 
         /* ===== HEADER / NAVIGATION ===== */
         .header-nav {
-            background: rgba(255,255,255,0.92);
+            background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--card-border);
@@ -158,21 +156,39 @@
             white-space: nowrap;
         }
 
-        .nav-link:hover, .nav-link.active {
+        .nav-link:hover,
+        .nav-link.active {
             color: var(--text-main);
-            background: rgba(0,0,0,0.06);
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        .nav-link.active {
+            position: relative;
+            background: transparent;
+            font-weight: 800;
+        }
+
+        .nav-link.active::after {
+            position: absolute;
+            right: 8px;
+            bottom: -14px;
+            left: 8px;
+            height: 3px;
+            border-radius: 999px 999px 0 0;
+            background: var(--accent-cyan);
+            content: '';
         }
 
         .nav-link.pos-btn {
             background: linear-gradient(135deg, #0EA5E9, #0284C7);
             color: #FFF;
             font-weight: 700;
-            box-shadow: 0 2px 8px rgba(2,132,199,0.3);
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
         }
 
         .nav-link.pos-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(2,132,199,0.4);
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
         }
 
         /* User menu */
@@ -181,6 +197,244 @@
             align-items: center;
             gap: 0.5rem;
             flex-shrink: 0;
+        }
+
+        .desktop-search-wrap { position:relative; }
+        .desktop-quick-search {
+            display: flex;
+            width: min(200px, 16vw);
+            min-width: 128px;
+            height: 38px;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0 0.65rem;
+            border: 1px solid var(--card-border);
+            border-radius: 11px;
+            background: #F8FAFC;
+            color: var(--text-secondary);
+        }
+
+        .desktop-quick-search input {
+            width: 100%;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: var(--text-main);
+            font: 500 0.78rem 'Inter', sans-serif;
+        }
+
+        .desktop-search-results {
+            position:absolute;
+            top:calc(100% + 8px);
+            right:0;
+            z-index:400;
+            display:none;
+            width:330px;
+            overflow:hidden;
+            border:1px solid var(--card-border);
+            border-radius:13px;
+            background:var(--card-bg);
+            box-shadow:0 16px 34px rgba(15,23,42,.18);
+        }
+        .desktop-search-results.is-open { display:block; }
+        .desktop-search-result {
+            display:flex;
+            align-items:center;
+            gap:.65rem;
+            padding:.7rem .8rem;
+            border-bottom:1px solid var(--card-border);
+            color:var(--text-main);
+            text-decoration:none;
+        }
+        .desktop-search-result:last-child { border-bottom:0; }
+        .desktop-search-result:hover { background:rgba(2,132,199,.08); }
+        .desktop-search-result-icon { display:grid; width:31px; height:31px; place-items:center; border-radius:9px; background:#E5F3FF; color:#0284C7; flex:0 0 auto; }
+        .desktop-search-result-main { min-width:0; flex:1; }
+        .desktop-search-result-name { display:block; overflow:hidden; font-size:.78rem; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+        .desktop-search-result-meta { display:block; margin-top:2px; overflow:hidden; color:var(--text-muted); font-size:.67rem; text-overflow:ellipsis; white-space:nowrap; }
+        .desktop-search-result-price { color:var(--accent-green); font:800 .78rem 'Outfit',sans-serif; white-space:nowrap; }
+        .desktop-search-empty { padding:.9rem; color:var(--text-muted); font-size:.76rem; text-align:center; }
+
+        /* Shared desktop dark theme. Individual pages inherit these tokens. */
+        html[data-theme="dark"] {
+            --bg-main: #0B1220;
+            --card-bg: #121C2E;
+            --card-border: #26344A;
+            --text-main: #F1F5F9;
+            --text-muted: #9AA9BF;
+            --text-secondary: #718096;
+            --shadow-xs: 0 1px 2px rgba(0,0,0,.25);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,.26);
+            --shadow-md: 0 8px 20px rgba(0,0,0,.28);
+        }
+        html[data-theme="dark"] .header-nav { background:rgba(15,23,42,.95); }
+        html[data-theme="dark"] .desktop-quick-search { background:#172235; }
+        html[data-theme="dark"] .desktop-quick-search kbd { border-color:#334155; }
+        html[data-theme="dark"] .desktop-search-result-icon { background:#173552; }
+        html[data-theme="dark"] .desktop-header-icon,
+        html[data-theme="dark"] .hamburger-btn { color:var(--text-main); }
+
+        .desktop-quick-search kbd {
+            padding: 1px 5px;
+            border: 1px solid #DDE3EC;
+            border-radius: 5px;
+            color: var(--text-secondary);
+            font-size: 0.65rem;
+            white-space: nowrap;
+        }
+
+        .desktop-header-icon,
+        .desktop-user-avatar {
+            display: grid;
+            width: 35px;
+            height: 35px;
+            place-items: center;
+            border: 0;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .desktop-header-icon { position: relative; font-size: 1rem; }
+        .desktop-header-icon .notification-dot { position: absolute; top: 4px; right: 5px; width: 8px; height: 8px; border: 2px solid #fff; border-radius: 50%; background: var(--accent-red); }
+        .desktop-user-avatar { background: linear-gradient(135deg, #7C3AED, #4F46E5); color: #fff; font: 800 0.9rem 'Outfit', sans-serif; text-decoration: none; }
+
+        .desktop-notification-wrap { position: relative; }
+        .notification-count {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            display: grid;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 4px;
+            place-items: center;
+            border: 2px solid var(--header-bg, #fff);
+            border-radius: 999px;
+            background: #EF4444;
+            color: #FFF;
+            font-size: .56rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .notification-count[hidden] { display: none; }
+        .notification-panel {
+            position: absolute;
+            top: calc(100% + 12px);
+            right: -86px;
+            z-index: 500;
+            display: none;
+            width: min(390px, calc(100vw - 2rem));
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            border-radius: 15px;
+            background: var(--card-bg);
+            box-shadow: 0 22px 55px rgba(15, 23, 42, .24);
+        }
+        .notification-panel.is-open { display: block; animation: notificationPanelIn .16s ease-out; }
+        @keyframes notificationPanelIn { from { opacity: 0; transform: translateY(-7px) scale(.98); } to { opacity: 1; transform: none; } }
+        .notification-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            padding: .9rem 1rem .65rem;
+        }
+        .notification-panel-title { font: 800 1rem 'Outfit', sans-serif; }
+        .notification-panel-total { margin-left: .3rem; color: var(--text-muted); font: 700 .7rem 'Inter', sans-serif; }
+        .notification-panel-actions { display: flex; gap: .3rem; }
+        .notification-action-btn {
+            display: grid;
+            width: 30px;
+            height: 30px;
+            place-items: center;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .notification-action-btn:hover { border-color: rgba(2,132,199,.35); background: rgba(2,132,199,.08); color: var(--accent-cyan); }
+        .notification-action-btn.is-danger:hover { border-color: rgba(220,38,38,.3); background: rgba(220,38,38,.08); color: var(--accent-red); }
+        .notification-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 35px;
+            padding: 0 1rem .6rem;
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-size: .67rem;
+        }
+        .notification-toolbar button { border: 0; background: transparent; color: var(--accent-cyan); cursor: pointer; font: 750 .69rem 'Inter', sans-serif; }
+        .notification-toolbar button:disabled { color: var(--text-secondary); cursor: default; opacity: .65; }
+        .notification-list { max-height: 390px; overflow-y: auto; overscroll-behavior: contain; }
+        .notification-item { position: relative; display: flex; border-bottom: 1px solid var(--card-border); }
+        .notification-item:last-child { border-bottom: 0; }
+        .notification-item.is-unread { background: rgba(2, 132, 199, .055); }
+        .notification-item.is-unread::before { position: absolute; top: 18px; left: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent-cyan); content: ''; }
+        .notification-item-link { display: flex; min-width: 0; flex: 1; gap: .65rem; padding: .75rem .4rem .75rem 1rem; color: var(--text-main); text-decoration: none; }
+        .notification-item-link:hover { background: rgba(2, 132, 199, .045); }
+        .notification-item-icon { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 10px; }
+        .notification-item-icon.green { background: rgba(5,150,105,.12); color: var(--accent-green); }
+        .notification-item-icon.red { background: rgba(220,38,38,.11); color: var(--accent-red); }
+        .notification-item-icon.orange { background: rgba(234,88,12,.11); color: var(--accent-orange); }
+        .notification-item-icon.cyan { background: rgba(2,132,199,.11); color: var(--accent-cyan); }
+        .notification-item-icon.purple { background: rgba(124,58,237,.11); color: var(--accent-purple); }
+        .notification-item-body { min-width: 0; flex: 1; }
+        .notification-item-title { display: block; padding-right: .2rem; font-size: .74rem; font-weight: 800; }
+        .notification-item-message { display: -webkit-box; margin-top: 2px; overflow: hidden; color: var(--text-muted); font-size: .68rem; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+        .notification-item-meta { display: block; margin-top: 4px; color: var(--text-secondary); font-size: .61rem; }
+        .notification-dismiss {
+            width: 34px;
+            flex: 0 0 34px;
+            border: 0;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity .14s, color .14s;
+        }
+        .notification-item:hover .notification-dismiss,.notification-dismiss:focus-visible { opacity: 1; }
+        .notification-dismiss:hover { color: var(--accent-red); }
+        .notification-empty,.notification-loading { padding: 2.3rem 1rem; color: var(--text-muted); text-align: center; }
+        .notification-empty i,.notification-loading i { display: block; margin-bottom: .55rem; color: var(--text-secondary); font-size: 1.35rem; }
+        .notification-empty strong { display: block; margin-bottom: .2rem; color: var(--text-main); font-size: .8rem; }
+        .notification-panel-footer { display: block; padding: .65rem 1rem; border-top: 1px solid var(--card-border); color: var(--accent-cyan); font-size: .7rem; font-weight: 750; text-align: center; text-decoration: none; }
+        .notification-panel-footer:hover { background: rgba(2,132,199,.06); }
+        html[data-theme="dark"] .notification-panel { box-shadow: 0 24px 60px rgba(0,0,0,.48); }
+
+        .desktop-logout-btn {
+            display: inline-flex;
+            height: 35px;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0 0.7rem;
+            border: 1px solid rgba(220, 38, 38, 0.22);
+            border-radius: 9px;
+            background: rgba(220, 38, 38, 0.07);
+            color: var(--accent-red);
+            font-size: 0.74rem;
+            font-weight: 750;
+            line-height: 1;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+        }
+
+        .desktop-logout-btn:hover {
+            border-color: rgba(220, 38, 38, 0.42);
+            background: rgba(220, 38, 38, 0.13);
+            transform: translateY(-1px);
+        }
+
+        html[data-theme="dark"] .desktop-logout-btn {
+            border-color: rgba(248, 113, 113, 0.28);
+            background: rgba(239, 68, 68, 0.1);
+            color: #F87171;
         }
 
         .user-badge {
@@ -193,6 +447,10 @@
             align-items: center;
             gap: 0.5rem;
             max-width: 180px;
+        }
+
+        @media (min-width: 961px) {
+            .header-nav .user-badge { display: none; }
         }
 
         .user-badge .user-name {
@@ -232,13 +490,15 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 200;
             opacity: 0;
             transition: opacity 0.25s ease;
         }
 
-        .mobile-nav-overlay.open { opacity: 1; }
+        .mobile-nav-overlay.open {
+            opacity: 1;
+        }
 
         .mobile-nav-drawer {
             position: fixed;
@@ -259,7 +519,9 @@
             box-shadow: var(--shadow-lg);
         }
 
-        .mobile-nav-drawer.open { transform: translateX(0); }
+        .mobile-nav-drawer.open {
+            transform: translateX(0);
+        }
 
         .drawer-header {
             display: flex;
@@ -306,8 +568,9 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .drawer-nav-link:hover, .drawer-nav-link.active {
-            background: rgba(0,0,0,0.05);
+        .drawer-nav-link:hover,
+        .drawer-nav-link.active {
+            background: rgba(0, 0, 0, 0.05);
         }
 
         .drawer-nav-link.pos-btn {
@@ -335,7 +598,9 @@
         }
 
         /* ===== ALERTS & NOTIFICATIONS (MULTICOLOR SYSTEM) ===== */
-        .messages-container { margin-bottom: 1rem; }
+        .messages-container {
+            margin-bottom: 1rem;
+        }
 
         .alert {
             padding: 12px 1rem;
@@ -350,40 +615,115 @@
             box-shadow: var(--shadow-xs);
         }
 
-        .alert-icon { font-size: 1.1rem; flex-shrink: 0; }
-        .alert-body { flex: 1; display: flex; align-items: center; gap: 0.5rem; }
+        .alert-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .alert-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
         /* Green / Зеленый (Успех) */
-        .alert-success { background: rgba(16, 185, 129, 0.12); border: 1px solid var(--accent-green); color: #047857; }
-        .alert-success .alert-icon { color: var(--accent-green); }
+        .alert-success {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid var(--accent-green);
+            color: #047857;
+        }
+
+        .alert-success .alert-icon {
+            color: var(--accent-green);
+        }
 
         /* Red / Красный (Ошибка) */
-        .alert-error, .alert-danger { background: rgba(239, 68, 68, 0.12); border: 1px solid var(--accent-red); color: #B91C1C; }
-        .alert-error .alert-icon, .alert-danger .alert-icon { color: var(--accent-red); }
+        .alert-error,
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid var(--accent-red);
+            color: #B91C1C;
+        }
+
+        .alert-error .alert-icon,
+        .alert-danger .alert-icon {
+            color: var(--accent-red);
+        }
 
         /* Blue / Синий (Информация) */
-        .alert-info, .alert-blue { background: rgba(59, 130, 246, 0.12); border: 1px solid #3B82F6; color: #1D4ED8; }
-        .alert-info .alert-icon, .alert-blue .alert-icon { color: #3B82F6; }
+        .alert-info,
+        .alert-blue {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid #3B82F6;
+            color: #1D4ED8;
+        }
+
+        .alert-info .alert-icon,
+        .alert-blue .alert-icon {
+            color: #3B82F6;
+        }
 
         /* Cyan / Бирюзовый / Голубой */
-        .alert-cyan { background: rgba(2, 132, 199, 0.12); border: 1px solid var(--accent-cyan); color: #0369A1; }
-        .alert-cyan .alert-icon { color: var(--accent-cyan); }
+        .alert-cyan {
+            background: rgba(2, 132, 199, 0.12);
+            border: 1px solid var(--accent-cyan);
+            color: #0369A1;
+        }
+
+        .alert-cyan .alert-icon {
+            color: var(--accent-cyan);
+        }
 
         /* Yellow / Orange / Желтый / Оранжевый (Предупреждение) */
-        .alert-warning, .alert-orange { background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; color: #B45309; }
-        .alert-warning .alert-icon, .alert-orange .alert-icon { color: #F59E0B; }
+        .alert-warning,
+        .alert-orange {
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid #F59E0B;
+            color: #B45309;
+        }
+
+        .alert-warning .alert-icon,
+        .alert-orange .alert-icon {
+            color: #F59E0B;
+        }
 
         /* Purple / Фиолетовый (Акцент / Важное) */
-        .alert-purple, .alert-primary, .alert-violet { background: rgba(139, 92, 246, 0.12); border: 1px solid #8B5CF6; color: #6D28D9; }
-        .alert-purple .alert-icon, .alert-primary .alert-icon { color: #8B5CF6; }
+        .alert-purple,
+        .alert-primary,
+        .alert-violet {
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid #8B5CF6;
+            color: #6D28D9;
+        }
+
+        .alert-purple .alert-icon,
+        .alert-primary .alert-icon {
+            color: #8B5CF6;
+        }
 
         /* Pink / Розовый (Специальное / Скидки / Акции) */
-        .alert-pink { background: rgba(236, 72, 153, 0.12); border: 1px solid #EC4899; color: #BE185D; }
-        .alert-pink .alert-icon { color: #EC4899; }
+        .alert-pink {
+            background: rgba(236, 72, 153, 0.12);
+            border: 1px solid #EC4899;
+            color: #BE185D;
+        }
+
+        .alert-pink .alert-icon {
+            color: #EC4899;
+        }
 
         /* Dark / Тёмно-серый / Нейтральный */
-        .alert-dark, .alert-secondary { background: rgba(100, 116, 139, 0.12); border: 1px solid #64748B; color: #334155; }
-        .alert-dark .alert-icon { color: #64748B; }
+        .alert-dark,
+        .alert-secondary {
+            background: rgba(100, 116, 139, 0.12);
+            border: 1px solid #64748B;
+            color: #334155;
+        }
+
+        .alert-dark .alert-icon {
+            color: #64748B;
+        }
 
         /* ===== GLOBAL FLOATING TOAST SYSTEM (MULTICOLOR) ===== */
         .dacar-toast-container {
@@ -421,27 +761,105 @@
         }
 
         /* Toast Colors */
-        .dacar-toast.toast-success                       { border-left-color: #10B981; } /* Green */
-        .dacar-toast.toast-error, .dacar-toast.toast-danger { border-left-color: #EF4444; } /* Red */
-        .dacar-toast.toast-info, .dacar-toast.toast-blue { border-left-color: #3B82F6; } /* Blue */
-        .dacar-toast.toast-cyan                          { border-left-color: #0284C7; } /* Cyan */
-        .dacar-toast.toast-warning, .dacar-toast.toast-orange { border-left-color: #F59E0B; } /* Orange/Yellow */
-        .dacar-toast.toast-purple, .dacar-toast.toast-primary, .dacar-toast.toast-violet { border-left-color: #8B5CF6; } /* Purple */
-        .dacar-toast.toast-pink                          { border-left-color: #EC4899; } /* Pink */
-        .dacar-toast.toast-dark, .dacar-toast.toast-secondary { border-left-color: #64748B; } /* Dark */
+        .dacar-toast.toast-success {
+            border-left-color: #10B981;
+        }
 
-        .dacar-toast-icon { font-size: 1.15rem; flex-shrink: 0; margin-top: 1px; }
-        .toast-success .dacar-toast-icon                     { color: #10B981; }
-        .toast-error .dacar-toast-icon, .toast-danger .dacar-toast-icon { color: #EF4444; }
-        .toast-info .dacar-toast-icon, .toast-blue .dacar-toast-icon   { color: #3B82F6; }
-        .toast-cyan .dacar-toast-icon                        { color: #0284C7; }
-        .toast-warning .dacar-toast-icon, .toast-orange .dacar-toast-icon { color: #F59E0B; }
-        .toast-purple .dacar-toast-icon, .toast-primary .dacar-toast-icon { color: #8B5CF6; }
-        .toast-pink .dacar-toast-icon                        { color: #EC4899; }
-        .toast-dark .dacar-toast-icon                        { color: #64748B; }
+        /* Green */
+        .dacar-toast.toast-error,
+        .dacar-toast.toast-danger {
+            border-left-color: #EF4444;
+        }
 
-        .dacar-toast-content { flex: 1; color: #E2E8F0; font-weight: 500; }
-        .dacar-toast-content strong { color: #FFFFFF; font-weight: 700; }
+        /* Red */
+        .dacar-toast.toast-info,
+        .dacar-toast.toast-blue {
+            border-left-color: #3B82F6;
+        }
+
+        /* Blue */
+        .dacar-toast.toast-cyan {
+            border-left-color: #0284C7;
+        }
+
+        /* Cyan */
+        .dacar-toast.toast-warning,
+        .dacar-toast.toast-orange {
+            border-left-color: #F59E0B;
+        }
+
+        /* Orange/Yellow */
+        .dacar-toast.toast-purple,
+        .dacar-toast.toast-primary,
+        .dacar-toast.toast-violet {
+            border-left-color: #8B5CF6;
+        }
+
+        /* Purple */
+        .dacar-toast.toast-pink {
+            border-left-color: #EC4899;
+        }
+
+        /* Pink */
+        .dacar-toast.toast-dark,
+        .dacar-toast.toast-secondary {
+            border-left-color: #64748B;
+        }
+
+        /* Dark */
+
+        .dacar-toast-icon {
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .toast-success .dacar-toast-icon {
+            color: #10B981;
+        }
+
+        .toast-error .dacar-toast-icon,
+        .toast-danger .dacar-toast-icon {
+            color: #EF4444;
+        }
+
+        .toast-info .dacar-toast-icon,
+        .toast-blue .dacar-toast-icon {
+            color: #3B82F6;
+        }
+
+        .toast-cyan .dacar-toast-icon {
+            color: #0284C7;
+        }
+
+        .toast-warning .dacar-toast-icon,
+        .toast-orange .dacar-toast-icon {
+            color: #F59E0B;
+        }
+
+        .toast-purple .dacar-toast-icon,
+        .toast-primary .dacar-toast-icon {
+            color: #8B5CF6;
+        }
+
+        .toast-pink .dacar-toast-icon {
+            color: #EC4899;
+        }
+
+        .toast-dark .dacar-toast-icon {
+            color: #64748B;
+        }
+
+        .dacar-toast-content {
+            flex: 1;
+            color: #E2E8F0;
+            font-weight: 500;
+        }
+
+        .dacar-toast-content strong {
+            color: #FFFFFF;
+            font-weight: 700;
+        }
 
         .dacar-toast-close {
             background: none;
@@ -457,7 +875,10 @@
             align-items: center;
             justify-content: center;
         }
-        .dacar-toast-close:hover { color: #F1F5F9; }
+
+        .dacar-toast-close:hover {
+            color: #F1F5F9;
+        }
 
         .dacar-toast-progress {
             position: absolute;
@@ -470,7 +891,27 @@
             animation: toastProgress linear forwards;
         }
 
-        /* @keyframes toastSlideIn и toastProgress вынесены в dacar-core.css */
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(100%) scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes toastProgress {
+            from {
+                transform: scaleX(1);
+            }
+
+            to {
+                transform: scaleX(0);
+            }
+        }
 
         /* ===== CARDS ===== */
         .dacar-card {
@@ -505,10 +946,17 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--accent-orange), #F97316);
             color: #FFF;
-            box-shadow: 0 2px 10px rgba(234,88,12,0.25);
+            box-shadow: 0 2px 10px rgba(234, 88, 12, 0.25);
         }
-        .btn-primary:hover  { opacity: 0.92; transform: translateY(-1px); }
-        .btn-primary:active { transform: scale(0.97); }
+
+        .btn-primary:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
 
         .btn-secondary {
             background: #FFFFFF;
@@ -516,21 +964,32 @@
             border: 1px solid var(--card-border);
             box-shadow: var(--shadow-xs);
         }
-        .btn-secondary:hover  { background: #F9FAFB; border-color: #D1D5DB; }
+
+        .btn-secondary:hover {
+            background: #F9FAFB;
+            border-color: #D1D5DB;
+        }
 
         .btn-danger {
-            background: rgba(220,38,38,0.08);
+            background: rgba(220, 38, 38, 0.08);
             color: var(--accent-red);
-            border: 1px solid rgba(220,38,38,0.25);
+            border: 1px solid rgba(220, 38, 38, 0.25);
         }
-        .btn-danger:hover { background: var(--accent-red); color: #FFF; }
+
+        .btn-danger:hover {
+            background: var(--accent-red);
+            color: #FFF;
+        }
 
         .btn-success {
             background: var(--accent-green);
             color: #FFF;
             font-weight: 700;
         }
-        .btn-success:hover { background: #047857; }
+
+        .btn-success:hover {
+            background: #047857;
+        }
 
         /* ===== TABLES ===== */
         .table-responsive {
@@ -564,7 +1023,9 @@
             vertical-align: middle;
         }
 
-        .dacar-table tbody tr:hover { background: #FAFAFA; }
+        .dacar-table tbody tr:hover {
+            background: #FAFAFA;
+        }
 
         /* ===== FORMS ===== */
         .form-control {
@@ -585,7 +1046,7 @@
 
         .form-control:focus {
             border-color: var(--accent-cyan);
-            box-shadow: 0 0 0 3px rgba(2,132,199,0.12);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
         }
 
         select.form-control {
@@ -608,25 +1069,58 @@
             white-space: nowrap;
         }
 
-        .badge-cyan   { background: rgba(2,132,199,0.1);   color: var(--accent-cyan);   border: 1px solid rgba(2,132,199,0.25); }
-        .badge-orange { background: rgba(234,88,12,0.1);   color: var(--accent-orange); border: 1px solid rgba(234,88,12,0.25); }
-        .badge-green  { background: rgba(5,150,105,0.1);   color: var(--accent-green);  border: 1px solid rgba(5,150,105,0.25); }
-        .badge-red    { background: rgba(220,38,38,0.1);   color: var(--accent-red);    border: 1px solid rgba(220,38,38,0.25); }
-        .badge-purple { background: rgba(124,58,237,0.1);  color: var(--accent-purple); border: 1px solid rgba(124,58,237,0.25); }
+        .badge-cyan {
+            background: rgba(2, 132, 199, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(2, 132, 199, 0.25);
+        }
+
+        .badge-orange {
+            background: rgba(234, 88, 12, 0.1);
+            color: var(--accent-orange);
+            border: 1px solid rgba(234, 88, 12, 0.25);
+        }
+
+        .badge-green {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(5, 150, 105, 0.25);
+        }
+
+        .badge-red {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--accent-red);
+            border: 1px solid rgba(220, 38, 38, 0.25);
+        }
+
+        .badge-purple {
+            background: rgba(124, 58, 237, 0.1);
+            color: var(--accent-purple);
+            border: 1px solid rgba(124, 58, 237, 0.25);
+        }
 
         /* ===== PRINT ===== */
         @media print {
-            .header-nav, .no-print, .messages-container,
-            .hamburger-btn, .mobile-nav-overlay, .mobile-nav-drawer {
+
+            .header-nav,
+            .no-print,
+            .messages-container,
+            .hamburger-btn,
+            .mobile-nav-overlay,
+            .mobile-nav-drawer {
                 display: none !important;
             }
-            body, html {
+
+            body,
+            html {
                 background: #FFF !important;
                 color: #000 !important;
                 padding: 0 !important;
                 margin: 0 !important;
             }
-            main, .main-container {
+
+            main,
+            .main-container {
                 display: block !important;
                 padding: 0 !important;
                 margin: 0 !important;
@@ -636,7 +1130,10 @@
 
         /* ===== REDUCED MOTION ===== */
         @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
+
+            *,
+            *::before,
+            *::after {
                 animation-duration: 0.01ms !important;
                 transition-duration: 0.01ms !important;
             }
@@ -646,8 +1143,20 @@
 
         /* Tablet: show hamburger, hide desktop nav links */
         @media (max-width: 960px) {
-            .nav-links { display: none; }
-            .hamburger-btn { display: flex; }
+            .nav-links {
+                display: none;
+            }
+
+            .hamburger-btn {
+                display: flex;
+            }
+
+            .desktop-quick-search,
+            .desktop-header-icon,
+            .desktop-user-avatar,
+            .desktop-logout-btn {
+                display: none;
+            }
         }
 
         @media (max-width: 768px) {
@@ -661,8 +1170,14 @@
                 overflow-x: hidden;
                 box-sizing: border-box;
             }
-            .user-badge .user-role { display: none; }
-            .user-badge { max-width: 130px; }
+
+            .user-badge .user-role {
+                display: none;
+            }
+
+            .user-badge {
+                max-width: 130px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -677,17 +1192,29 @@
                 overflow-x: hidden;
                 box-sizing: border-box;
             }
-            .dacar-card { padding: 0.85rem; }
-            .brand-badge { display: none; }
-            .user-badge { display: none; }
+
+            .dacar-card {
+                padding: 0.85rem;
+            }
+
+            .brand-badge {
+                display: none;
+            }
+
+            .user-badge {
+                display: none;
+            }
         }
 
         @media (max-width: 359px) {
-            .brand-logo span:not(.brand-badge) { display: none; }
+            .brand-logo span:not(.brand-badge) {
+                display: none;
+            }
         }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
+
 <body>
     {% if user.is_authenticated %}
     <!-- Mobile Nav Overlay -->
@@ -698,7 +1225,8 @@
         <div class="drawer-header">
             <a href="{% url 'dashboard' %}" class="brand-logo" onclick="closeMobileNav()">
                 <i class="fa-solid fa-car-side" style="color: var(--accent-cyan);"></i>
-                <i class="fa-solid fa-gauge-high" style="color: var(--accent-cyan); margin-left: -5px; font-size: 0.8em;"></i>
+                <i class="fa-solid fa-gauge-high"
+                    style="color: var(--accent-cyan); margin-left: -5px; font-size: 0.8em;"></i>
                 <span>DACAR <span style="color: var(--accent-orange); font-weight: 300;">MARKET</span></span>
             </a>
             <button class="drawer-close-btn" onclick="closeMobileNav()" aria-label="Закрыть меню">
@@ -707,15 +1235,28 @@
         </div>
 
         <ul class="drawer-nav">
-            <li><a href="{% url 'pos' %}" class="drawer-nav-link pos-btn" onclick="closeMobileNav()"><i class="fa-solid fa-cash-register"></i> Касса (POS)</a></li>
+            <li><a href="{% url 'pos' %}" class="drawer-nav-link pos-btn" onclick="closeMobileNav()"><i
+                        class="fa-solid fa-cash-register"></i> Касса (POS)</a></li>
             {% if user.is_admin_user %}
-            <li><a href="{% url 'dashboard' %}" class="drawer-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-chart-line"></i> Дашборд</a></li>
-            <li><a href="{% url 'product_list' %}" class="drawer-nav-link {% if 'catalog' in request.path %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-boxes-stacked"></i> Каталог и Склад</a></li>
-            <li><a href="{% url 'sales_orders_list' %}" class="drawer-nav-link {% if 'orders' in request.path %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-receipt"></i> Все чеки</a></li>
-            <li><a href="{% url 'audit_log' %}" class="drawer-nav-link {% if 'audit-log' in request.path %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-shield-halved"></i> Журнал аудита</a></li>
-            <li><a href="{% url 'users_list' %}" class="drawer-nav-link {% if 'staff' in request.path %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-users-gear"></i> Персонал</a></li>
+            <li><a href="{% url 'dashboard' %}"
+                    class="drawer-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-chart-line"></i> Дашборд</a></li>
+            <li><a href="{% url 'product_list' %}"
+                    class="drawer-nav-link {% if 'catalog' in request.path %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-boxes-stacked"></i> Каталог и Склад</a></li>
+            <li><a href="{% url 'sales_orders_list' %}"
+                    class="drawer-nav-link {% if 'orders' in request.path %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-receipt"></i> Все чеки</a></li>
+            <li><a href="{% url 'audit_log' %}"
+                    class="drawer-nav-link {% if 'audit-log' in request.path %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-shield-halved"></i> Журнал аудита</a></li>
+            <li><a href="{% url 'users_list' %}"
+                    class="drawer-nav-link {% if 'staff' in request.path %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-users-gear"></i> Персонал</a></li>
             {% else %}
-            <li><a href="{% url 'sales_orders_list' %}" class="drawer-nav-link {% if 'orders' in request.path %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-receipt"></i> Моя история продаж</a></li>
+            <li><a href="{% url 'sales_orders_list' %}"
+                    class="drawer-nav-link {% if 'orders' in request.path %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-receipt"></i> Моя история продаж</a></li>
             {% endif %}
         </ul>
 
@@ -736,36 +1277,72 @@
     <!-- Main Header -->
     <header class="header-nav" role="banner">
         <a href="{% url 'dashboard' %}" class="brand-logo">
-            <i class="fa-solid fa-car-side" style="color: var(--accent-cyan); font-size: 1.25rem; transform: scaleX(-1);"></i>
+            <i class="fa-solid fa-car-side"
+                style="color: var(--accent-cyan); font-size: 1.25rem; transform: scaleX(-1);"></i>
             <span>DACAR <span style="color: var(--accent-orange); font-weight: 300;">MARKET</span></span>
-            <span class="brand-badge">POS v1</span>
+            <span class="brand-badge" title="Версия DACAR POS {{ APP_VERSION }}">POS v{{ APP_VERSION }}</span>
         </a>
 
         <nav aria-label="Основная навигация">
             <ul class="nav-links">
-                <li><a href="{% url 'pos' %}" class="nav-link pos-btn"><i class="fa-solid fa-cash-register"></i> Касса</a></li>
                 {% if user.is_admin_user %}
-                <li><a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="fa-solid fa-chart-line"></i> Дашборд</a></li>
-                <li><a href="{% url 'product_list' %}" class="nav-link {% if 'catalog' in request.path %}active{% endif %}"><i class="fa-solid fa-boxes-stacked"></i> Каталог</a></li>
-                <li><a href="{% url 'sales_orders_list' %}" class="nav-link {% if 'orders' in request.path %}active{% endif %}"><i class="fa-solid fa-receipt"></i> Чеки</a></li>
-                <li><a href="{% url 'audit_log' %}" class="nav-link {% if 'audit-log' in request.path %}active{% endif %}"><i class="fa-solid fa-shield-halved"></i> Аудит</a></li>
-                <li><a href="{% url 'users_list' %}" class="nav-link {% if 'staff' in request.path %}active{% endif %}"><i class="fa-solid fa-users-gear"></i> Персонал</a></li>
+                <li><a href="{% url 'dashboard' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Дашборд</a></li>
+                <li><a href="{% url 'pos' %}" class="nav-link">Касса</a></li>
+                <li><a href="{% url 'product_list' %}"
+                        class="nav-link {% if 'catalog' in request.path %}active{% endif %}">Склад</a></li>
+                <li><a href="{% url 'sales_orders_list' %}"
+                        class="nav-link {% if 'orders' in request.path %}active{% endif %}">Чеки</a></li>
+                <li><a href="{% url 'audit_log' %}"
+                        class="nav-link {% if 'audit-log' in request.path %}active{% endif %}">Аудит</a></li>
+                <li><a href="{% url 'users_list' %}"
+                        class="nav-link {% if 'staff' in request.path %}active{% endif %}">Персонал</a></li>
                 {% else %}
-                <li><a href="{% url 'sales_orders_list' %}" class="nav-link {% if 'orders' in request.path %}active{% endif %}"><i class="fa-solid fa-receipt"></i> Мои чеки</a></li>
+                <li><a href="{% url 'sales_orders_list' %}"
+                        class="nav-link {% if 'orders' in request.path %}active{% endif %}"><i
+                            class="fa-solid fa-receipt"></i> Мои чеки</a></li>
                 {% endif %}
             </ul>
         </nav>
 
         <div class="user-menu">
+            <div class="desktop-search-wrap">
+                <label class="desktop-quick-search" aria-label="Поиск по товарам"><i class="fa-solid fa-magnifying-glass"></i><input id="desktopQuickSearchInput" type="search" placeholder="Поиск товаров…" autocomplete="off"><kbd>⌘K</kbd></label>
+                <div class="desktop-search-results" id="desktopSearchResults" role="listbox" aria-label="Результаты поиска"></div>
+            </div>
+            <div class="desktop-notification-wrap">
+                <button type="button" class="desktop-header-icon" id="desktopNotificationsBtn" title="Уведомления" aria-label="Открыть уведомления" aria-haspopup="dialog" aria-expanded="false">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-count" id="desktopNotificationCount" hidden>0</span>
+                </button>
+                <section class="notification-panel" id="desktopNotificationPanel" aria-label="Центр уведомлений">
+                    <div hidden id="notificationCsrf">{% csrf_token %}</div>
+                    <div class="notification-panel-header">
+                        <div class="notification-panel-title">Уведомления <span class="notification-panel-total" id="notificationPanelTotal"></span></div>
+                        <div class="notification-panel-actions">
+                            <button type="button" class="notification-action-btn" id="notificationRefreshBtn" title="Обновить"><i class="fa-solid fa-rotate"></i></button>
+                            <button type="button" class="notification-action-btn is-danger" id="notificationClearBtn" title="Удалить все"><i class="fa-regular fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                    <div class="notification-toolbar"><span id="notificationUnreadLabel">Новых нет</span><button type="button" id="notificationReadAllBtn">Прочитать все</button></div>
+                    <div class="notification-list" id="desktopNotificationList"><div class="notification-loading"><i class="fa-solid fa-circle-notch fa-spin"></i>Загрузка…</div></div>
+                    {% if user.is_admin_user %}<a class="notification-panel-footer" href="{% url 'audit_log' %}">Открыть весь журнал событий</a>{% endif %}
+                </section>
+            </div>
+            <button type="button" class="desktop-header-icon" title="Сменить тему" aria-label="Сменить тему" onclick="toggleDesktopTheme()"><i class="fa-solid fa-moon" id="desktopThemeIcon"></i></button>
             <div class="user-badge">
                 <span class="status-dot"></span>
                 <span class="user-name">{{ user.first_name|default:user.username }}</span>
-                <span class="user-role" style="color: var(--text-muted); font-size: 0.72rem;">({{ user.get_role_display }})</span>
+                <span class="user-role" style="color: var(--text-muted); font-size: 0.72rem;">({{ user.get_role_display
+                    }})</span>
             </div>
-            <a href="{% url 'logout' %}" class="btn btn-secondary" style="padding: 8px 10px;" title="Выйти из системы" aria-label="Выйти из системы">
-                <i class="fa-solid fa-right-from-bracket"></i>
+            <a href="{% url 'users_list' %}" class="desktop-user-avatar" title="Профиль">{{ user.first_name|default:user.username|slice:":1"|upper }}</a>
+            <a href="{% url 'logout' %}" class="desktop-logout-btn" title="Выйти из системы" aria-label="Выйти из системы">
+                <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                <span>Выйти</span>
             </a>
-            <button class="hamburger-btn" onclick="openMobileNav()" aria-label="Открыть меню" aria-expanded="false" id="hamburgerBtn">
+            <button class="hamburger-btn" onclick="openMobileNav()" aria-label="Открыть меню" aria-expanded="false"
+                id="hamburgerBtn">
                 <i class="fa-solid fa-bars"></i>
             </button>
         </div>
@@ -775,30 +1352,31 @@
     <!-- GLOBAL FLOATING TOASTS CONTAINER (MULTICOLOR) -->
     <div class="dacar-toast-container" id="dacarToastContainer" aria-live="polite">
         {% if messages %}
-            {% for message in messages %}
-            <div class="dacar-toast toast-{{ message.tags|default:'info' }}" role="alert" data-auto-dismiss="4500">
-                <div class="dacar-toast-icon">
-                    {% if message.tags == 'success' %}
-                        <i class="fa-solid fa-circle-check"></i>
-                    {% elif message.tags == 'error' or message.tags == 'danger' %}
-                        <i class="fa-solid fa-circle-xmark"></i>
-                    {% elif message.tags == 'warning' or message.tags == 'orange' %}
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    {% elif message.tags == 'purple' or message.tags == 'primary' %}
-                        <i class="fa-solid fa-bell"></i>
-                    {% elif message.tags == 'pink' %}
-                        <i class="fa-solid fa-tag"></i>
-                    {% elif message.tags == 'dark' %}
-                        <i class="fa-solid fa-circle-dot"></i>
-                    {% else %}
-                        <i class="fa-solid fa-circle-info"></i>
-                    {% endif %}
-                </div>
-                <div class="dacar-toast-content">{{ message }}</div>
-                <button type="button" class="dacar-toast-close" onclick="dismissToast(this.closest('.dacar-toast'))" aria-label="Закрыть">&times;</button>
-                <div class="dacar-toast-progress" style="animation-duration: 4.5s;"></div>
+        {% for message in messages %}
+        <div class="dacar-toast toast-{{ message.tags|default:'info' }}" role="alert" data-auto-dismiss="4500">
+            <div class="dacar-toast-icon">
+                {% if message.tags == 'success' %}
+                <i class="fa-solid fa-circle-check"></i>
+                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                <i class="fa-solid fa-circle-xmark"></i>
+                {% elif message.tags == 'warning' or message.tags == 'orange' %}
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                {% elif message.tags == 'purple' or message.tags == 'primary' %}
+                <i class="fa-solid fa-bell"></i>
+                {% elif message.tags == 'pink' %}
+                <i class="fa-solid fa-tag"></i>
+                {% elif message.tags == 'dark' %}
+                <i class="fa-solid fa-circle-dot"></i>
+                {% else %}
+                <i class="fa-solid fa-circle-info"></i>
+                {% endif %}
             </div>
-            {% endfor %}
+            <div class="dacar-toast-content">{{ message }}</div>
+            <button type="button" class="dacar-toast-close" onclick="dismissToast(this.closest('.dacar-toast'))"
+                aria-label="Закрыть">&times;</button>
+            <div class="dacar-toast-progress" style="animation-duration: 4.5s;"></div>
+        </div>
+        {% endfor %}
         {% endif %}
     </div>
 
@@ -900,9 +1478,209 @@
             setTimeout(() => { overlay.style.display = 'none'; }, 280);
         }
 
+        function toggleDesktopTheme() {
+            const root = document.documentElement;
+            const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+            root.dataset.theme = nextTheme;
+            localStorage.setItem('dacar-desktop-theme', nextTheme);
+            const icon = document.getElementById('desktopThemeIcon');
+            if (icon) icon.className = nextTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
+        const notificationCentre = (() => {
+            let loaded = false;
+            const escapeText = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            }[char]));
+
+            const elements = () => ({
+                button: document.getElementById('desktopNotificationsBtn'),
+                panel: document.getElementById('desktopNotificationPanel'),
+                list: document.getElementById('desktopNotificationList'),
+                count: document.getElementById('desktopNotificationCount'),
+                total: document.getElementById('notificationPanelTotal'),
+                unread: document.getElementById('notificationUnreadLabel'),
+                readAll: document.getElementById('notificationReadAllBtn'),
+            });
+
+            const updateCounters = (unreadCount, totalCount) => {
+                const el = elements();
+                if (el.count) {
+                    el.count.hidden = unreadCount < 1;
+                    el.count.textContent = unreadCount > 99 ? '99+' : String(unreadCount);
+                }
+                if (el.total) el.total.textContent = totalCount ? `(${totalCount})` : '';
+                if (el.unread) el.unread.textContent = unreadCount ? `Новых: ${unreadCount}` : 'Новых нет';
+                if (el.readAll) el.readAll.disabled = unreadCount < 1;
+            };
+
+            const render = data => {
+                const el = elements();
+                if (!el.list) return;
+                const items = Array.isArray(data.items) ? data.items : [];
+                updateCounters(Number(data.unread_count || 0), Number(data.total_count || items.length));
+                if (!items.length) {
+                    el.list.innerHTML = '<div class="notification-empty"><i class="fa-regular fa-bell-slash"></i><strong>Уведомлений нет</strong><span>Новые события появятся здесь автоматически</span></div>';
+                    return;
+                }
+                el.list.innerHTML = items.map(item => `
+                    <article class="notification-item ${item.is_read ? '' : 'is-unread'}">
+                        <a class="notification-item-link" href="${escapeText(item.url || '#')}">
+                            <span class="notification-item-icon ${escapeText(item.color || 'cyan')}"><i class="fa-solid ${escapeText(item.icon || 'fa-circle-info')}"></i></span>
+                            <span class="notification-item-body">
+                                <span class="notification-item-title">${escapeText(item.title)}</span>
+                                <span class="notification-item-message">${escapeText(item.message)}</span>
+                                <span class="notification-item-meta">${escapeText(item.actor || 'DACAR')} · ${escapeText(item.time || '')}</span>
+                            </span>
+                        </a>
+                        <button type="button" class="notification-dismiss" data-notification-key="${escapeText(item.key)}" title="Удалить уведомление" aria-label="Удалить уведомление"><i class="fa-solid fa-xmark"></i></button>
+                    </article>
+                `).join('');
+            };
+
+            const load = async (showLoader = false) => {
+                const el = elements();
+                if (!el.list) return;
+                if (showLoader) el.list.innerHTML = '<div class="notification-loading"><i class="fa-solid fa-circle-notch fa-spin"></i>Загрузка…</div>';
+                try {
+                    const response = await fetch('{% url "notifications_api" %}', { credentials: 'same-origin' });
+                    if (!response.ok) throw new Error('notification-load');
+                    render(await response.json());
+                    loaded = true;
+                } catch (error) {
+                    el.list.innerHTML = '<div class="notification-empty"><i class="fa-solid fa-triangle-exclamation"></i><strong>Не удалось загрузить</strong><span>Попробуйте обновить список</span></div>';
+                }
+            };
+
+            const action = async (actionName, key = '') => {
+                const csrf = document.querySelector('#notificationCsrf input[name="csrfmiddlewaretoken"]')?.value || '';
+                const response = await fetch('{% url "notifications_action_api" %}', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                    body: JSON.stringify({ action: actionName, key }),
+                });
+                if (!response.ok) throw new Error('notification-action');
+                await load(false);
+            };
+
+            const init = () => {
+                const el = elements();
+                if (!el.button || !el.panel) return;
+                el.button.addEventListener('click', async event => {
+                    event.stopPropagation();
+                    const willOpen = !el.panel.classList.contains('is-open');
+                    el.panel.classList.toggle('is-open', willOpen);
+                    el.button.setAttribute('aria-expanded', String(willOpen));
+                    if (willOpen) await load(!loaded);
+                });
+                el.panel.addEventListener('click', event => event.stopPropagation());
+                document.getElementById('notificationRefreshBtn')?.addEventListener('click', () => load(true));
+                document.getElementById('notificationReadAllBtn')?.addEventListener('click', async () => {
+                    try { await action('read_all'); } catch (error) { showToast('Не удалось отметить уведомления', 'error'); }
+                });
+                document.getElementById('notificationClearBtn')?.addEventListener('click', async () => {
+                    if (!window.confirm('Удалить все текущие уведомления? Новые события продолжат появляться.')) return;
+                    try { await action('clear_all'); } catch (error) { showToast('Не удалось очистить уведомления', 'error'); }
+                });
+                el.list?.addEventListener('click', async event => {
+                    const dismissButton = event.target.closest('[data-notification-key]');
+                    if (!dismissButton) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    dismissButton.disabled = true;
+                    try { await action('dismiss', dismissButton.dataset.notificationKey); } catch (error) { showToast('Не удалось удалить уведомление', 'error'); }
+                });
+                document.addEventListener('click', () => {
+                    el.panel.classList.remove('is-open');
+                    el.button.setAttribute('aria-expanded', 'false');
+                });
+                load(false);
+                window.setInterval(() => load(false), 60000);
+            };
+
+            return { init, close() {
+                const el = elements();
+                el.panel?.classList.remove('is-open');
+                el.button?.setAttribute('aria-expanded', 'false');
+            }};
+        })();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('dacar-desktop-theme');
+            if (savedTheme === 'dark') toggleDesktopTheme();
+
+            const quickSearch = document.getElementById('desktopQuickSearchInput');
+            const searchResults = document.getElementById('desktopSearchResults');
+            let searchTimer;
+            const closeSearchResults = () => {
+                if (searchResults) {
+                    searchResults.classList.remove('is-open');
+                    searchResults.innerHTML = '';
+                }
+            };
+            const renderSearchResults = (products) => {
+                if (!searchResults) return;
+                if (!products.length) {
+                    searchResults.innerHTML = '<div class="desktop-search-empty">Ничего не найдено</div>';
+                } else {
+                    searchResults.innerHTML = products.slice(0, 6).map(product => {
+                        const safeName = String(product.name || '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#039;'}[char]));
+                        const safeMeta = String(product.barcode || product.sku || 'Без штрихкода').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#039;'}[char]));
+                        const price = Number(product.retail_price || 0).toLocaleString('ru-RU');
+                        return '<a class="desktop-search-result" href="{% url "product_list" %}?q=' + encodeURIComponent(product.sku || product.barcode || product.name) + '" role="option"><span class="desktop-search-result-icon"><i class="fa-solid fa-box"></i></span><span class="desktop-search-result-main"><span class="desktop-search-result-name">' + safeName + '</span><span class="desktop-search-result-meta">ШК: ' + safeMeta + '</span></span><span class="desktop-search-result-price">' + price + ' ₸</span></a>';
+                    }).join('');
+                }
+                searchResults.classList.add('is-open');
+            };
+            if (quickSearch) {
+                quickSearch.addEventListener('input', () => {
+                    const query = quickSearch.value.trim();
+                    window.clearTimeout(searchTimer);
+                    if (query.length < 2) {
+                        closeSearchResults();
+                        return;
+                    }
+                    searchTimer = window.setTimeout(async () => {
+                        try {
+                            const response = await fetch('{% url "api_product_search" %}?q=' + encodeURIComponent(query));
+                            const data = await response.json();
+                            if (quickSearch.value.trim() === query) renderSearchResults(data.products || []);
+                        } catch (error) {
+                            closeSearchResults();
+                        }
+                    }, 180);
+                });
+                quickSearch.addEventListener('keydown', (event) => {
+                    if (event.key !== 'Enter') return;
+                    const query = quickSearch.value.trim();
+                    if (query) {
+                        window.location.href = '{% url "product_list" %}?q=' + encodeURIComponent(query);
+                    }
+                });
+            }
+            document.addEventListener('click', (event) => {
+                if (!event.target.closest('.desktop-search-wrap')) closeSearchResults();
+            });
+            notificationCentre.init();
+        });
+
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeMobileNav();
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                const quickSearch = document.getElementById('desktopQuickSearchInput');
+                if (quickSearch) {
+                    e.preventDefault();
+                    quickSearch.focus();
+                    quickSearch.select();
+                }
+                return;
+            }
+            if (e.key === 'Escape') {
+                closeMobileNav();
+                notificationCentre.close();
+            }
         });
     </script>
 </body>
+
 </html>

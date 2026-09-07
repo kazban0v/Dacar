@@ -166,12 +166,69 @@
     }
 
     .dacar-field .form-control {
+        min-height: 46px;
+        background: #FFFFFF;
+        color: #111827;
+        caret-color: var(--accent-cyan);
+        -webkit-text-fill-color: #111827;
         transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+    }
+
+    .dacar-field .form-control::placeholder {
+        color: #94A3B8;
+        opacity: 1;
+        -webkit-text-fill-color: #94A3B8;
     }
 
     .dacar-field .form-control:focus {
         transform: translateY(-1px);
         box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.18);
+    }
+
+    .dacar-input-wrap { position: relative; }
+    .dacar-password-input { padding-right: 2.7rem !important; }
+    .dacar-password-toggle {
+        position: absolute;
+        top: 50%;
+        right: .55rem;
+        display: grid;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        place-items: center;
+        transform: translateY(-50%);
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+    }
+    .dacar-password-toggle:hover { background: rgba(2,132,199,.1); color: var(--accent-cyan); }
+
+    html[data-theme="dark"] .dacar-login-card .form-control {
+        border-color: #334155;
+        background: #0E1728;
+        color: #F8FAFC;
+        caret-color: #38BDF8;
+        color-scheme: dark;
+        -webkit-text-fill-color: #F8FAFC;
+    }
+    html[data-theme="dark"] .dacar-login-card .form-control::placeholder {
+        color: #718096;
+        opacity: 1;
+        -webkit-text-fill-color: #718096;
+    }
+    html[data-theme="dark"] .dacar-login-card .form-control:focus {
+        border-color: #38BDF8;
+        background: #101C30;
+        box-shadow: 0 0 0 3px rgba(56,189,248,.18);
+    }
+    html[data-theme="dark"] .dacar-login-card input:-webkit-autofill,
+    html[data-theme="dark"] .dacar-login-card input:-webkit-autofill:hover,
+    html[data-theme="dark"] .dacar-login-card input:-webkit-autofill:focus {
+        -webkit-text-fill-color: #F8FAFC !important;
+        -webkit-box-shadow: 0 0 0 1000px #0E1728 inset !important;
+        caret-color: #38BDF8;
     }
 
     .dacar-field i {
@@ -241,22 +298,23 @@
                 <label
                     style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Логин
                     сотрудника</label>
-                <div style="position: relative;">
+                <div class="dacar-input-wrap">
                     <i class="fa-solid fa-user"
                         style="position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
                     <input type="text" name="username" class="form-control" required style="padding-left: 2.5rem;"
-                        placeholder="например: admin или cashier1" autofocus>
+                        placeholder="например: admin или cashier1" value="{{ request.POST.username|default:'' }}" autocomplete="username" spellcheck="false" autofocus>
                 </div>
             </div>
 
             <div class="dacar-field">
                 <label
                     style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Пароль</label>
-                <div style="position: relative;">
+                <div class="dacar-input-wrap">
                     <i class="fa-solid fa-lock"
                         style="position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
-                    <input type="password" name="password" class="form-control" required style="padding-left: 2.5rem;"
-                        placeholder="••••••••">
+                    <input type="password" name="password" id="dacarLoginPassword" class="form-control dacar-password-input" required style="padding-left: 2.5rem;"
+                        placeholder="••••••••" autocomplete="current-password">
+                    <button type="button" class="dacar-password-toggle" id="dacarPasswordToggle" aria-label="Показать пароль" title="Показать пароль"><i class="fa-regular fa-eye"></i></button>
                 </div>
             </div>
 
@@ -274,7 +332,18 @@
         var form = document.getElementById('dacarLoginForm');
         var icon = document.getElementById('dacarLoginIcon');
         var btn = document.getElementById('dacarLoginBtn');
+        var password = document.getElementById('dacarLoginPassword');
+        var passwordToggle = document.getElementById('dacarPasswordToggle');
         var isLeaving = false;
+
+        passwordToggle.addEventListener('click', function () {
+            var reveal = password.type === 'password';
+            password.type = reveal ? 'text' : 'password';
+            passwordToggle.setAttribute('aria-label', reveal ? 'Скрыть пароль' : 'Показать пароль');
+            passwordToggle.setAttribute('title', reveal ? 'Скрыть пароль' : 'Показать пароль');
+            passwordToggle.querySelector('i').className = reveal ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+            password.focus();
+        });
 
         form.addEventListener('submit', function (e) {
             if (isLeaving) return;

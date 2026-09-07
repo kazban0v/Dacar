@@ -3,7 +3,7 @@ from config.rendering import render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count, Sum
 from django.utils import timezone
 from sales.models import SaleOrder, SaleOrderItem
 from catalog.models import Product, Category, StockMovement
@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from decimal import Decimal
+from datetime import datetime, timedelta
 import json
 
 from sales.raw_printer import print_order_direct, get_target_printer_name
@@ -99,13 +100,38 @@ def sales_orders_list_view(request):
     status_filter = request.GET.get('status')
     payment_filter = request.GET.get('payment_method')
     cashier_filter = request.GET.get('cashier_id')
+    date_filter = request.GET.get('date', '').strip()
+    cashier_period = request.GET.get('period', 'today')
+    if cashier_period not in {'today', 'yesterday', 'week'}:
+        cashier_period = 'today'
 
     orders = SaleOrder.objects.select_related('cashier', 'refunded_by').prefetch_related('items__product').all()
 
-    # DATA ISOLATION RULE: Cashiers can ONLY see their own sales for current shift/day!
+    cashier_period_label = 'сегодня'
+    cashier_stats_label = 'Чеков за смену'
+    shift_start = None
+
+    # DATA ISOLATION RULE: cashiers can only see their own receipts.  The
+    # period switch never weakens this ownership filter.
     if not request.user.is_admin_user:
         today = timezone.localdate()
-        orders = orders.filter(cashier=request.user, created_at__date=today)
+        own_orders = orders.filter(cashier=request.user)
+        first_shift_order = own_orders.filter(created_at__date=today).order_by('created_at').first()
+        if first_shift_order:
+            shift_start = timezone.localtime(first_shift_order.created_at).strftime('%H:%M')
+
+        if cashier_period == 'yesterday':
+            selected_day = today - timedelta(days=1)
+            orders = own_orders.filter(created_at__date=selected_day)
+            cashier_period_label = 'вчера'
+            cashier_stats_label = 'Чеков вчера'
+        elif cashier_period == 'week':
+            orders = own_orders.filter(created_at__date__gte=today - timedelta(days=6), created_at__date__lte=today)
+            cashier_period_label = 'за 7 дней'
+            cashier_stats_label = 'Чеков за неделю'
+        else:
+            orders = own_orders.filter(created_at__date=today)
+        date_filter = ''
 
     if search:
         orders = orders.filter(
@@ -122,6 +148,29 @@ def sales_orders_list_view(request):
     if cashier_filter and request.user.is_admin_user:
         orders = orders.filter(cashier_id=cashier_filter)
 
+    selected_date = None
+    if date_filter and request.user.is_admin_user:
+        try:
+            selected_date = datetime.strptime(date_filter, '%Y-%m-%d').date()
+            orders = orders.filter(created_at__date=selected_date)
+        except ValueError:
+            date_filter = ''
+
+    order_stats = orders.aggregate(
+        receipt_count=Count('id'),
+        refunded_count=Count('id', filter=Q(status=SaleOrder.Status.REFUNDED)),
+        # Возвращённый чек остаётся в реестре и учитывается в счётчике
+        # возвратов, но не должен увеличивать чистую сумму продаж.
+        total_amount=Sum(
+            'total_amount',
+            filter=Q(status=SaleOrder.Status.COMPLETED),
+        ),
+        completed_count=Count('id', filter=Q(status=SaleOrder.Status.COMPLETED)),
+    )
+    completed_count = order_stats['completed_count'] or 0
+    total_amount = order_stats['total_amount'] or Decimal('0')
+    order_stats['average_amount'] = total_amount / completed_count if completed_count else Decimal('0')
+
     from django.core.paginator import Paginator
 
     page_number = request.GET.get('page', 1)
@@ -135,6 +184,13 @@ def sales_orders_list_view(request):
         'status_filter': status_filter,
         'payment_filter': payment_filter,
         'cashier_filter': cashier_filter,
+        'date_filter': date_filter,
+        'selected_date': selected_date,
+        'cashier_period': cashier_period,
+        'cashier_period_label': cashier_period_label,
+        'cashier_stats_label': cashier_stats_label,
+        'shift_start': shift_start,
+        'order_stats': order_stats,
         'statuses': SaleOrder.Status.choices,
         'payment_methods': SaleOrder.PaymentMethod.choices
     })
@@ -156,7 +212,7 @@ def order_detail_print_view(request, pk):
 @login_required
 def order_refund_view(request, pk):
     """
-    Refund Engine: Both Cashiers and Admins can process a refund by receipt #.
+    Refund Engine for administrators and managers.
     Requires specifying a refund_reason. Creates a permanent log in AuditLog and StockMovement.
     """
     order = get_object_or_404(SaleOrder, pk=pk)
@@ -177,8 +233,8 @@ def order_refund_view(request, pk):
 
     if request.method == 'POST':
         refund_reason = request.POST.get('refund_reason', '').strip()
-        if not refund_reason or len(refund_reason) < 5:
-            messages.error(request, 'Пожалуйста, укажите подробную причину возврата (не менее 5 символов).')
+        if not refund_reason or len(refund_reason) < 4:
+            messages.error(request, 'Пожалуйста, укажите подробную причину возврата (не менее 4 символов).')
             return redirect(orders_list_url)
 
         with transaction.atomic():

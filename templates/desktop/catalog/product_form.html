@@ -29,6 +29,56 @@
         padding-top: 1rem;
         flex-wrap: wrap;
     }
+    .product-form-shell .form-control {
+        min-height: 42px;
+        transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
+    }
+    .product-form-shell .form-control:focus {
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, .14);
+    }
+    html[data-theme="dark"] .product-form-shell .dacar-card {
+        border-color: #2A3B55;
+        background: #121C2E;
+    }
+    html[data-theme="dark"] .product-form-shell .form-control {
+        border-color: #334155;
+        background: #0E1728;
+        color: #F1F5F9;
+        color-scheme: dark;
+    }
+    html[data-theme="dark"] .product-form-shell .form-control::placeholder {
+        color: #718096;
+        opacity: 1;
+    }
+    html[data-theme="dark"] .product-form-shell select.form-control {
+        color: #E2E8F0;
+    }
+    html[data-theme="dark"] .product-form-shell select.form-control option {
+        background: #121C2E;
+        color: #F1F5F9;
+    }
+    html[data-theme="dark"] .product-form-shell select.form-control option[value="__NEW__"] {
+        background: #13253A !important;
+        color: #38BDF8 !important;
+    }
+    html[data-theme="dark"] .product-form-shell .btn-secondary {
+        border-color: #334155;
+        background: #182338;
+        color: #CBD5E1;
+    }
+    html[data-theme="dark"] .product-form-shell .btn-secondary:hover {
+        border-color: #475569;
+        background: #202D43;
+        color: #FFF;
+    }
+    html[data-theme="dark"] .product-form-shell input:-webkit-autofill,
+    html[data-theme="dark"] .product-form-shell input:-webkit-autofill:hover,
+    html[data-theme="dark"] .product-form-shell input:-webkit-autofill:focus {
+        -webkit-text-fill-color: #F1F5F9;
+        -webkit-box-shadow: 0 0 0 1000px #0E1728 inset;
+        caret-color: #F1F5F9;
+    }
     @media (max-width: 640px) {
         .product-form-grid { grid-template-columns: 1fr; }
         .product-form-grid .full-width { grid-column: 1; }
@@ -37,7 +87,7 @@
 {% endblock %}
 
 {% block content %}
-<div style="max-width: 760px; margin: 0 auto;">
+<div class="product-form-shell" style="max-width: 760px; margin: 0 auto;">
     <div class="form-page-header">
         <h1>
             {% if product %}<i class="fa-solid fa-pen-to-square" style="color: var(--accent-cyan);"></i> Редактировать товар{% else %}<i class="fa-solid fa-plus-circle" style="color: var(--accent-orange);"></i> Новый товар{% endif %}

@@ -83,7 +83,7 @@
     scroll-snap-type: x mandatory;
     scroll-padding-left: 1rem;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
+    touch-action: pan-y;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }

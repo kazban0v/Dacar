@@ -16,16 +16,37 @@
     }
 
     /* Staggered Rise Animation ("Волна" при загрузке экрана) */
-    .hub-dashboard-container > * {
+    .hub-dashboard-container>* {
         animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
-    .hub-dashboard-container > *:nth-child(1) { animation-delay: 0.02s; }
-    .hub-dashboard-container > *:nth-child(2) { animation-delay: 0.06s; }
-    .hub-dashboard-container > *:nth-child(3) { animation-delay: 0.10s; }
-    .hub-dashboard-container > *:nth-child(4) { animation-delay: 0.14s; }
-    .hub-dashboard-container > *:nth-child(5) { animation-delay: 0.18s; }
-    .hub-dashboard-container > *:nth-child(6) { animation-delay: 0.22s; }
-    .hub-dashboard-container > *:nth-child(7) { animation-delay: 0.26s; }
+
+    .hub-dashboard-container>*:nth-child(1) {
+        animation-delay: 0.02s;
+    }
+
+    .hub-dashboard-container>*:nth-child(2) {
+        animation-delay: 0.06s;
+    }
+
+    .hub-dashboard-container>*:nth-child(3) {
+        animation-delay: 0.10s;
+    }
+
+    .hub-dashboard-container>*:nth-child(4) {
+        animation-delay: 0.14s;
+    }
+
+    .hub-dashboard-container>*:nth-child(5) {
+        animation-delay: 0.18s;
+    }
+
+    .hub-dashboard-container>*:nth-child(6) {
+        animation-delay: 0.22s;
+    }
+
+    .hub-dashboard-container>*:nth-child(7) {
+        animation-delay: 0.26s;
+    }
 
     /* Top Hub Header */
     .hub-header {
@@ -104,8 +125,15 @@
     }
 
     @keyframes ping {
-        0% { transform: scale(0.6); opacity: 0.9; }
-        100% { transform: scale(2.1); opacity: 0; }
+        0% {
+            transform: scale(0.6);
+            opacity: 0.9;
+        }
+
+        100% {
+            transform: scale(2.1);
+            opacity: 0;
+        }
     }
 
     /* 1. HERO REVENUE CARD */
@@ -216,9 +244,20 @@
         font-size: 0.88rem;
     }
 
-    .hub-kpi-icon-box.blue   { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
-    .hub-kpi-icon-box.purple { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
-    .hub-kpi-icon-box.green  { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+    .hub-kpi-icon-box.blue {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38BDF8;
+    }
+
+    .hub-kpi-icon-box.purple {
+        background: rgba(168, 85, 247, 0.15);
+        color: #C084FC;
+    }
+
+    .hub-kpi-icon-box.green {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34D399;
+    }
 
     .hub-kpi-value {
         font-family: 'Outfit', sans-serif;
@@ -292,6 +331,7 @@
         background: rgba(245, 158, 11, 0.1);
         transition: background 0.15s;
     }
+
     .hub-warning-link:hover {
         background: rgba(245, 158, 11, 0.2);
     }
@@ -395,12 +435,15 @@
         .hub-mini-kpi-grid {
             gap: 0.45rem;
         }
+
         .hub-mini-kpi-card {
             padding: 0.75rem 0.55rem;
         }
+
         .hub-kpi-value {
             font-size: 1.05rem;
         }
+
         .hub-hero-amount {
             font-size: 1.85rem;
         }
@@ -410,7 +453,7 @@
 
 {% block content %}
 <div class="hub-dashboard-container">
-    
+
     <!-- TOP APP HEADER -->
     <div class="hub-header">
         <div class="hub-header-brand">
@@ -422,7 +465,9 @@
         </div>
 
         <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <button type="button" class="btn btn-secondary" onclick="toggleDacarTheme()" style="width: 38px; height: 38px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center;" title="Переключить тему">
+            <button type="button" class="btn btn-secondary" onclick="toggleDacarTheme()"
+                style="width: 38px; height: 38px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center;"
+                title="Переключить тему">
                 <i class="fa-solid fa-moon" id="themeIcon" style="color: #F59E0B; font-size: 0.95rem;"></i>
             </button>
         </div>
@@ -435,47 +480,7 @@
         <span>· обновлено только что</span>
     </div>
 
-    <!-- MARQUEE TICKER (Бегущая строка событий) -->
-    <div class="marquee-container" id="marqueeTicker" style="border-radius: var(--radius-md); background: rgba(2,132,199,0.07); border: 1px solid rgba(2,132,199,0.18); padding: 0.4rem 0; margin-bottom: 0.25rem;">
-        <div class="marquee-track" id="marqueeTrack">
-            <!-- 1я половина -->
-            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
-                <i class="fa-solid fa-chart-line" style="color:var(--accent-cyan);"></i>
-                <span id="marqueeLastSale">{% if last_sale %}✅ Чек №{{ last_sale.order_number }} — {{ last_sale.total_amount|floatformat:0 }} ₸{% else %}Ждём первой продажи...{% endif %}</span>
-            </span>
-            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
-                <i class="fa-solid fa-box" style="color:var(--accent-orange);"></i>
-                {% if low_stock_count > 0 %}
-                <span>⚠️ Товаров на исходе: <strong>{{ low_stock_count }}</strong> позиций</span>
-                {% else %}
-                <span>Склад в порядке ✓</span>
-                {% endif %}
-            </span>
-            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
-                <i class="fa-solid fa-receipt" style="color:var(--accent-green);"></i>
-                <span>Чеков сегодня: <strong>{{ today_count }}</strong> &middot; Ср. чек: <strong>{{ today_avg_check|floatformat:0 }} ₸</strong></span>
-            </span>
-            <!-- Дубликат для бесшовной петли -->
-            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
-                <i class="fa-solid fa-chart-line" style="color:var(--accent-cyan);"></i>
-                <span>{% if last_sale %}✅ Чек №{{ last_sale.order_number }} — {{ last_sale.total_amount|floatformat:0 }} ₸{% else %}Ждём первой продажи...{% endif %}</span>
-            </span>
-            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
-                <i class="fa-solid fa-box" style="color:var(--accent-orange);"></i>
-                {% if low_stock_count > 0 %}
-                <span>⚠️ Товаров на исходе: <strong>{{ low_stock_count }}</strong> позиций</span>
-                {% else %}
-                <span>Склад в порядке ✓</span>
-                {% endif %}
-            </span>
-            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
-                <i class="fa-solid fa-receipt" style="color:var(--accent-green);"></i>
-                <span>Чеков сегодня: <strong>{{ today_count }}</strong> &middot; Ср. чек: <strong>{{ today_avg_check|floatformat:0 }} ₸</strong></span>
-            </span>
-        </div>
-    </div>
-
-    <!-- 1. HERO REVENUE CARD -->
+    <!-- 1. HERO REVENUE CARD (Выручка сегодня + Semicircle Gauge) -->
     <div class="hub-hero-card">
         <div class="hub-hero-label">Выручка сегодня</div>
         <div class="hub-hero-body">
@@ -489,9 +494,12 @@
                         </linearGradient>
                     </defs>
                     <!-- Background track -->
-                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="8" stroke-linecap="round" />
+                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="8"
+                        stroke-linecap="round" />
                     <!-- Dynamic fill arc -->
-                    <path id="hubGaugeArc" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="url(#hubGaugeGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="0" style="transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);" />
+                    <path id="hubGaugeArc" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="url(#hubGaugeGrad)"
+                        stroke-width="8" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="0"
+                        style="transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);" />
                 </svg>
             </div>
 
@@ -508,12 +516,13 @@
         </div>
 
         <div class="hub-hero-target-text" id="heroTargetText">
-            Цель дня 130% от вчерашней выручки — сейчас на отметке <strong><span id="heroTargetPct">{{ target_percent }}</span>%</strong>
+            Цель дня 130% от вчерашней выручки — сейчас на отметке <strong><span id="heroTargetPct">{{ target_percent
+                    }}</span>%</strong>
         </div>
     </div>
 
-    <!-- 2. 3-COLUMN COMPACT KPI GRID (Horizontal Snap Scroll on mobile) -->
-    <div class="hub-mini-kpi-grid snap-row" role="region" aria-label="Ключевые показатели">
+    <!-- 2. 3-COLUMN COMPACT KPI GRID -->
+    <div class="hub-mini-kpi-grid">
         <!-- Чеков сегодня -->
         <div class="hub-mini-kpi-card">
             <div class="hub-kpi-icon-box blue">
@@ -601,7 +610,8 @@
                         <span class="hub-legend-dot" style="background: #10B981;"></span>
                         <span>Наличные</span>
                     </div>
-                    <span class="hub-legend-pct" id="legendCashPct">{{ payment_breakdown.cash_pct|default:"37" }}%</span>
+                    <span class="hub-legend-pct" id="legendCashPct">{{ payment_breakdown.cash_pct|default:"37"
+                        }}%</span>
                 </div>
 
                 <div class="hub-legend-row">
@@ -609,26 +619,32 @@
                         <span class="hub-legend-dot" style="background: #38BDF8;"></span>
                         <span>Карта</span>
                     </div>
-                    <span class="hub-legend-pct" id="legendCardPct">{{ payment_breakdown.card_pct|default:"11" }}%</span>
+                    <span class="hub-legend-pct" id="legendCardPct">{{ payment_breakdown.card_pct|default:"11"
+                        }}%</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- RECENT SALE REAL-TIME STREAM BANNER -->
-    <div class="hub-recent-sale-row" id="hubRecentSaleBanner" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 0.85rem 1.15rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+    <div class="hub-recent-sale-row" id="hubRecentSaleBanner"
+        style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 0.85rem 1.15rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
         <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; flex: 1;">
             <i class="fa-solid fa-bell" style="color: var(--accent-cyan); font-size: 0.95rem;"></i>
             <span style="color: var(--text-secondary); white-space: nowrap; font-size: 0.8rem;">Последний чек:</span>
-            <strong style="color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: 0.82rem;" id="hubLastSaleText">
+            <strong
+                style="color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: 0.82rem;"
+                id="hubLastSaleText">
                 {% if recent_orders.0 %}
-                №{{ recent_orders.0.order_number }} • {{ recent_orders.0.total_amount|floatformat:0 }} ₸ ({{ recent_orders.0.get_payment_method_display }})
+                №{{ recent_orders.0.order_number }} • {{ recent_orders.0.total_amount|floatformat:0 }} ₸ ({{
+                recent_orders.0.get_payment_method_display }})
                 {% else %}
                 Ожидание продаж...
                 {% endif %}
             </strong>
         </div>
-        <a href="{% url 'sales_orders_list' %}" style="color: var(--accent-cyan); font-weight: 700; text-decoration: none; white-space: nowrap; font-size: 0.85rem;">
+        <a href="{% url 'sales_orders_list' %}"
+            style="color: var(--accent-cyan); font-weight: 700; text-decoration: none; white-space: nowrap; font-size: 0.85rem;">
             Чеки &rarr;
         </a>
     </div>

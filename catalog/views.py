@@ -1,8 +1,8 @@
 from django.shortcuts import redirect, get_object_or_404
-from config.rendering import render
+from config.rendering import render, is_mobile_request
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, F
+from django.db.models import Q, F, Sum, ExpressionWrapper, DecimalField
 from django.http import JsonResponse
 from catalog.models import Product, Category, Brand, StockMovement
 from analytics.models import AuditLog
@@ -20,7 +20,8 @@ def product_list_view(request):
     brand_id = request.GET.get('brand')
     low_stock = request.GET.get('low_stock')
 
-    products = Product.objects.select_related('category', 'brand').filter(is_active=True)
+    all_active_products = Product.objects.select_related('category', 'brand').filter(is_active=True)
+    products = all_active_products
 
     if search:
         products = products.filter(
@@ -44,6 +45,15 @@ def product_list_view(request):
     paginator = Paginator(products, 15)
     page_obj = paginator.get_page(page_number)
 
+    inventory_value = all_active_products.aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F('stock_qty') * F('purchase_price'),
+                output_field=DecimalField(max_digits=24, decimal_places=2),
+            )
+        )
+    )['total'] or Decimal('0')
+
     return render(request, 'catalog/product_list.html', {
         'page_obj': page_obj,
         'products': page_obj.object_list,
@@ -53,14 +63,20 @@ def product_list_view(request):
         'selected_category': category_id,
         'selected_brand': brand_id,
         'low_stock_filter': low_stock,
+        'total_products': products.count(),
+        'all_products_count': all_active_products.count(),
+        'low_stock_count': all_active_products.filter(stock_qty__lte=F('min_stock_alert')).count(),
+        'out_of_stock_count': all_active_products.filter(stock_qty__lte=0).count(),
+        'inventory_value': inventory_value,
     })
 
 
 @login_required
 def product_create_view(request):
+    product_list_url = 'm_product_list' if is_mobile_request(request) else 'product_list'
     if not request.user.is_admin_user:
         messages.error(request, 'Добавление товаров доступно исключительно Администратору.')
-        return redirect('product_list')
+        return redirect(product_list_url)
 
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
@@ -143,7 +159,7 @@ def product_create_view(request):
             )
 
             messages.success(request, f'Товар "{product.name}" успешно добавлен.')
-            return redirect('product_list')
+            return redirect(product_list_url)
 
     categories = Category.objects.all()
     brands = Brand.objects.all()
@@ -158,9 +174,10 @@ def product_create_view(request):
 
 @login_required
 def product_edit_view(request, pk):
+    product_list_url = 'm_product_list' if is_mobile_request(request) else 'product_list'
     if not request.user.is_admin_user:
         messages.error(request, 'Редактирование товаров доступно исключительно Администратору.')
-        return redirect('product_list')
+        return redirect(product_list_url)
 
     product = get_object_or_404(Product, pk=pk)
 
@@ -207,7 +224,7 @@ def product_edit_view(request, pk):
         )
 
         messages.success(request, f'Товар "{product.name}" обновлен.')
-        return redirect('product_list')
+        return redirect(product_list_url)
 
     categories = Category.objects.all()
     brands = Brand.objects.all()
@@ -236,6 +253,13 @@ def stock_movement_view(request):
         qty = Decimal(qty_str)
         cost_price = Decimal(cost_price_str) if cost_price_str else product.purchase_price
 
+        movement_labels = dict(StockMovement.MovementType.choices)
+        if movement_type not in movement_labels:
+            messages.error(request, 'Выберите корректный тип складской операции.')
+            return redirect('stock_movement')
+
+        previous_stock = product.stock_qty
+
         if movement_type in [StockMovement.MovementType.IN, StockMovement.MovementType.RETURN]:
             product.stock_qty += qty
         elif movement_type in [StockMovement.MovementType.OUT, StockMovement.MovementType.SALE]:
@@ -254,13 +278,31 @@ def stock_movement_view(request):
             created_by=request.user
         )
 
+        if movement_type in [StockMovement.MovementType.IN, StockMovement.MovementType.RETURN]:
+            audit_action = AuditLog.ActionType.STOCK_IN
+        elif movement_type == StockMovement.MovementType.ADJUSTMENT:
+            audit_action = AuditLog.ActionType.STOCK_ADJUST
+        else:
+            audit_action = AuditLog.ActionType.STOCK_OUT
+
+        movement_description = f'{movement_labels[movement_type]}: «{product.name}» — {qty} {product.unit}'
+        if comment:
+            movement_description += f'. Комментарий: {comment}'
+        movement_description += f' (было {previous_stock}, стало {product.stock_qty})'
+
         AuditLog.log(
             request,
-            AuditLog.ActionType.STOCK_IN if movement_type == 'IN' else AuditLog.ActionType.STOCK_OUT,
-            f"Складская операция [{movement_type}] для '{product.name}': {qty} {product.unit}. Комментарий: {comment}"
+            audit_action,
+            movement_description,
         )
 
-        messages.success(request, f'Остаток товара "{product.name}" успешно обновлен (+{qty} {product.unit}).')
+        if movement_type in [StockMovement.MovementType.IN, StockMovement.MovementType.RETURN]:
+            quantity_result = f'+{qty}'
+        elif movement_type in [StockMovement.MovementType.OUT, StockMovement.MovementType.SALE]:
+            quantity_result = f'-{qty}'
+        else:
+            quantity_result = f'{product.stock_qty}'
+        messages.success(request, f'{movement_labels[movement_type]}: «{product.name}» ({quantity_result} {product.unit}).')
         referer = request.META.get('HTTP_REFERER')
         if referer and '/catalog/' in referer:
             return redirect(referer)
@@ -437,4 +479,3 @@ def stock_action_api(request):
             'unit': product.unit,
             'is_low_stock': product.is_low_stock
         })
-

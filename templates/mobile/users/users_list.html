@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}Персонал — DACAR Mobile Hub{% endblock %}
+{% block body_class %}staff-page{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -317,10 +318,169 @@
         transform: scale(1.08);
         box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
     }
+
+    /* ===== STAFF V2 — mobile PWA ===== */
+    body.staff-page .header-nav { display: none; }
+    body.staff-page .main-container { max-width: 760px; padding-top: 1rem; }
+    .staff-redesign { max-width:680px; margin:0 auto; padding-bottom:calc(98px + var(--safe-bottom)); }
+    .staff-redesign-topbar { display:flex; align-items:center; justify-content:space-between; gap:.7rem; margin-bottom:.95rem; }
+    .staff-redesign-title { display:flex; align-items:center; min-width:0; }
+    .staff-redesign-icon { display:grid; width:43px; height:43px; flex:0 0 auto; place-items:center; border-radius:14px; background:linear-gradient(135deg,#7c3aed,#2563eb); color:#fff; box-shadow:0 8px 18px rgba(124,58,237,.24); }
+    .staff-redesign-title h1 { margin:0; color:var(--text-primary); font:800 1.35rem/1.15 'Outfit',sans-serif; }
+    .staff-top-actions { display:flex; gap:.42rem; }
+    .staff-icon-button { display:grid; width:39px; height:39px; padding:0; place-items:center; border:1px solid var(--card-border); border-radius:50%; background:var(--card-bg); color:var(--text-primary); }
+    .staff-add-button { display:inline-flex; min-height:39px; align-items:center; gap:.4rem; padding:0 .7rem; border:0; border-radius:13px; background:var(--accent-cyan); color:#fff; font-size:.74rem; font-weight:800; }
+    .staff-hero { position:relative; overflow:hidden; margin-bottom:.75rem; padding:1rem; border:1px solid rgba(124,58,237,.24); border-radius:21px; background:linear-gradient(135deg,#1e1246,#112a55 58%,#082d45); color:#fff; box-shadow:0 14px 30px rgba(37,99,235,.15); }
+    .staff-hero::after { position:absolute; top:-56px; right:-36px; width:155px; height:155px; border:24px solid rgba(147,197,253,.13); border-radius:50%; content:''; }
+    .staff-hero-label { position:relative; z-index:1; color:rgba(255,255,255,.63); font-size:.72rem; font-weight:700; }
+    .staff-hero-total { position:relative; z-index:1; margin:.38rem 0 .8rem; font:900 1.85rem/1 'Outfit',sans-serif; }
+    .staff-hero-total small { margin-left:.22rem; color:rgba(255,255,255,.67); font-size:.72rem; letter-spacing:0; }
+    .staff-hero-stats { position:relative; z-index:1; display:flex; gap:.48rem; }
+    .staff-hero-stat { min-width:77px; padding:.47rem .55rem; border:1px solid rgba(255,255,255,.14); border-radius:11px; background:rgba(5,12,29,.31); backdrop-filter:blur(7px); }
+    .staff-hero-stat strong { display:block; font:800 .94rem/1 'Outfit',sans-serif; }
+    .staff-hero-stat span { display:block; margin-top:.22rem; color:rgba(255,255,255,.61); font-size:.59rem; font-weight:700; }
+    .staff-search { display:flex; align-items:center; gap:.45rem; padding:.48rem .55rem; margin-bottom:.65rem; border:1px solid var(--card-border); border-radius:16px; background:var(--card-bg); }
+    .staff-search > i { padding-left:.2rem; color:var(--text-muted); }
+    .staff-search input { min-width:0; flex:1; min-height:37px; padding:0; border:0; outline:0; background:transparent; color:var(--text-primary); font:700 .85rem 'Outfit',sans-serif; }
+    .staff-search input::placeholder { color:var(--text-muted); font-weight:500; }
+    .staff-role-row { display:flex; gap:.48rem; margin-bottom:.85rem; overflow-x:auto; scrollbar-width:none; }
+    .staff-role-row::-webkit-scrollbar { display:none; }
+    .staff-role-chip { display:inline-flex; min-height:34px; align-items:center; gap:.35rem; padding:0 .72rem; flex:0 0 auto; border:1px solid var(--card-border); border-radius:999px; background:var(--card-bg); color:var(--text-muted); font:800 .72rem 'Outfit',sans-serif; white-space:nowrap; }
+    .staff-role-chip.active { border-color:var(--accent-cyan); background:rgba(2,132,199,.13); color:var(--accent-cyan); }
+    .staff-section-head { display:flex; align-items:center; justify-content:space-between; margin:.2rem 0 .62rem; }
+    .staff-section-head h2 { margin:0; color:var(--text-primary); font:800 .95rem/1.2 'Outfit',sans-serif; }
+    .staff-section-head span { color:var(--text-muted); font-size:.7rem; }
+    .staff-v2-list { display:flex; flex-direction:column; gap:.62rem; }
+    .staff-v2-card { overflow:hidden; border:1px solid var(--card-border); border-radius:17px; background:var(--card-bg); box-shadow:var(--shadow-xs); }
+    .staff-v2-card details { position:relative; }
+    .staff-v2-card summary { display:block; padding:.8rem; cursor:pointer; list-style:none; }
+    .staff-v2-card summary::-webkit-details-marker { display:none; }
+    .staff-v2-card summary::after { position:absolute; top:1.05rem; right:.8rem; color:var(--accent-cyan); content:'⌄'; font-size:1rem; }
+    .staff-v2-card details[open] summary::after { transform:rotate(180deg); }
+    .staff-v2-card-top { display:flex; align-items:center; gap:.62rem; padding-right:1.35rem; }
+    .staff-v2-avatar { display:grid; width:41px; height:41px; flex:0 0 auto; place-items:center; border-radius:14px; color:#fff; font:800 .88rem 'Outfit',sans-serif; }
+    .staff-v2-avatar.admin { background:linear-gradient(135deg,#f97316,#ea580c); }
+    .staff-v2-avatar.cashier { background:linear-gradient(135deg,#10b981,#059669); }
+    .staff-v2-person { min-width:0; flex:1; }
+    .staff-v2-name { overflow:hidden; color:var(--text-primary); font:800 .88rem/1.2 'Outfit',sans-serif; text-overflow:ellipsis; white-space:nowrap; }
+    .staff-v2-login { margin-top:.18rem; color:var(--text-muted); font-size:.7rem; }
+    .staff-v2-status { display:inline-flex; align-items:center; gap:.26rem; padding:.3rem .43rem; border-radius:999px; background:rgba(16,185,129,.11); color:var(--accent-green); font-size:.62rem; font-weight:800; }
+    .staff-v2-status.off { background:rgba(239,68,68,.1); color:var(--accent-red); }
+    .staff-v2-meta { display:flex; align-items:center; gap:.42rem; margin-top:.67rem; padding-top:.63rem; border-top:1px dashed var(--card-border); color:var(--text-muted); font-size:.71rem; }
+    .staff-v2-role { display:inline-flex; align-items:center; gap:.28rem; padding:.28rem .42rem; border-radius:8px; background:rgba(124,58,237,.1); color:#8b5cf6; font-weight:800; }
+    .staff-v2-role.cashier { background:rgba(16,185,129,.1); color:var(--accent-green); }
+    .staff-v2-expanded { padding:0 .8rem .76rem; border-top:1px solid var(--card-border); }
+    .staff-v2-contact { display:flex; align-items:center; gap:.5rem; margin-top:.65rem; padding:.6rem; border:1px solid var(--card-border); border-radius:11px; background:var(--glass-card); color:var(--text-secondary); font-size:.72rem; }
+    .staff-v2-contact a { color:var(--accent-cyan); font-weight:700; text-decoration:none; }
+    .staff-v2-actions { display:flex; gap:.45rem; margin-top:.6rem; }
+    .staff-v2-actions .btn { min-height:37px; padding:.38rem .58rem; border-radius:11px; font-size:.71rem; }
+    .staff-v2-actions form:first-child { flex:1; }
+    .staff-v2-actions form:first-child .btn { width:100%; }
+    /* Карточка сотрудника: реальные данные продаж за 7 дней. */
+    .staff-v2-list { gap:.75rem; }
+    .staff-v2-card { overflow:visible; border-radius:22px; }
+    .staff-v3-card-body { display:grid; grid-template-columns:52px minmax(0,1fr) 68px 44px 20px; align-items:center; gap:.56rem; min-height:96px; padding:.75rem .8rem; }
+    .staff-v2-avatar { display:flex; width:52px; height:52px; align-items:center; justify-content:center; box-sizing:border-box; border-radius:50%; font-size:.92rem; line-height:1; text-align:center; }
+    .staff-v2-avatar.admin { background:linear-gradient(135deg,#7c3aed,#4f46e5); }
+    .staff-v2-avatar.cashier { background:linear-gradient(135deg,#0284c7,#0ea5e9); }
+    .staff-v2-avatar.cashier.warm { background:linear-gradient(135deg,#f97316,#ea580c); }
+    .staff-v3-person { min-width:0; }
+    .staff-v3-name-row { display:flex; align-items:center; gap:.4rem; min-width:0; }
+    .staff-v2-name { min-width:0; font-size:.93rem; text-overflow:ellipsis; }
+    .staff-v3-role { display:inline-flex; flex:0 0 auto; align-items:center; padding:.2rem .48rem; border-radius:999px; background:rgba(56,189,248,.14); color:#7dd3fc; font-size:.64rem; font-weight:900; }
+    .staff-v3-role.admin { background:rgba(139,92,246,.17); color:#c4b5fd; }
+    .staff-v3-revenue { margin-top:.2rem; color:var(--text-muted); font-size:.7rem; font-weight:700; line-height:1.2; }
+    .staff-v3-revenue strong { display:block; color:var(--text-primary); font:900 .9rem/1.05 'Outfit',sans-serif; }
+    .staff-v3-revenue.is-empty strong { color:var(--text-muted); font-size:.8rem; }
+    .staff-sparkline { width:68px; height:28px; overflow:visible; }
+    .staff-sparkline polyline { fill:none; stroke:#34d399; stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; }
+    .staff-sparkline.down polyline { stroke:#fb7185; }
+    .staff-sparkline.flat polyline { stroke:#64748b; }
+    .staff-toggle-form { margin:0; }
+    .staff-toggle { position:relative; display:block; width:44px; height:28px; padding:0; border:0; border-radius:999px; background:#26354d; cursor:pointer; transition:background .2s ease; }
+    .staff-toggle::after { position:absolute; top:4px; left:4px; width:22px; height:22px; border-radius:50%; background:#94a3b8; box-shadow:0 1px 3px rgba(0,0,0,.25); content:''; transition:transform .2s ease, background .2s ease; }
+    .staff-toggle.is-on { background:#0284c7; }
+    .staff-toggle.is-on::after { background:#fff; transform:translateX(14px); }
+    .staff-more-button { width:22px; height:42px; padding:0; border:0; background:transparent; color:var(--text-muted); cursor:pointer; font-size:1.15rem; }
+    .staff-v3-card-body.is-inactive { opacity:.58; }
+    .staff-v3-card-body.is-inactive .staff-toggle { background:#26354d; }
+    .staff-action-backdrop { position:fixed; z-index:1200; inset:0; display:none; background:rgba(2,6,23,.72); backdrop-filter:blur(5px); }
+    .staff-action-backdrop.show { display:block; }
+    .staff-action-sheet { position:fixed; z-index:1201; right:0; bottom:0; left:0; display:none; max-width:560px; margin:0 auto; padding:0 1.2rem calc(1.2rem + var(--safe-bottom)); border:1px solid var(--card-border); border-radius:28px 28px 0 0; background:var(--card-bg); box-shadow:0 -18px 50px rgba(0,0,0,.32); }
+    .staff-action-sheet.show { display:block; animation:sheetUp .22s ease both; }
+    .staff-action-handle { width:62px; height:6px; margin:.75rem auto 1rem; border-radius:999px; background:#475569; }
+    .staff-action-person { display:flex; align-items:center; gap:.7rem; padding-bottom:1rem; border-bottom:1px solid var(--card-border); }
+    .staff-action-person > .staff-v2-avatar { display:flex; width:50px; height:50px; margin-top:0; align-items:center; justify-content:center; color:#fff; font-size:.9rem; }
+    .staff-action-person strong { display:block; color:var(--text-primary); font:800 1rem 'Outfit',sans-serif; }
+    .staff-action-person > div > span { display:block; margin-top:.18rem; color:var(--text-muted); font-size:.77rem; font-weight:700; }
+    .staff-action-options { display:flex; flex-direction:column; margin:.7rem 0; }
+    .staff-action-option { display:flex; width:100%; min-height:52px; align-items:center; gap:.9rem; padding:.4rem .15rem; border:0; background:transparent; color:var(--text-primary); cursor:pointer; font:700 .95rem 'Outfit',sans-serif; text-align:left; text-decoration:none; }
+    .staff-action-option i { width:27px; color:var(--text-muted); text-align:center; font-size:1.12rem; }
+    .staff-action-option.danger { color:#fb7185; }
+    .staff-action-option.danger i { color:#fb7185; }
+    .staff-action-cancel { width:100%; min-height:46px; border:0; border-radius:13px; background:transparent; color:var(--text-muted); font:800 .95rem 'Outfit',sans-serif; cursor:pointer; }
+    .staff-role-picker { display:none; gap:.5rem; padding:.2rem 0 .65rem; }
+    .staff-role-picker.show { display:flex; }
+    .staff-role-picker button { flex:1; min-height:39px; border:1px solid var(--card-border); border-radius:11px; background:var(--glass-card); color:var(--text-primary); font-weight:800; }
+    @keyframes sheetUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    @media (max-width:520px) { .staff-v3-card-body { grid-template-columns:48px minmax(0,1fr) 50px 42px 18px; gap:.42rem; min-height:90px; padding:.7rem; } .staff-v2-avatar { width:48px; height:48px; } .staff-sparkline { width:50px; } .staff-toggle { width:42px; } .staff-toggle.is-on::after { transform:translateX(12px); } .staff-v3-role { padding:.18rem .35rem; font-size:.59rem; } }
+    .staff-add-sheet { display:none; margin:.75rem 0; padding:.85rem; border:1px solid var(--card-border); border-radius:18px; background:var(--card-bg); box-shadow:var(--shadow-sm); }
+    .staff-add-sheet.is-open { display:block; animation:rise .25s ease; }
+    .staff-add-sheet-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:.75rem; }
+    .staff-add-sheet-head h2 { margin:0; color:var(--text-primary); font:800 .92rem 'Outfit',sans-serif; }
+    .staff-add-sheet-grid { display:grid; grid-template-columns:1fr 1fr; gap:.65rem; }
+    .staff-add-sheet .full { grid-column:1 / -1; }
+    .staff-add-sheet label { display:block; margin-bottom:.3rem; color:var(--text-muted); font-size:.71rem; font-weight:700; }
+    .staff-add-sheet .form-control { min-height:43px; border-radius:12px; }
+    .staff-add-sheet .btn-primary { width:100%; min-height:44px; margin-top:.75rem; border-radius:12px; font-weight:800; }
+    .legacy-staff-content { display:none !important; }
+    @media (min-width:560px) and (max-width:1200px) { body.staff-page .dacar-bottom-nav { width:calc(100% - 2rem)!important; max-width:760px!important; } .staff-v2-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); } }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="staff-redesign">
+    <header class="staff-redesign-topbar">
+        <div class="staff-redesign-title"><h1>Штат</h1></div>
+        <div class="staff-top-actions"><button type="button" class="staff-icon-button haptic-press" onclick="toggleDacarTheme()" aria-label="Переключить тему"><i class="fa-solid fa-moon" data-dacar-theme-icon style="color:#f59e0b;"></i></button><button type="button" class="staff-icon-button haptic-press" onclick="openUsersHelpModal()" aria-label="Справка по персоналу"><i class="fa-solid fa-question"></i></button><button type="button" class="staff-add-button haptic-press" id="toggleAddUserBtn" onclick="toggleAddUserForm()"><i class="fa-solid fa-user-plus"></i> <span id="toggleAddUserBtnText">Добавить</span></button></div>
+    </header>
+
+    <section class="staff-add-sheet" id="staffAddSheet"><div class="staff-add-sheet-head"><h2><i class="fa-solid fa-user-plus" style="color:var(--accent-cyan);"></i> Новый сотрудник</h2><button type="button" class="staff-icon-button" style="width:31px;height:31px;" onclick="toggleAddUserForm()" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button></div><form method="POST">{% csrf_token %}<input type="hidden" name="action" value="create"><div class="staff-add-sheet-grid"><div><label>Логин *</label><input type="text" name="username" class="form-control" required placeholder="cashier3" autocomplete="username"></div><div><label>Роль</label><select name="role" class="form-control">{% for r_val, r_lbl in roles %}<option value="{{ r_val }}">{{ r_lbl }}</option>{% endfor %}</select></div><div><label>Имя</label><input type="text" name="first_name" class="form-control" placeholder="Иван"></div><div><label>Фамилия</label><input type="text" name="last_name" class="form-control" placeholder="Петров"></div><div class="full"><label>Телефон</label><input type="tel" name="phone" class="form-control" placeholder="+7 (707) 000-00-00"></div><div class="full"><label>Пароль *</label><div class="password-input-group"><input type="password" name="password" id="staffPasswordInputV2" class="form-control" required placeholder="••••••••" autocomplete="new-password" style="padding-right:36px;"><button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('staffPasswordInputV2', this)" aria-label="Показать пароль"><i class="fa-regular fa-eye"></i></button></div></div></div><button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-check"></i> Создать сотрудника</button></form></section>
+
+    <div class="staff-search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" id="staffSearchInput" placeholder="Имя, логин или телефон" autocomplete="off" oninput="filterStaffList()"></div>
+    <nav class="staff-role-row" aria-label="Фильтр сотрудников"><button type="button" class="staff-role-chip active" onclick="filterStaffRole('all', this)"><i class="fa-solid fa-users"></i> Все · {{ staff_stats.total|default:0 }}</button><button type="button" class="staff-role-chip" onclick="filterStaffRole('ADMIN', this)"><i class="fa-solid fa-crown"></i> Админы</button><button type="button" class="staff-role-chip" onclick="filterStaffRole('CASHIER', this)"><i class="fa-solid fa-cash-register"></i> Кассиры</button></nav>
+    <div class="staff-section-head"><h2>Сотрудники</h2><span>Нажмите для действий</span></div>
+    <section class="staff-v2-list" id="mobileStaffCards">
+        {% for staff in staff_cards %}{% with u=staff.user %}
+        <article class="staff-v2-card staff-row" data-name="{{ u.get_full_name|default:'' }}" data-username="{{ u.username }}" data-phone="{{ u.phone|default:'' }}" data-role="{{ u.role }}">
+            <div class="staff-v3-card-body {% if not u.is_active %}is-inactive{% endif %}">
+                <span class="staff-v2-avatar {% if u.role == 'ADMIN' %}admin{% else %}cashier{% if forloop.counter|divisibleby:2 %} warm{% endif %}{% endif %}">{{ u.first_name|default:u.username|slice:":1"|upper }}{{ u.last_name|slice:":1"|upper }}</span>
+                <div class="staff-v3-person"><div class="staff-v3-name-row"><div class="staff-v2-name">{{ u.get_full_name|default:u.username }}{% if u == request.user %} <span style="color:var(--accent-cyan);font-size:.62rem;">· Вы</span>{% endif %}</div><span class="staff-v3-role {% if u.role == 'ADMIN' %}admin{% endif %}">{% if u.role == 'ADMIN' %}Админ{% else %}Кассир{% endif %}</span></div><div class="staff-v3-revenue {% if not staff.has_sales %}is-empty{% endif %}">{% if staff.has_sales %}<strong>{{ staff.month_revenue|floatformat:0 }} ₸</strong>{{ staff.month_orders }} чек. за месяц{% else %}<strong>Нет продаж</strong>за последние 7 дней{% endif %}</div></div>
+                <svg class="staff-sparkline {{ staff.trend_direction }}" viewBox="0 0 82 28" aria-label="Продажи за последние семь дней"><polyline points="{{ staff.sparkline_points }}"></polyline></svg>
+                {% if u != request.user and u.username != 'beybit' %}<form method="POST" class="staff-toggle-form" title="{% if u.is_active %}Деактивировать{% else %}Активировать{% endif %}">{% csrf_token %}<input type="hidden" name="action" value="toggle_status"><input type="hidden" name="user_id" value="{{ u.id }}"><button type="submit" class="staff-toggle {% if u.is_active %}is-on{% endif %}" aria-label="{% if u.is_active %}Деактивировать{% else %}Активировать{% endif %}"></button></form>{% else %}<span class="staff-toggle {% if u.is_active %}is-on{% endif %}" aria-label="Профиль защищён"></span>{% endif %}
+                <button type="button" class="staff-more-button" aria-label="Действия с сотрудником" onclick="openStaffActionSheet('{{ u.id }}', '{{ u.get_full_name|default:u.username|escapejs }}', '{{ u.first_name|default:u.username|slice:":1"|upper }}{{ u.last_name|slice:":1"|upper }}', '{{ u.role }}', '{{ u.is_active|yesno:'true,false' }}', '{{ u.username }}', {% if u != request.user and u.username != 'beybit' %}true{% else %}false{% endif %})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+            </div>
+        </article>
+        {% endwith %}{% endfor %}
+    </section>
+    <div id="noStaffMessage" style="display:{% if users_list %}none{% else %}block{% endif %};text-align:center;color:var(--text-muted);padding:2.5rem 1rem;"><i class="fa-solid fa-user-slash" style="font-size:2.2rem;opacity:.4;"></i><p style="font-weight:700;">Сотрудники не найдены</p><p style="margin:.35rem 0 0;font-size:.78rem;">Добавьте первого сотрудника кнопкой сверху.</p></div>
+</div>
+
+<div class="staff-action-backdrop" id="staffActionBackdrop" onclick="closeStaffActionSheet()"></div>
+<section class="staff-action-sheet" id="staffActionSheet" aria-modal="true" role="dialog" aria-labelledby="staffActionName">
+    <div class="staff-action-handle"></div>
+    <div class="staff-action-person"><span class="staff-v2-avatar cashier" id="staffActionAvatar">?</span><div><strong id="staffActionName"></strong><span id="staffActionRole"></span></div></div>
+    <div class="staff-action-options">
+        <button type="button" class="staff-action-option" id="staffActionRoleButton" onclick="toggleStaffRolePicker()"><i class="fa-solid fa-user-shield"></i> Изменить роль</button>
+        <form method="POST" id="staffRoleForm" class="staff-role-picker">{% csrf_token %}<input type="hidden" name="action" value="set_role"><input type="hidden" name="user_id" id="staffRoleUserId"><button type="submit" name="role" value="ADMIN">Админ</button><button type="submit" name="role" value="CASHIER">Кассир</button></form>
+        <a class="staff-action-option" id="staffActionHistoryLink" href="#"><i class="fa-solid fa-clock-rotate-left"></i> История чеков</a>
+        <form method="POST" id="staffStatusForm">{% csrf_token %}<input type="hidden" name="action" value="toggle_status"><input type="hidden" name="user_id" id="staffStatusUserId"><button type="submit" class="staff-action-option" id="staffActionStatusButton"><i class="fa-solid fa-user-slash"></i><span>Деактивировать</span></button></form>
+        <form method="POST" id="staffDeleteForm" onsubmit="return confirm('Удалить сотрудника из системы?')">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="user_id" id="staffDeleteUserId"><button type="submit" class="staff-action-option danger"><i class="fa-solid fa-trash-can"></i> Удалить сотрудника</button></form>
+    </div>
+    <button type="button" class="staff-action-cancel" onclick="closeStaffActionSheet()">Отмена</button>
+</section>
+
+<div class="legacy-staff-content">
 <div class="users-page-header">
     <div>
         <h1 style="font-size: 1.4rem; font-weight: 800; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem;">
@@ -346,38 +506,6 @@
         </button>
     </div>
 </div>
-
-{% if request.user.is_admin_user %}
-<div id="posUpdateBannerMobile" class="dacar-card" style="margin-bottom: 1.5rem; border: 1px solid var(--accent-cyan); background: rgba(6, 182, 212, 0.05); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; position: relative; padding-right: 2.5rem;">
-    <button type="button" onclick="closePosBannerMobile()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.color='var(--accent-red)'" onmouseout="this.style.color='var(--text-muted)'" title="Закрыть">
-        <i class="fa-solid fa-xmark"></i>
-    </button>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <div style="font-size: 2rem; color: var(--accent-cyan);">
-            <i class="fa-brands fa-android"></i>
-        </div>
-        <div>
-            <h3 style="font-size: 1.1rem; font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--text-main); margin-bottom: 0.2rem;">Приложение POS обновлено!</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Вшит нативный высокоскоростной сканер штрихкодов. Установите этот файл на кассовые терминалы.</p>
-        </div>
-    </div>
-    <a href="{% static 'app/DACAR_POS.apk' %}" download class="btn btn-primary" style="white-space: nowrap; padding: 0.6rem 1rem;">
-        <i class="fa-solid fa-download"></i> Скачать APK
-    </a>
-</div>
-<script>
-    const bannerVersionMobile = "v1.1";
-    const hideKeyMobile = 'hidePosUpdateBanner_' + bannerVersionMobile;
-    
-    if (localStorage.getItem(hideKeyMobile) === 'true') {
-        document.getElementById('posUpdateBannerMobile').style.display = 'none';
-    }
-    function closePosBannerMobile() {
-        document.getElementById('posUpdateBannerMobile').style.display = 'none';
-        localStorage.setItem(hideKeyMobile, 'true');
-    }
-</script>
-{% endif %}
 
 <div class="users-grid-layout">
     <!-- CREATE USER CARD -->
@@ -676,6 +804,7 @@
         </div>
     </div>
 </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -684,14 +813,14 @@
 
     // Toggle Add User Form on mobile
     function toggleAddUserForm() {
-        const formCard = document.getElementById('addUserCard');
+        const formCard = document.getElementById('staffAddSheet');
         const btnText = document.getElementById('toggleAddUserBtnText');
         if (!formCard) return;
 
-        formCard.classList.toggle('open');
-        const isOpen = formCard.classList.contains('open');
+        formCard.classList.toggle('is-open');
+        const isOpen = formCard.classList.contains('is-open');
         if (btnText) {
-            btnText.textContent = isOpen ? 'Скрыть форму' : 'Добавить сотрудника';
+            btnText.textContent = isOpen ? 'Скрыть' : 'Добавить';
         }
         if (isOpen) {
             formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -713,7 +842,7 @@
     // Filter by Role Pills
     function filterStaffRole(role, btn) {
         selectedRoleFilter = role;
-        document.querySelectorAll('.staff-pill').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.staff-role-chip').forEach(b => b.classList.remove('active'));
         if (btn) btn.classList.add('active');
         filterStaffList();
     }
@@ -722,7 +851,7 @@
     function filterStaffList() {
         const searchInput = document.getElementById('staffSearchInput');
         const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
-        const rows = document.querySelectorAll('.staff-row');
+        const rows = document.querySelectorAll('.staff-redesign .staff-row');
         let visibleCount = 0;
 
         rows.forEach(row => {
@@ -764,8 +893,49 @@
         }
     }
 
+    function openStaffActionSheet(userId, name, initials, role, isActive, username, canManage) {
+        const active = isActive === true || isActive === 'true';
+        document.getElementById('staffActionName').textContent = name;
+        document.getElementById('staffActionRole').textContent = role === 'ADMIN' ? 'Администратор' : 'Кассир';
+        const avatar = document.getElementById('staffActionAvatar');
+        avatar.textContent = initials || '?';
+        avatar.className = `staff-v2-avatar ${role === 'ADMIN' ? 'admin' : 'cashier'}`;
+        document.getElementById('staffRoleUserId').value = userId;
+        document.getElementById('staffStatusUserId').value = userId;
+        document.getElementById('staffDeleteUserId').value = userId;
+        document.getElementById('staffActionHistoryLink').href = `/m/sales/orders/?cashier_id=${encodeURIComponent(userId)}`;
+
+        const roleButton = document.getElementById('staffActionRoleButton');
+        const rolePicker = document.getElementById('staffRoleForm');
+        const statusForm = document.getElementById('staffStatusForm');
+        const deleteForm = document.getElementById('staffDeleteForm');
+        roleButton.style.display = canManage ? '' : 'none';
+        statusForm.style.display = canManage ? '' : 'none';
+        deleteForm.style.display = canManage ? '' : 'none';
+        rolePicker.classList.remove('show');
+        document.querySelector('#staffActionStatusButton span').textContent = active ? 'Деактивировать' : 'Активировать';
+        document.querySelector('#staffActionStatusButton i').className = active ? 'fa-solid fa-user-slash' : 'fa-solid fa-user-check';
+
+        document.getElementById('staffActionBackdrop').classList.add('show');
+        document.getElementById('staffActionSheet').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeStaffActionSheet() {
+        document.getElementById('staffActionBackdrop').classList.remove('show');
+        document.getElementById('staffActionSheet').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    function toggleStaffRolePicker() {
+        document.getElementById('staffRoleForm').classList.toggle('show');
+    }
+
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeUsersHelpModal();
+        if (e.key === 'Escape') {
+            closeUsersHelpModal();
+            closeStaffActionSheet();
+        }
     });
 </script>
 

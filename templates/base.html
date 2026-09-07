@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
@@ -27,11 +28,11 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- DACAR Core Design System (токены, анимации, утилиты) -->
-    <link rel="stylesheet" href="{% static 'css/dacar-core.css' %}">
 
     <style>
         /* ===== DESIGN SYSTEM TOKENS ===== */
@@ -78,10 +79,10 @@
             --accent-purple: #8B5CF6;
             --glow-color: rgba(2, 132, 199, 0.15);
 
-            --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.35);
-            --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
-            --shadow-lg: 0 16px 36px rgba(0,0,0,0.5);
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.35);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.5);
 
             --radius-sm: 8px;
             --radius-md: 12px;
@@ -140,15 +141,24 @@
             --accent-purple: #7C3AED;
             --glow-color: rgba(2, 132, 199, 0.08);
 
-            --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -2px rgba(0,0,0,0.03);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.07), 0 4px 6px -4px rgba(0,0,0,0.03);
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
         }
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
 
         body {
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -233,21 +243,22 @@
             white-space: nowrap;
         }
 
-        .nav-link:hover, .nav-link.active {
+        .nav-link:hover,
+        .nav-link.active {
             color: var(--text-main);
-            background: rgba(0,0,0,0.06);
+            background: rgba(0, 0, 0, 0.06);
         }
 
         .nav-link.pos-btn {
             background: linear-gradient(135deg, #0EA5E9, #0284C7);
             color: #FFF;
             font-weight: 700;
-            box-shadow: 0 2px 8px rgba(2,132,199,0.3);
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
         }
 
         .nav-link.pos-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(2,132,199,0.4);
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
         }
 
         /* User menu */
@@ -277,7 +288,9 @@
             white-space: nowrap;
         }
 
-        .status-dot, .live-dot, .hub-status-dot {
+        .status-dot,
+        .live-dot,
+        .hub-status-dot {
             position: relative;
             width: 8px;
             height: 8px;
@@ -287,7 +300,9 @@
             display: inline-block;
         }
 
-        .status-dot::after, .live-dot::after, .hub-status-dot::after {
+        .status-dot::after,
+        .live-dot::after,
+        .hub-status-dot::after {
             content: '';
             position: absolute;
             inset: -4px;
@@ -297,7 +312,30 @@
             pointer-events: none;
         }
 
-        /* @keyframes radarPing и rise вынесены в dacar-core.css */
+        @keyframes radarPing {
+            0% {
+                transform: scale(0.6);
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: scale(2.1);
+                opacity: 0;
+            }
+        }
+
+        /* Staggered Rise Animations */
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
 
         /* Bottom Sheet & Backdrop Global System */
         .sheet-backdrop {
@@ -350,6 +388,7 @@
             border-radius: 9999px;
             margin: -0.25rem auto 1rem;
         }
+
         [data-theme="light"] .bottom-sheet-handle {
             background: rgba(0, 0, 0, 0.15);
         }
@@ -376,13 +415,15 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 200;
             opacity: 0;
             transition: opacity 0.25s ease;
         }
 
-        .mobile-nav-overlay.open { opacity: 1; }
+        .mobile-nav-overlay.open {
+            opacity: 1;
+        }
 
         .mobile-nav-drawer {
             position: fixed;
@@ -403,7 +444,9 @@
             box-shadow: var(--shadow-lg);
         }
 
-        .mobile-nav-drawer.open { transform: translateX(0); }
+        .mobile-nav-drawer.open {
+            transform: translateX(0);
+        }
 
         .drawer-header {
             display: flex;
@@ -450,8 +493,9 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .drawer-nav-link:hover, .drawer-nav-link.active {
-            background: rgba(0,0,0,0.05);
+        .drawer-nav-link:hover,
+        .drawer-nav-link.active {
+            background: rgba(0, 0, 0, 0.05);
         }
 
         .drawer-nav-link.pos-btn {
@@ -513,26 +557,52 @@
             border-left: 4px solid var(--accent-cyan);
         }
 
-        .dacar-toast.toast-success { border-left-color: #10B981; }
-        .dacar-toast.toast-error, .dacar-toast.toast-danger { border-left-color: #EF4444; }
-        .dacar-toast.toast-warning { border-left-color: #F59E0B; }
-        .dacar-toast.toast-info { border-left-color: #0284C7; }
+        .dacar-toast.toast-success {
+            border-left-color: #10B981;
+        }
+
+        .dacar-toast.toast-error,
+        .dacar-toast.toast-danger {
+            border-left-color: #EF4444;
+        }
+
+        .dacar-toast.toast-warning {
+            border-left-color: #F59E0B;
+        }
+
+        .dacar-toast.toast-info {
+            border-left-color: #0284C7;
+        }
 
         .dacar-toast-icon {
             font-size: 1.15rem;
             flex-shrink: 0;
             margin-top: 1px;
         }
-        .toast-success .dacar-toast-icon { color: #10B981; }
-        .toast-error .dacar-toast-icon, .toast-danger .dacar-toast-icon { color: #EF4444; }
-        .toast-warning .dacar-toast-icon { color: #F59E0B; }
-        .toast-info .dacar-toast-icon { color: #0284C7; }
+
+        .toast-success .dacar-toast-icon {
+            color: #10B981;
+        }
+
+        .toast-error .dacar-toast-icon,
+        .toast-danger .dacar-toast-icon {
+            color: #EF4444;
+        }
+
+        .toast-warning .dacar-toast-icon {
+            color: #F59E0B;
+        }
+
+        .toast-info .dacar-toast-icon {
+            color: #0284C7;
+        }
 
         .dacar-toast-content {
             flex: 1;
             color: #E2E8F0;
             font-weight: 500;
         }
+
         .dacar-toast-content strong {
             color: #FFFFFF;
             font-weight: 700;
@@ -552,7 +622,10 @@
             align-items: center;
             justify-content: center;
         }
-        .dacar-toast-close:hover { color: #F1F5F9; }
+
+        .dacar-toast-close:hover {
+            color: #F1F5F9;
+        }
 
         .dacar-toast-progress {
             position: absolute;
@@ -565,7 +638,27 @@
             animation: toastProgress linear forwards;
         }
 
-        /* @keyframes toastSlideIn и toastProgress вынесены в dacar-core.css */
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(100%) scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes toastProgress {
+            from {
+                transform: scaleX(1);
+            }
+
+            to {
+                transform: scaleX(0);
+            }
+        }
 
         @media (max-width: 600px) {
             .dacar-toast-container {
@@ -610,10 +703,17 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--accent-orange), #F97316);
             color: #FFF;
-            box-shadow: 0 2px 10px rgba(234,88,12,0.25);
+            box-shadow: 0 2px 10px rgba(234, 88, 12, 0.25);
         }
-        .btn-primary:hover  { opacity: 0.92; transform: translateY(-1px); }
-        .btn-primary:active { transform: scale(0.97); }
+
+        .btn-primary:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
 
         .btn-secondary {
             background: var(--btn-secondary-bg);
@@ -621,21 +721,33 @@
             border: 1px solid var(--btn-secondary-border);
             box-shadow: var(--shadow-xs);
         }
-        .btn-secondary:hover  { background: var(--btn-secondary-hover-bg); color: var(--btn-secondary-text); border-color: var(--accent-cyan); }
+
+        .btn-secondary:hover {
+            background: var(--btn-secondary-hover-bg);
+            color: var(--btn-secondary-text);
+            border-color: var(--accent-cyan);
+        }
 
         .btn-danger {
-            background: rgba(220,38,38,0.08);
+            background: rgba(220, 38, 38, 0.08);
             color: var(--accent-red);
-            border: 1px solid rgba(220,38,38,0.25);
+            border: 1px solid rgba(220, 38, 38, 0.25);
         }
-        .btn-danger:hover { background: var(--accent-red); color: #FFF; }
+
+        .btn-danger:hover {
+            background: var(--accent-red);
+            color: #FFF;
+        }
 
         .btn-success {
             background: var(--accent-green);
             color: #FFF;
             font-weight: 700;
         }
-        .btn-success:hover { background: #047857; }
+
+        .btn-success:hover {
+            background: #047857;
+        }
 
         /* ===== TABLES ===== */
         .table-responsive {
@@ -670,10 +782,18 @@
             color: var(--text-primary);
         }
 
-        .dacar-table tbody tr:hover { background: var(--table-hover); }
+        .dacar-table tbody tr:hover {
+            background: var(--table-hover);
+        }
 
         /* ===== FORMS & INPUTS ===== */
-        .form-control, input[type="text"], input[type="number"], input[type="password"], input[type="search"], select, textarea {
+        .form-control,
+        input[type="text"],
+        input[type="number"],
+        input[type="password"],
+        input[type="search"],
+        select,
+        textarea {
             width: 100%;
             background: var(--input-bg);
             border: 1px solid var(--input-border);
@@ -689,9 +809,12 @@
             appearance: none;
         }
 
-        .form-control:focus, input:focus, select:focus, textarea:focus {
+        .form-control:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
             border-color: var(--accent-cyan);
-            box-shadow: 0 0 0 3px rgba(2,132,199,0.18);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
             background: var(--input-bg);
             color: var(--input-text);
         }
@@ -709,7 +832,8 @@
             opacity: 1 !important;
         }
 
-        select.form-control, select {
+        select.form-control,
+        select {
             background-color: var(--input-bg);
             color: var(--input-text);
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3e%3cpath d='m6 8 4 4 4-4' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
@@ -720,7 +844,8 @@
             cursor: pointer;
         }
 
-        select.form-control option, select option {
+        select.form-control option,
+        select option {
             background-color: var(--select-option-bg);
             color: var(--select-option-text);
             padding: 8px 12px;
@@ -738,25 +863,58 @@
             white-space: nowrap;
         }
 
-        .badge-cyan   { background: rgba(2,132,199,0.1);   color: var(--accent-cyan);   border: 1px solid rgba(2,132,199,0.25); }
-        .badge-orange { background: rgba(234,88,12,0.1);   color: var(--accent-orange); border: 1px solid rgba(234,88,12,0.25); }
-        .badge-green  { background: rgba(5,150,105,0.1);   color: var(--accent-green);  border: 1px solid rgba(5,150,105,0.25); }
-        .badge-red    { background: rgba(220,38,38,0.1);   color: var(--accent-red);    border: 1px solid rgba(220,38,38,0.25); }
-        .badge-purple { background: rgba(124,58,237,0.1);  color: var(--accent-purple); border: 1px solid rgba(124,58,237,0.25); }
+        .badge-cyan {
+            background: rgba(2, 132, 199, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(2, 132, 199, 0.25);
+        }
+
+        .badge-orange {
+            background: rgba(234, 88, 12, 0.1);
+            color: var(--accent-orange);
+            border: 1px solid rgba(234, 88, 12, 0.25);
+        }
+
+        .badge-green {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(5, 150, 105, 0.25);
+        }
+
+        .badge-red {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--accent-red);
+            border: 1px solid rgba(220, 38, 38, 0.25);
+        }
+
+        .badge-purple {
+            background: rgba(124, 58, 237, 0.1);
+            color: var(--accent-purple);
+            border: 1px solid rgba(124, 58, 237, 0.25);
+        }
 
         /* ===== PRINT ===== */
         @media print {
-            .header-nav, .no-print, .messages-container,
-            .hamburger-btn, .mobile-nav-overlay, .mobile-nav-drawer {
+
+            .header-nav,
+            .no-print,
+            .messages-container,
+            .hamburger-btn,
+            .mobile-nav-overlay,
+            .mobile-nav-drawer {
                 display: none !important;
             }
-            body, html {
+
+            body,
+            html {
                 background: #FFF !important;
                 color: #000 !important;
                 padding: 0 !important;
                 margin: 0 !important;
             }
-            main, .main-container {
+
+            main,
+            .main-container {
                 display: block !important;
                 padding: 0 !important;
                 margin: 0 !important;
@@ -766,7 +924,10 @@
 
         /* ===== REDUCED MOTION ===== */
         @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
+
+            *,
+            *::before,
+            *::after {
                 animation-duration: 0.01ms !important;
                 transition-duration: 0.01ms !important;
             }
@@ -776,8 +937,13 @@
 
         /* Tablet: show hamburger, hide desktop nav links */
         @media (max-width: 960px) {
-            .nav-links { display: none; }
-            .hamburger-btn { display: flex; }
+            .nav-links {
+                display: none;
+            }
+
+            .hamburger-btn {
+                display: flex;
+            }
         }
 
         @media (max-width: 768px) {
@@ -791,8 +957,14 @@
                 overflow-x: hidden;
                 box-sizing: border-box;
             }
-            .user-badge .user-role { display: none; }
-            .user-badge { max-width: 130px; }
+
+            .user-badge .user-role {
+                display: none;
+            }
+
+            .user-badge {
+                max-width: 130px;
+            }
         }
 
         /* ===== MOBILE BOTTOM NAVIGATION BAR ===== */
@@ -863,6 +1035,7 @@
             .dacar-bottom-nav {
                 display: flex;
             }
+
             .main-container {
                 padding-bottom: calc(72px + var(--safe-bottom)) !important;
             }
@@ -872,6 +1045,7 @@
             .dacar-bottom-nav {
                 display: flex;
             }
+
             .main-container {
                 padding-bottom: calc(72px + var(--safe-bottom)) !important;
             }
@@ -879,6 +1053,7 @@
     </style>
     {% block extra_head %}{% endblock %}
 </head>
+
 <body>
     {% if user.is_authenticated %}
     <!-- Mobile Nav Overlay -->
@@ -889,7 +1064,8 @@
         <div class="drawer-header">
             <a href="{% url 'dashboard' %}" class="brand-logo" onclick="closeMobileNav()">
                 <i class="fa-solid fa-car-side" style="color: var(--accent-cyan);"></i>
-                <i class="fa-solid fa-gauge-high" style="color: var(--accent-cyan); margin-left: -5px; font-size: 0.8em;"></i>
+                <i class="fa-solid fa-gauge-high"
+                    style="color: var(--accent-cyan); margin-left: -5px; font-size: 0.8em;"></i>
                 <span>DACAR <span style="color: var(--accent-orange); font-weight: 300;">MARKET</span></span>
             </a>
             <button class="drawer-close-btn" onclick="closeMobileNav()" aria-label="Закрыть меню">
@@ -898,15 +1074,28 @@
         </div>
 
         <ul class="drawer-nav">
-            <li><a href="{% url 'pos' %}" class="drawer-nav-link pos-btn" onclick="closeMobileNav()"><i class="fa-solid fa-cash-register"></i> Касса (POS)</a></li>
+            <li><a href="{% url 'pos' %}" class="drawer-nav-link pos-btn" onclick="closeMobileNav()"><i
+                        class="fa-solid fa-cash-register"></i> Касса (POS)</a></li>
             {% if user.is_admin_user %}
-            <li><a href="{% url 'dashboard' %}" class="drawer-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-chart-line"></i> Дашборд</a></li>
-            <li><a href="{% url 'product_list' %}" class="drawer-nav-link {% if 'catalog' in request.path %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-boxes-stacked"></i> Каталог и Склад</a></li>
-            <li><a href="{% url 'sales_orders_list' %}" class="drawer-nav-link {% if 'orders' in request.path %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-receipt"></i> Все чеки</a></li>
-            <li><a href="{% url 'audit_log' %}" class="drawer-nav-link {% if 'audit-log' in request.path %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-shield-halved"></i> Журнал аудита</a></li>
-            <li><a href="{% url 'users_list' %}" class="drawer-nav-link {% if 'staff' in request.path %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-users-gear"></i> Персонал</a></li>
+            <li><a href="{% url 'dashboard' %}"
+                    class="drawer-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-chart-line"></i> Дашборд</a></li>
+            <li><a href="{% url 'product_list' %}"
+                    class="drawer-nav-link {% if 'catalog' in request.path %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-boxes-stacked"></i> Каталог и Склад</a></li>
+            <li><a href="{% url 'sales_orders_list' %}"
+                    class="drawer-nav-link {% if 'orders' in request.path %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-receipt"></i> Все чеки</a></li>
+            <li><a href="{% url 'audit_log' %}"
+                    class="drawer-nav-link {% if 'audit-log' in request.path %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-shield-halved"></i> Журнал аудита</a></li>
+            <li><a href="{% url 'users_list' %}"
+                    class="drawer-nav-link {% if 'staff' in request.path %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-users-gear"></i> Персонал</a></li>
             {% else %}
-            <li><a href="{% url 'sales_orders_list' %}" class="drawer-nav-link {% if 'orders' in request.path %}active{% endif %}" onclick="closeMobileNav()"><i class="fa-solid fa-receipt"></i> Моя история продаж</a></li>
+            <li><a href="{% url 'sales_orders_list' %}"
+                    class="drawer-nav-link {% if 'orders' in request.path %}active{% endif %}"
+                    onclick="closeMobileNav()"><i class="fa-solid fa-receipt"></i> Моя история продаж</a></li>
             {% endif %}
         </ul>
 
@@ -927,39 +1116,58 @@
     <!-- Main Header -->
     <header class="header-nav" role="banner">
         <a href="{% url 'dashboard' %}" class="brand-logo">
-            <i class="fa-solid fa-car-side" style="color: var(--accent-cyan); font-size: 1.25rem; transform: scaleX(-1);"></i>
+            <i class="fa-solid fa-car-side"
+                style="color: var(--accent-cyan); font-size: 1.25rem; transform: scaleX(-1);"></i>
             <span>DACAR <span style="color: var(--accent-orange); font-weight: 300;">MARKET</span></span>
-            <span class="brand-badge">POS v1</span>
+            <span class="brand-badge" title="Версия DACAR POS {{ APP_VERSION }}">POS v{{ APP_VERSION }}</span>
         </a>
 
         <nav aria-label="Основная навигация">
             <ul class="nav-links">
-                <li><a href="{% url 'pos' %}" class="nav-link pos-btn"><i class="fa-solid fa-cash-register"></i> Касса</a></li>
+                <li><a href="{% url 'pos' %}" class="nav-link pos-btn"><i class="fa-solid fa-cash-register"></i>
+                        Касса</a></li>
                 {% if user.is_admin_user %}
-                <li><a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="fa-solid fa-chart-line"></i> Дашборд</a></li>
-                <li><a href="{% url 'product_list' %}" class="nav-link {% if 'catalog' in request.path %}active{% endif %}"><i class="fa-solid fa-boxes-stacked"></i> Каталог</a></li>
-                <li><a href="{% url 'sales_orders_list' %}" class="nav-link {% if 'orders' in request.path %}active{% endif %}"><i class="fa-solid fa-receipt"></i> Чеки</a></li>
-                <li><a href="{% url 'audit_log' %}" class="nav-link {% if 'audit-log' in request.path %}active{% endif %}"><i class="fa-solid fa-shield-halved"></i> Аудит</a></li>
-                <li><a href="{% url 'users_list' %}" class="nav-link {% if 'staff' in request.path %}active{% endif %}"><i class="fa-solid fa-users-gear"></i> Персонал</a></li>
+                <li><a href="{% url 'dashboard' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i
+                            class="fa-solid fa-chart-line"></i> Дашборд</a></li>
+                <li><a href="{% url 'product_list' %}"
+                        class="nav-link {% if 'catalog' in request.path %}active{% endif %}"><i
+                            class="fa-solid fa-boxes-stacked"></i> Каталог</a></li>
+                <li><a href="{% url 'sales_orders_list' %}"
+                        class="nav-link {% if 'orders' in request.path %}active{% endif %}"><i
+                            class="fa-solid fa-receipt"></i> Чеки</a></li>
+                <li><a href="{% url 'audit_log' %}"
+                        class="nav-link {% if 'audit-log' in request.path %}active{% endif %}"><i
+                            class="fa-solid fa-shield-halved"></i> Аудит</a></li>
+                <li><a href="{% url 'users_list' %}"
+                        class="nav-link {% if 'staff' in request.path %}active{% endif %}"><i
+                            class="fa-solid fa-users-gear"></i> Персонал</a></li>
                 {% else %}
-                <li><a href="{% url 'sales_orders_list' %}" class="nav-link {% if 'orders' in request.path %}active{% endif %}"><i class="fa-solid fa-receipt"></i> Мои чеки</a></li>
+                <li><a href="{% url 'sales_orders_list' %}"
+                        class="nav-link {% if 'orders' in request.path %}active{% endif %}"><i
+                            class="fa-solid fa-receipt"></i> Мои чеки</a></li>
                 {% endif %}
             </ul>
         </nav>
 
         <div class="user-menu">
-            <button type="button" class="btn btn-secondary theme-toggle-btn" id="themeToggleBtn" onclick="toggleDacarTheme()" title="Переключить тему (Тёмная / Светлая)" aria-label="Переключить тему" style="padding: 7px 11px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.2s, background 0.2s;">
+            <button type="button" class="btn btn-secondary theme-toggle-btn" id="themeToggleBtn"
+                onclick="toggleDacarTheme()" title="Переключить тему (Тёмная / Светлая)" aria-label="Переключить тему"
+                style="padding: 7px 11px; border-radius: var(--radius-md); border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.2s, background 0.2s;">
                 <i class="fa-solid fa-moon" id="themeIcon" style="font-size: 0.95rem; color: #F59E0B;"></i>
             </button>
             <div class="user-badge">
                 <span class="status-dot"></span>
                 <span class="user-name">{{ user.first_name|default:user.username }}</span>
-                <span class="user-role" style="color: var(--text-muted); font-size: 0.72rem;">({{ user.get_role_display }})</span>
+                <span class="user-role" style="color: var(--text-muted); font-size: 0.72rem;">({{ user.get_role_display
+                    }})</span>
             </div>
-            <a href="{% url 'logout' %}" class="btn btn-secondary" style="padding: 8px 10px;" title="Выйти из системы" aria-label="Выйти из системы">
+            <a href="{% url 'logout' %}" class="btn btn-secondary" style="padding: 8px 10px;" title="Выйти из системы"
+                aria-label="Выйти из системы">
                 <i class="fa-solid fa-right-from-bracket"></i>
             </a>
-            <button class="hamburger-btn" onclick="openMobileNav()" aria-label="Открыть меню" aria-expanded="false" id="hamburgerBtn">
+            <button class="hamburger-btn" onclick="openMobileNav()" aria-label="Открыть меню" aria-expanded="false"
+                id="hamburgerBtn">
                 <i class="fa-solid fa-bars"></i>
             </button>
         </div>
@@ -969,24 +1177,25 @@
     <!-- GLOBAL FLOATING TOASTS CONTAINER -->
     <div class="dacar-toast-container" id="dacarToastContainer" aria-live="polite">
         {% if messages %}
-            {% for message in messages %}
-            <div class="dacar-toast toast-{{ message.tags|default:'info' }}" role="alert" data-auto-dismiss="4500">
-                <div class="dacar-toast-icon">
-                    {% if message.tags == 'success' %}
-                        <i class="fa-solid fa-circle-check"></i>
-                    {% elif message.tags == 'error' or message.tags == 'danger' %}
-                        <i class="fa-solid fa-circle-xmark"></i>
-                    {% elif message.tags == 'warning' %}
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    {% else %}
-                        <i class="fa-solid fa-circle-info"></i>
-                    {% endif %}
-                </div>
-                <div class="dacar-toast-content">{{ message }}</div>
-                <button type="button" class="dacar-toast-close" onclick="dismissToast(this.closest('.dacar-toast'))" aria-label="Закрыть">&times;</button>
-                <div class="dacar-toast-progress" style="animation-duration: 4.5s;"></div>
+        {% for message in messages %}
+        <div class="dacar-toast toast-{{ message.tags|default:'info' }}" role="alert" data-auto-dismiss="4500">
+            <div class="dacar-toast-icon">
+                {% if message.tags == 'success' %}
+                <i class="fa-solid fa-circle-check"></i>
+                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                <i class="fa-solid fa-circle-xmark"></i>
+                {% elif message.tags == 'warning' %}
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                {% else %}
+                <i class="fa-solid fa-circle-info"></i>
+                {% endif %}
             </div>
-            {% endfor %}
+            <div class="dacar-toast-content">{{ message }}</div>
+            <button type="button" class="dacar-toast-close" onclick="dismissToast(this.closest('.dacar-toast'))"
+                aria-label="Закрыть">&times;</button>
+            <div class="dacar-toast-progress" style="animation-duration: 4.5s;"></div>
+        </div>
+        {% endfor %}
         {% endif %}
     </div>
 
@@ -997,7 +1206,8 @@
     {% if user.is_authenticated %}
     <!-- 4-TAB PREMIUM MOBILE BOTTOM NAVIGATION BAR -->
     <nav class="dacar-bottom-nav no-print" aria-label="Мобильная навигация">
-        <a href="{% url 'dashboard' %}" class="bottom-nav-item {% if request.resolver_match.url_name == 'dashboard' or request.path == '/' %}active{% endif %}">
+        <a href="{% url 'dashboard' %}"
+            class="bottom-nav-item {% if request.resolver_match.url_name == 'dashboard' or request.path == '/' %}active{% endif %}">
             <div class="nav-icon-wrap"><i class="fa-solid fa-chart-pie"></i></div>
             <span>Обзор</span>
         </a>
@@ -1005,12 +1215,14 @@
             <div class="nav-icon-wrap"><i class="fa-solid fa-boxes-stacked"></i></div>
             <span>Склад</span>
         </a>
-        <a href="{% url 'sales_orders_list' %}" class="bottom-nav-item {% if 'orders' in request.path or 'sales' in request.path and 'pos' not in request.path %}active{% endif %}">
+        <a href="{% url 'sales_orders_list' %}"
+            class="bottom-nav-item {% if 'orders' in request.path or 'sales' in request.path and 'pos' not in request.path %}active{% endif %}">
             <div class="nav-icon-wrap"><i class="fa-solid fa-receipt"></i></div>
             <span>Чеки</span>
         </a>
         {% if user.is_admin_user or user.role == 'MANAGER' %}
-        <a href="{% url 'users_list' %}" class="bottom-nav-item {% if 'staff' in request.path or 'audit-log' in request.path or 'users' in request.path %}active{% endif %}">
+        <a href="{% url 'users_list' %}"
+            class="bottom-nav-item {% if 'staff' in request.path or 'audit-log' in request.path or 'users' in request.path %}active{% endif %}">
             <div class="nav-icon-wrap"><i class="fa-solid fa-users-gear"></i></div>
             <span>Штат</span>
         </a>
@@ -1227,4 +1439,5 @@
         }
     </script>
 </body>
+
 </html>

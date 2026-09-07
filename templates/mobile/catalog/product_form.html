@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}{% if product %}Редактировать {{ product.name }}{% else %}Добавить новый товар{% endif %} — DACAR{% endblock %}
+{% block body_class %}product-form-page{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -34,105 +35,105 @@
         .product-form-grid { grid-template-columns: 1fr; gap: 1.25rem; }
         .product-form-grid .full-width { grid-column: 1; }
     }
+
+    /* ===== PRODUCT FORM V2 — mobile PWA ===== */
+    body.product-form-page .header-nav { display: none; }
+    body.product-form-page .main-container { max-width: 760px; padding-top: 1rem; }
+    .product-form-shell { max-width: 680px; margin: 0 auto; padding-bottom: calc(104px + var(--safe-bottom)); }
+    .product-form-topbar { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: 1rem; }
+    .product-form-title { display: flex; min-width: 0; align-items: center; gap: .7rem; }
+    .product-form-title-icon { display: grid; width: 42px; height: 42px; place-items: center; flex: 0 0 auto; border-radius: 14px; background: linear-gradient(135deg, #0ea5e9, #0369a1); color: #fff; box-shadow: 0 7px 18px rgba(2,132,199,.25); }
+    .product-form-title h1 { margin: 0; color: var(--text-primary); font: 800 1.08rem/1.15 'Outfit', sans-serif; }
+    .product-form-title p { margin: .22rem 0 0; color: var(--text-muted); font-size: .71rem; }
+    .product-top-actions { display: flex; gap: .45rem; }
+    .product-top-action { display: grid; width: 39px; height: 39px; padding: 0; place-items: center; border: 1px solid var(--card-border); border-radius: 50%; background: var(--card-bg); color: var(--text-primary); }
+    .product-form-card { padding: .8rem; border-radius: 19px; }
+    .product-form-section { padding: .95rem .15rem; border-bottom: 1px solid var(--card-border); }
+    .product-form-section:last-of-type { border-bottom: 0; }
+    .product-section-head { display: flex; align-items: center; gap: .5rem; margin-bottom: .8rem; color: var(--text-primary); font: 800 .86rem/1.2 'Outfit', sans-serif; }
+    .product-section-head i { color: var(--accent-cyan); }
+    .product-field { display: flex; min-width: 0; flex-direction: column; gap: .38rem; }
+    .product-field label { color: var(--text-muted); font-size: .74rem; font-weight: 700; }
+    .product-field .form-control { min-height: 45px; border-radius: 13px; }
+    .product-field--name .form-control { min-height: 50px; font-size: .96rem; font-weight: 700; }
+    .product-form-grid { gap: .75rem; margin-bottom: 0; }
+    .product-barcode-row { display: flex; gap: .5rem; }
+    .product-barcode-row .form-control { min-width: 0; flex: 1; color: var(--accent-cyan); font-weight: 800; }
+    .product-scan-button { display: grid; width: 48px; height: 48px; padding: 0; place-items: center; flex: 0 0 auto; border: 1px solid var(--accent-cyan); border-radius: 13px; background: rgba(2,132,199,.1); color: var(--accent-cyan); font-size: 1rem; }
+    .product-field-help { color: var(--text-muted); font-size: .68rem; line-height: 1.35; }
+    .product-price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .product-price-grid .product-field:first-child label { color: var(--accent-cyan); }
+    .product-stock-note { display: flex; align-items: center; gap: .5rem; margin-top: .7rem; padding: .65rem .75rem; border-radius: 12px; background: rgba(2,132,199,.08); color: var(--text-secondary); font-size: .7rem; line-height: 1.35; }
+    .product-stock-note i { color: var(--accent-cyan); }
+    .product-save-bar { position: sticky; bottom: calc(76px + var(--safe-bottom)); z-index: 30; display: flex; gap: .6rem; margin: 1rem -.1rem 0; padding: .7rem; border: 1px solid var(--card-border); border-radius: 17px; background: color-mix(in srgb, var(--card-bg) 92%, transparent); box-shadow: 0 10px 28px rgba(0,0,0,.18); backdrop-filter: blur(16px); }
+    .product-save-bar .btn { min-height: 46px; border-radius: 13px; }
+    .product-save-bar .btn-primary { flex: 1; font-weight: 800; }
+    .category-create-modal { position:fixed; inset:0; z-index:10010; display:none; align-items:flex-end; background:rgba(3,7,18,.62); backdrop-filter:blur(7px); }
+    .category-create-modal.is-open { display:flex; }
+    .category-create-sheet { width:100%; max-width:680px; margin:0 auto; padding:1rem 1rem calc(1rem + var(--safe-bottom)); border:1px solid var(--card-border); border-bottom:0; border-radius:22px 22px 0 0; background:var(--card-bg); box-shadow:0 -18px 45px rgba(0,0,0,.28); animation:categorySheetIn .22s ease; }
+    .category-create-sheet-head { display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem; margin-bottom:.85rem; }
+    .category-create-sheet-title { display:flex; align-items:center; gap:.6rem; color:var(--text-primary); font:800 1rem/1.2 'Outfit',sans-serif; }
+    .category-create-sheet-title i { display:grid; width:37px; height:37px; place-items:center; border-radius:12px; background:rgba(2,132,199,.12); color:var(--accent-cyan); }
+    .category-create-sheet p { margin:.22rem 0 0 43px; color:var(--text-muted); font-size:.72rem; line-height:1.4; }
+    .category-create-close { display:grid; width:34px; height:34px; padding:0; place-items:center; border:1px solid var(--card-border); border-radius:50%; background:var(--btn-secondary-bg); color:var(--text-muted); }
+    .category-create-sheet label { display:block; margin-bottom:.35rem; color:var(--text-muted); font-size:.74rem; font-weight:700; }
+    .category-create-sheet .form-control { min-height:48px; border-radius:13px; font-size:.94rem; font-weight:700; }
+    .category-create-error { display:none; margin-top:.45rem; color:var(--accent-red); font-size:.71rem; }
+    .category-create-error.is-visible { display:block; }
+    .category-create-actions { display:flex; gap:.55rem; margin-top:.9rem; }
+    .category-create-actions .btn { min-height:45px; border-radius:13px; }
+    .category-create-actions .btn-primary { flex:1; font-weight:800; }
+    @keyframes categorySheetIn { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    @media (min-width: 560px) and (max-width: 1200px) {
+        body.product-form-page .dacar-bottom-nav { width: calc(100% - 2rem) !important; max-width: 760px !important; }
+        .product-save-bar { bottom: calc(98px + var(--safe-bottom)); }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div style="max-width: 760px; margin: 0 auto;">
-    <div class="form-page-header">
-        <h1>
-            {% if product %}<i class="fa-solid fa-pen-to-square" style="color: var(--accent-cyan);"></i> Редактировать товар{% else %}<i class="fa-solid fa-plus-circle" style="color: var(--accent-orange);"></i> Новый товар{% endif %}
-        </h1>
-        <a href="{% url 'm_product_list' %}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Назад</a>
-    </div>
+<div class="product-form-shell">
+    <header class="product-form-topbar">
+        <div class="product-form-title"><div class="product-form-title-icon"><i class="fa-solid {% if product %}fa-pen-to-square{% else %}fa-box-open{% endif %}"></i></div><div><h1>{% if product %}Редактировать товар{% else %}Новый товар{% endif %}</h1><p>{% if product %}Измените карточку и сохраните изменения{% else %}Заполните данные для добавления на склад{% endif %}</p></div></div>
+        <div class="product-top-actions"><button type="button" class="product-top-action haptic-press" onclick="toggleDacarTheme()" aria-label="Переключить тему"><i class="fa-solid fa-moon" data-dacar-theme-icon style="color:#f59e0b;"></i></button><a href="{% url 'm_product_list' %}" class="product-top-action haptic-press" aria-label="Вернуться в склад"><i class="fa-solid fa-arrow-left"></i></a></div>
+    </header>
 
-    <div class="dacar-card">
+    <div class="dacar-card product-form-card">
         <form method="POST" id="productForm">
             {% csrf_token %}
-            <div class="product-form-grid">
-                <!-- Штрихкод -->
-                <div class="full-width">
-                    <label style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem; flex-wrap: wrap; gap: 0.35rem;">
-                        <span><i class="fa-solid fa-barcode"></i> Штрихкод</span>
-                        <span id="barcodeScannerBadge" class="badge badge-cyan"><i class="fa-solid fa-barcode"></i> Сканер готов</span>
-                    </label>
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <input type="text" name="barcode" id="productBarcode" class="form-control" style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan); flex: 1;" value="{% if initial_barcode %}{{ initial_barcode }}{% elif product %}{{ product.barcode }}{% endif %}" placeholder="Отсканируйте или введите штрихкод..." inputmode="text" autocomplete="off" {% if not product and not initial_barcode %}autofocus{% endif %}>
-                        <button type="button" class="btn btn-secondary" onclick="openCameraScannerModal()" style="height: 42px; border-radius: var(--radius-md); font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid var(--accent-cyan); color: var(--accent-cyan); background: rgba(2, 132, 199, 0.08); white-space: nowrap; padding: 0 14px;" title="Сканировать камерой смартфона">
-                            <i class="fa-solid fa-camera"></i> <span>Камера</span>
-                        </button>
-                    </div>
-                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Если оставить пустым, штрихкод сгенерируется автоматически</small>
-                </div>
+            <section class="product-form-section">
+                <div class="product-section-head"><i class="fa-solid fa-barcode"></i> Идентификация</div>
+                <div class="product-field product-field--name"><label for="productName">Наименование товара *</label><input type="text" name="name" id="productName" class="form-control" required value="{{ product.name|default:'' }}" placeholder="Например: Шампунь Detail Nano 1 л" autocomplete="off" {% if initial_barcode %}autofocus{% endif %}></div>
+                <div class="product-field" style="margin-top:.8rem;"><label for="productBarcode">Штрихкод <span id="barcodeScannerBadge" class="badge badge-cyan">Сканер готов</span></label><div class="product-barcode-row"><input type="text" name="barcode" id="productBarcode" class="form-control" value="{% if initial_barcode %}{{ initial_barcode }}{% elif product %}{{ product.barcode }}{% endif %}" placeholder="Отсканируйте или введите" autocomplete="off" {% if not product and not initial_barcode %}autofocus{% endif %}><button type="button" class="product-scan-button haptic-press" onclick="openCameraScannerModal()" aria-label="Сканировать камерой"><i class="fa-solid fa-camera"></i></button></div><span class="product-field-help">Пустое значение — штрихкод создастся автоматически.</span></div>
+            </section>
 
-                <!-- Наименование -->
-                <div class="full-width">
-                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Наименование товара *</label>
-                    <input type="text" name="name" id="productName" class="form-control" required value="{{ product.name|default:'' }}" placeholder="Например: Шампунь Detail Nano 1 л" autocomplete="off" {% if initial_barcode %}autofocus{% endif %}>
-                </div>
+            <section class="product-form-section">
+                <div class="product-section-head"><i class="fa-solid fa-tags"></i> Категория и бренд</div>
+                <div class="product-form-grid"><div class="product-field"><label for="productCategorySelect">Категория</label><select name="category" id="productCategorySelect" class="form-control" onchange="handleCategoryChange(this)"><option value="">Общая / Автохимия</option>{% for cat in categories %}<option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}<option value="__NEW__">+ Создать категорию</option></select></div><div class="product-field"><label for="productBrand">Бренд</label><input type="text" name="brand" id="productBrand" list="brandsList" class="form-control" placeholder="Grass, Koch, Soft99…" value="{% if product and product.brand %}{{ product.brand.name }}{% endif %}" autocomplete="off"><datalist id="brandsList">{% for b in brands %}<option value="{{ b.name }}">{% endfor %}</datalist></div></div>
+            </section>
 
-                <!-- Бренд (ручной ввод) -->
-                <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
-                        <i class="fa-solid fa-copyright"></i> Бренд (вручную)
-                    </label>
-                    <input type="text" name="brand" id="productBrand" list="brandsList" class="form-control" placeholder="Например: Detail, Grass, Koch, Soft99..." value="{% if product and product.brand %}{{ product.brand.name }}{% endif %}" autocomplete="off">
-                    <datalist id="brandsList">
-                        {% for b in brands %}
-                        <option value="{{ b.name }}">
-                        {% endfor %}
-                    </datalist>
-                </div>
-
-                <!-- Категория (необязательно) -->
-                <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
-                        <i class="fa-solid fa-tags"></i> Категория
-                    </label>
-                    <select name="category" id="productCategorySelect" class="form-control" onchange="handleCategoryChange(this)">
-                        <option value="">Общая / Автохимия</option>
-                        {% for cat in categories %}
-                        <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
-                        {% endfor %}
-                        <option value="__NEW__" style="color: var(--accent-cyan); font-weight: 700; background: #F0F9FF;">+ Создать новую категорию...</option>
-                    </select>
-                </div>
-
-                <!-- Цена продажи -->
-                <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--accent-cyan); font-weight: 700; margin-bottom: 0.35rem;">Цена продажи (₸) *</label>
-                    <input type="number" step="1" name="retail_price" inputmode="numeric" class="form-control" style="font-weight: 800; font-size: 1.05rem;" required value="{% if product %}{{ product.retail_price|floatformat:0 }}{% endif %}" placeholder="например: 4500">
-                </div>
-
-                <!-- Закупочная цена -->
-                <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Закупочная цена (₸)</label>
-                    <input type="number" step="1" name="purchase_price" inputmode="numeric" class="form-control" value="{% if product %}{{ product.purchase_price|floatformat:0 }}{% else %}0{% endif %}" placeholder="0">
-                </div>
-
+            <section class="product-form-section">
+                <div class="product-section-head"><i class="fa-solid fa-tenge-sign"></i> Цена и остаток</div>
+                <div class="product-price-grid"><div class="product-field"><label>Цена продажи (₸) *</label><input type="number" step="1" min="0" name="retail_price" inputmode="numeric" class="form-control" required value="{% if product %}{{ product.retail_price|floatformat:0 }}{% endif %}" placeholder="4 500"></div><div class="product-field"><label>Закупочная цена (₸)</label><input type="number" step="1" min="0" name="purchase_price" inputmode="numeric" class="form-control" value="{% if product %}{{ product.purchase_price|floatformat:0 }}{% else %}0{% endif %}" placeholder="0"></div></div>
                 <input type="hidden" name="unit" value="шт">
+                <div class="product-price-grid" style="margin-top:.75rem;">{% if not product %}<div class="product-field"><label>Начальный остаток (шт)</label><input type="number" step="1" min="0" name="stock_qty" inputmode="numeric" class="form-control" value="0" placeholder="10"></div>{% endif %}<div class="product-field"><label>Мин. порог остатка</label><input type="number" step="1" min="0" name="min_stock_alert" inputmode="numeric" class="form-control" value="{% if product %}{{ product.min_stock_alert|floatformat:0 }}{% else %}5{% endif %}" placeholder="5"></div></div>
+                {% if product %}<div class="product-stock-note"><i class="fa-solid fa-circle-info"></i> Остаток меняется через действия «Принять» или «В магазин» в карточке товара.</div>{% endif %}
+            </section>
 
-                <!-- Количество на складе -->
-                {% if not product %}
-                <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Начальное количество (шт)</label>
-                    <input type="number" step="1" name="stock_qty" inputmode="numeric" class="form-control" value="0" placeholder="например: 10">
-                </div>
-                {% endif %}
-
-                <!-- Мин. порог остатка -->
-                <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Мин. порог (сигнал)</label>
-                    <input type="number" step="1" name="min_stock_alert" inputmode="numeric" class="form-control" value="{% if product %}{{ product.min_stock_alert|floatformat:0 }}{% else %}5{% endif %}" placeholder="5">
-                </div>
-            </div>
-
-            <div class="form-actions">
-                <a href="{% url 'm_product_list' %}" class="btn btn-secondary">Отмена</a>
-                <button type="submit" class="btn btn-primary" style="min-width: 160px;"><i class="fa-solid fa-floppy-disk"></i> Сохранить товар</button>
-            </div>
+            <div class="product-save-bar"><a href="{% url 'm_product_list' %}" class="btn btn-secondary">Отмена</a><button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> {% if product %}Сохранить{% else %}Добавить товар{% endif %}</button></div>
         </form>
     </div>
+</div>
+
+<!-- CREATE CATEGORY: category becomes available throughout the warehouse -->
+<div class="category-create-modal" id="createCategoryModal" role="dialog" aria-modal="true" aria-labelledby="createCategoryTitle">
+    <form class="category-create-sheet" id="createCategoryForm" onsubmit="createProductCategory(event)">
+        <div class="category-create-sheet-head"><div><div class="category-create-sheet-title" id="createCategoryTitle"><i class="fa-solid fa-tags"></i> Новая категория</div><p>Она появится в складе и будет доступна для всех следующих товаров.</p></div><button type="button" class="category-create-close haptic-press" onclick="closeCategoryCreateModal()" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button></div>
+        <label for="createCategoryName">Название категории</label>
+        <input type="text" id="createCategoryName" class="form-control" maxlength="100" required placeholder="Например: Полировальные круги" autocomplete="off">
+        <div class="category-create-error" id="createCategoryError" role="alert"></div>
+        <div class="category-create-actions"><button type="button" class="btn btn-secondary" onclick="closeCategoryCreateModal()">Отмена</button><button type="submit" class="btn btn-primary" id="createCategorySubmit"><i class="fa-solid fa-plus"></i> Создать и выбрать</button></div>
+    </form>
 </div>
 
 <!-- CAMERA SCANNER MODAL -->
@@ -167,43 +168,74 @@
     // 1. Quick Category Creation right from dropdown
     let prevCatVal = (document.getElementById('productCategorySelect') ? document.getElementById('productCategorySelect').value : '') || '';
 
-    async function handleCategoryChange(select) {
+    function handleCategoryChange(select) {
         if (select.value === '__NEW__') {
-            const catName = prompt('Введите название новой категории:');
-            if (catName && catName.trim()) {
-                try {
-                    const csrfToken = (document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '') || '';
-                    const res = await fetch('/catalog/api/categories/create/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'X-CSRFToken': csrfToken
-                        },
-                        body: new URLSearchParams({ name: catName.trim() })
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        const newOption = document.createElement('option');
-                        newOption.value = data.id;
-                        newOption.textContent = data.name;
-                        const triggerOpt = select.querySelector('option[value="__NEW__"]');
-                        select.insertBefore(newOption, triggerOpt);
-                        select.value = data.id;
-                        prevCatVal = data.id;
-                        if (window.showToast) window.showToast('Категория успешно создана: ' + data.name, 'success');
-                        return;
-                    } else {
-                        if (window.showToast) window.showToast(data.error || 'Ошибка при создании категории', 'error');
-                        else alert(data.error || 'Ошибка при создании категории');
-                    }
-                } catch (e) {
-                    console.error(e);
-                    if (window.showToast) window.showToast('Не удалось создать категорию', 'error');
-                }
-            }
             select.value = prevCatVal;
+            openCategoryCreateModal();
         } else {
             prevCatVal = select.value;
+        }
+    }
+
+    function openCategoryCreateModal() {
+        const modal = document.getElementById('createCategoryModal');
+        const input = document.getElementById('createCategoryName');
+        const error = document.getElementById('createCategoryError');
+        if (!modal || !input) return;
+        if (error) { error.textContent = ''; error.classList.remove('is-visible'); }
+        input.value = '';
+        modal.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => input.focus(), 120);
+    }
+
+    function closeCategoryCreateModal() {
+        const modal = document.getElementById('createCategoryModal');
+        if (modal) modal.classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    async function createProductCategory(event) {
+        event.preventDefault();
+        const input = document.getElementById('createCategoryName');
+        const error = document.getElementById('createCategoryError');
+        const submit = document.getElementById('createCategorySubmit');
+        const select = document.getElementById('productCategorySelect');
+        const name = input ? input.value.trim() : '';
+
+        if (!name || name.length < 2) {
+            if (error) { error.textContent = 'Введите название минимум из 2 символов.'; error.classList.add('is-visible'); }
+            if (input) input.focus();
+            return;
+        }
+
+        try {
+            if (submit) { submit.disabled = true; submit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Создаём…'; }
+            if (error) error.classList.remove('is-visible');
+            const csrfToken = (document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '') || '';
+            const res = await fetch("{% url 'm_api_create_category' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
+                body: new URLSearchParams({ name })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error || 'Не удалось создать категорию.');
+
+            let option = select ? select.querySelector('option[value="' + data.id + '"]') : null;
+            if (!option && select) {
+                option = document.createElement('option');
+                option.value = data.id;
+                option.textContent = data.name;
+                select.insertBefore(option, select.querySelector('option[value="__NEW__"]'));
+            }
+            if (select) select.value = data.id;
+            prevCatVal = String(data.id);
+            closeCategoryCreateModal();
+            if (window.showToast) window.showToast('Категория «' + data.name + '» создана и выбрана.', 'success');
+        } catch (e) {
+            if (error) { error.textContent = e.message || 'Не удалось создать категорию.'; error.classList.add('is-visible'); }
+        } finally {
+            if (submit) { submit.disabled = false; submit.innerHTML = '<i class="fa-solid fa-plus"></i> Создать и выбрать'; }
         }
     }
 

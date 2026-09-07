@@ -1518,11 +1518,17 @@
     }
 
     @keyframes laserScan {
-        0% { top: 15%; }
-        100% { top: 85%; }
+        0% {
+            top: 15%;
+        }
+
+        100% {
+            top: 85%;
+        }
     }
 
     @keyframes badgeBounce {
+
         0%,
         100% {
             transform: scale(1);
@@ -1940,12 +1946,15 @@
 <!-- MOBILE CAMERA SCANNER MODAL -->
 <div class="modal-overlay" id="cameraScannerModal" role="dialog" aria-modal="true">
     <div class="pos-camera-modal-box">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.6rem;">
+        <div
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.6rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-camera" style="color: var(--accent-cyan); font-size: 1.1rem;"></i>
                 <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: #FFF;">Сканер штрихкодов</h3>
             </div>
-            <button type="button" style="background: rgba(255, 255, 255, 0.1); border: none; font-size: 1.2rem; color: #FFF; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="closeCameraScannerModal()" title="Закрыть">&times;</button>
+            <button type="button"
+                style="background: rgba(255, 255, 255, 0.1); border: none; font-size: 1.2rem; color: #FFF; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"
+                onclick="closeCameraScannerModal()" title="Закрыть">&times;</button>
         </div>
 
         <div class="camera-viewfinder-container" id="cameraScannerViewport">
@@ -1957,7 +1966,9 @@
             <p style="font-size: 0.78rem; color: #94A3B8; margin: 0 0 0.65rem;">
                 Наведите камеру на штрихкод товара DACAR
             </p>
-            <button type="button" class="btn btn-secondary" style="background: rgba(255, 255, 255, 0.1); color: #FFF; border: 1px solid rgba(255, 255, 255, 0.15); font-size: 0.82rem; padding: 6px 16px;" onclick="closeCameraScannerModal()">
+            <button type="button" class="btn btn-secondary"
+                style="background: rgba(255, 255, 255, 0.1); color: #FFF; border: 1px solid rgba(255, 255, 255, 0.15); font-size: 0.82rem; padding: 6px 16px;"
+                onclick="closeCameraScannerModal()">
                 Отмена
             </button>
         </div>
@@ -2976,119 +2987,119 @@
             }
         }
         // ===== MOBILE CAMERA BARCODE SCANNER =====
-    let html5QrCode = null;
+        let html5QrCode = null;
 
-    // Global handler for Android ML Kit scanner result
-    window.onAndroidBarcodeScanned = function(barcode) {
-        processScannedBarcode(barcode.trim());
-    };
+        // Global handler for Android ML Kit scanner result
+        window.onAndroidBarcodeScanned = function (barcode) {
+            processScannedBarcode(barcode.trim());
+        };
 
-    async function openCameraScannerModal() {
-        // Native Android Scanner check
-        if (window.AndroidApp && typeof window.AndroidApp.startScanner === 'function') {
-            window.AndroidApp.startScanner();
-            return;
-        }
+        async function openCameraScannerModal() {
+            // Native Android Scanner check
+            if (window.AndroidApp && typeof window.AndroidApp.startScanner === 'function') {
+                window.AndroidApp.startScanner();
+                return;
+            }
 
-        const modal = document.getElementById('cameraScannerModal');
-        if (modal) modal.classList.add('active');
+            const modal = document.getElementById('cameraScannerModal');
+            if (modal) modal.classList.add('active');
 
-        // Dynamically load html5-qrcode if not present
-        if (typeof Html5Qrcode === 'undefined') {
-            const script = document.createElement('script');
-            script.src = "{% static 'js/html5-qrcode.min.js' %}";
-            script.onload = () => startCameraScanner();
-            script.onerror = () => {
-                const cdnScript = document.createElement('script');
-                cdnScript.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
-                cdnScript.onload = () => startCameraScanner();
-                cdnScript.onerror = () => {
-                    if (window.showToast) window.showToast('Не удалось загрузить библиотеку камеры', 'error');
+            // Dynamically load html5-qrcode if not present
+            if (typeof Html5Qrcode === 'undefined') {
+                const script = document.createElement('script');
+                script.src = "{% static 'js/html5-qrcode.min.js' %}";
+                script.onload = () => startCameraScanner();
+                script.onerror = () => {
+                    const cdnScript = document.createElement('script');
+                    cdnScript.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+                    cdnScript.onload = () => startCameraScanner();
+                    cdnScript.onerror = () => {
+                        if (window.showToast) window.showToast('Не удалось загрузить библиотеку камеры', 'error');
+                    };
+                    document.head.appendChild(cdnScript);
                 };
-                document.head.appendChild(cdnScript);
-            };
-            document.head.appendChild(script);
-        } else {
-            startCameraScanner();
-        }
-    }
-
-    function startCameraScanner() {
-        try {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => initScannerInstance()).catch(() => initScannerInstance());
+                document.head.appendChild(script);
             } else {
+                startCameraScanner();
+            }
+        }
+
+        function startCameraScanner() {
+            try {
+                if (html5QrCode) {
+                    html5QrCode.stop().then(() => initScannerInstance()).catch(() => initScannerInstance());
+                } else {
+                    initScannerInstance();
+                }
+            } catch (e) {
                 initScannerInstance();
             }
-        } catch (e) {
-            initScannerInstance();
         }
-    }
 
-    let posCurrentFacingMode = "environment";
+        let posCurrentFacingMode = "environment";
 
-    function switchPosCameraMode() {
-        posCurrentFacingMode = (posCurrentFacingMode === "environment") ? "user" : "environment";
-        if (html5QrCode) {
-            html5QrCode.stop().then(() => {
-                initScannerInstance();
-            }).catch(() => {
-                initScannerInstance();
-            });
-        }
-    }
-
-    function initScannerInstance() {
-        var readerEl = document.getElementById('qr-reader');
-        if (!readerEl) return;
-
-        try {
-            var barcodeFormats = [
-                Html5QrcodeSupportedFormats.EAN_13,
-                Html5QrcodeSupportedFormats.EAN_8,
-                Html5QrcodeSupportedFormats.UPC_A,
-                Html5QrcodeSupportedFormats.UPC_E,
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.CODE_39,
-                Html5QrcodeSupportedFormats.CODE_93,
-                Html5QrcodeSupportedFormats.ITF,
-                Html5QrcodeSupportedFormats.CODABAR
-            ];
-            html5QrCode = new Html5Qrcode("qr-reader", { formatsToSupport: barcodeFormats });
-            var config = { 
-                fps: 30, 
-                qrbox: function(viewfinderWidth, viewfinderHeight) {
-                    return { width: Math.floor(viewfinderWidth * 0.92), height: Math.floor(viewfinderHeight * 0.7) };
-                }, 
-                aspectRatio: 1.333,
-                disableFlip: false
-            };
-
-            var onScanSuccess = function(decodedText) {
-                if ('vibrate' in navigator) navigator.vibrate([50, 40, 50]);
-                playScanBeep();
-                closeCameraScannerModal();
-                processScannedBarcode(decodedText.trim());
-            };
-
-            html5QrCode.start({ facingMode: posCurrentFacingMode }, config, onScanSuccess, function() {}).catch(function(err) {
-                var fallbackMode = (posCurrentFacingMode === "environment") ? "user" : "environment";
-                html5QrCode.start({ facingMode: fallbackMode }, config, onScanSuccess, function() {}).catch(function(e2) {
-                    if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
+        function switchPosCameraMode() {
+            posCurrentFacingMode = (posCurrentFacingMode === "environment") ? "user" : "environment";
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    initScannerInstance();
+                }).catch(() => {
+                    initScannerInstance();
                 });
-            });
-        } catch(e) {
-            console.error('POS camera init error:', e);
-            if (window.showToast) window.showToast('Ошибка запуска камеры', 'error');
+            }
         }
-    }
 
-    function closeCameraScannerModal() {
-        const modal = document.getElementById('cameraScannerModal');
-        if (modal) modal.classList.remove('active');
-        if (html5QrCode) {
-            html5QrCode.stop().catch(() => {});
+        function initScannerInstance() {
+            var readerEl = document.getElementById('qr-reader');
+            if (!readerEl) return;
+
+            try {
+                var barcodeFormats = [
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E,
+                    Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.CODE_39,
+                    Html5QrcodeSupportedFormats.CODE_93,
+                    Html5QrcodeSupportedFormats.ITF,
+                    Html5QrcodeSupportedFormats.CODABAR
+                ];
+                html5QrCode = new Html5Qrcode("qr-reader", { formatsToSupport: barcodeFormats });
+                var config = {
+                    fps: 30,
+                    qrbox: function (viewfinderWidth, viewfinderHeight) {
+                        return { width: Math.floor(viewfinderWidth * 0.92), height: Math.floor(viewfinderHeight * 0.7) };
+                    },
+                    aspectRatio: 1.333,
+                    disableFlip: false
+                };
+
+                var onScanSuccess = function (decodedText) {
+                    if ('vibrate' in navigator) navigator.vibrate([50, 40, 50]);
+                    playScanBeep();
+                    closeCameraScannerModal();
+                    processScannedBarcode(decodedText.trim());
+                };
+
+                html5QrCode.start({ facingMode: posCurrentFacingMode }, config, onScanSuccess, function () { }).catch(function (err) {
+                    var fallbackMode = (posCurrentFacingMode === "environment") ? "user" : "environment";
+                    html5QrCode.start({ facingMode: fallbackMode }, config, onScanSuccess, function () { }).catch(function (e2) {
+                        if (window.showToast) window.showToast('Камера недоступна или нет разрешения', 'warning');
+                    });
+                });
+            } catch (e) {
+                console.error('POS camera init error:', e);
+                if (window.showToast) window.showToast('Ошибка запуска камеры', 'error');
+            }
         }
-    }
+
+        function closeCameraScannerModal() {
+            const modal = document.getElementById('cameraScannerModal');
+            if (modal) modal.classList.remove('active');
+            if (html5QrCode) {
+                html5QrCode.stop().catch(() => { });
+            }
+        }
 </script>
 {% endblock %}

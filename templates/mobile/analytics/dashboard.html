@@ -1,6 +1,7 @@
 {% extends 'mobile/base.html' %}
 
 {% block title %}Обзор — DACAR Mobile Hub{% endblock %}
+{% block body_class %}dashboard-page{% endblock %}
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,20 +13,41 @@
         display: flex;
         flex-direction: column;
         gap: 1rem;
-        padding-bottom: 3rem;
+        padding-bottom: calc(108px + var(--safe-bottom));
     }
 
     /* Staggered Rise Animation ("Волна" при загрузке экрана) */
-    .hub-dashboard-container > * {
+    .hub-dashboard-container>* {
         animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
-    .hub-dashboard-container > *:nth-child(1) { animation-delay: 0.02s; }
-    .hub-dashboard-container > *:nth-child(2) { animation-delay: 0.06s; }
-    .hub-dashboard-container > *:nth-child(3) { animation-delay: 0.10s; }
-    .hub-dashboard-container > *:nth-child(4) { animation-delay: 0.14s; }
-    .hub-dashboard-container > *:nth-child(5) { animation-delay: 0.18s; }
-    .hub-dashboard-container > *:nth-child(6) { animation-delay: 0.22s; }
-    .hub-dashboard-container > *:nth-child(7) { animation-delay: 0.26s; }
+
+    .hub-dashboard-container>*:nth-child(1) {
+        animation-delay: 0.02s;
+    }
+
+    .hub-dashboard-container>*:nth-child(2) {
+        animation-delay: 0.06s;
+    }
+
+    .hub-dashboard-container>*:nth-child(3) {
+        animation-delay: 0.10s;
+    }
+
+    .hub-dashboard-container>*:nth-child(4) {
+        animation-delay: 0.14s;
+    }
+
+    .hub-dashboard-container>*:nth-child(5) {
+        animation-delay: 0.18s;
+    }
+
+    .hub-dashboard-container>*:nth-child(6) {
+        animation-delay: 0.22s;
+    }
+
+    .hub-dashboard-container>*:nth-child(7) {
+        animation-delay: 0.26s;
+    }
 
     /* Top Hub Header */
     .hub-header {
@@ -104,8 +126,15 @@
     }
 
     @keyframes ping {
-        0% { transform: scale(0.6); opacity: 0.9; }
-        100% { transform: scale(2.1); opacity: 0; }
+        0% {
+            transform: scale(0.6);
+            opacity: 0.9;
+        }
+
+        100% {
+            transform: scale(2.1);
+            opacity: 0;
+        }
     }
 
     /* 1. HERO REVENUE CARD */
@@ -221,9 +250,20 @@
         flex-shrink: 0;
     }
 
-    .hub-kpi-icon-box.blue   { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
-    .hub-kpi-icon-box.purple { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
-    .hub-kpi-icon-box.green  { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+    .hub-kpi-icon-box.blue {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38BDF8;
+    }
+
+    .hub-kpi-icon-box.purple {
+        background: rgba(168, 85, 247, 0.15);
+        color: #C084FC;
+    }
+
+    .hub-kpi-icon-box.green {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34D399;
+    }
 
     .hub-kpi-info {
         display: flex;
@@ -305,6 +345,7 @@
         background: rgba(245, 158, 11, 0.1);
         transition: background 0.15s;
     }
+
     .hub-warning-link:hover {
         background: rgba(245, 158, 11, 0.2);
     }
@@ -412,6 +453,7 @@
         width: 100%;
         box-sizing: border-box;
     }
+
     .hub-tablet-col {
         display: flex;
         flex-direction: column;
@@ -467,21 +509,29 @@
             margin: 0 auto;
             gap: 1.15rem;
         }
+
         .hub-tablet-grid {
             display: grid;
             grid-template-columns: 1.06fr 1fr;
             gap: 1.25rem;
             align-items: start;
         }
-        .hub-hero-card, .hub-chart-card, .hub-payment-card, .hub-warning-banner {
+
+        .hub-hero-card,
+        .hub-chart-card,
+        .hub-payment-card,
+        .hub-warning-banner {
             margin-bottom: 0;
         }
+
         .hub-hero-card {
             padding: 1.15rem 1.35rem;
         }
+
         .hub-hero-amount {
             font-size: 2.15rem;
         }
+
         .hub-chart-card canvas {
             height: 145px !important;
             max-height: 155px !important;
@@ -515,22 +565,117 @@
         .hub-mini-kpi-grid {
             gap: 0.45rem;
         }
+
         .hub-mini-kpi-card {
             padding: 0.75rem 0.55rem;
         }
+
         .hub-kpi-value {
             font-size: 1.05rem;
         }
+
         .hub-hero-amount {
             font-size: 1.85rem;
         }
+    }
+
+    /* ===== DASHBOARD V3 — mobile first, based on approved reference ===== */
+    body.dashboard-page { background: var(--bg-main); }
+    body.dashboard-page .header-nav { display: none; }
+    body.dashboard-page .main-container { max-width: 760px; padding-top: 1rem; }
+    /* The old dashboard is retained only for backwards-compatible JS hooks. */
+    body.dashboard-page .hub-dashboard-container { display: none; }
+    .dashboard-v3 { display: flex; flex-direction: column; gap: 1.15rem; padding-bottom: 1rem; }
+    .dashboard-v3 .hub-header { padding: .2rem 0 .15rem; }
+    .dashboard-theme-toggle { display: grid; width: 40px; height: 40px; padding: 0; place-items: center; border: 1px solid var(--card-border); border-radius: 50%; background: var(--card-bg); color: var(--text-primary); box-shadow: var(--shadow-xs); }
+    .dashboard-v3 .hub-avatar-logo { width: 42px; height: 42px; background: linear-gradient(135deg, #0ea5e9, #0369a1); }
+    .dashboard-v3 .hub-brand-title { font-size: 1.05rem; }
+    .dashboard-v3 .hub-brand-subtitle { font-size: .72rem; }
+    .dashboard-v3 .hub-status-row { margin: -.1rem 0 0; font-size: .75rem; }
+
+    .dashboard-ticker { overflow: hidden; margin-inline: -.1rem; border-block: 1px solid rgba(148,163,184,.12); background: rgba(20,32,57,.68); }
+    .dashboard-ticker .marquee-track { padding: .48rem 0; gap: 2.1rem; }
+    .dashboard-ticker-item { display: inline-flex; align-items: center; gap: .42rem; color: var(--text-secondary); white-space: nowrap; font-size: .72rem; font-weight: 600; }
+    .dashboard-ticker-item strong { color: var(--text-primary); }
+
+    .hero-carousel { position: relative; overflow: hidden; border: 1px solid rgba(70,120,190,.2); border-radius: 21px; background: #0f1a2e; box-shadow: 0 14px 32px rgba(0,0,0,.22); touch-action: pan-y; }
+    .hero-carousel-track { display: flex; transition: transform var(--dur-slow) var(--ease-standard); }
+    .hero-slide { position: relative; display: flex; flex: 0 0 100%; flex-direction: column; justify-content: space-between; min-height: 166px; padding: 1.2rem 1.25rem 2rem; overflow: hidden; isolation: isolate; color: #fff; }
+    .hero-slide::before { content: ''; position: absolute; z-index: -1; width: 185px; height: 185px; right: -68px; top: -85px; border-radius: 50%; background: radial-gradient(circle, rgba(56,189,248,.26), transparent 70%); }
+    .hero-slide--revenue { background: linear-gradient(135deg, #12345f, #0d1930 70%); }
+    .hero-slide--profit { background: linear-gradient(135deg, #2c164f, #171128 70%); }
+    .hero-slide--goal { background: linear-gradient(135deg, #273719, #101b15 70%); }
+    .hero-slide--profit::before { background: radial-gradient(circle, rgba(168,85,247,.28), transparent 70%); }
+    .hero-slide--goal::before { background: radial-gradient(circle, rgba(16,185,129,.26), transparent 70%); }
+    .hero-kicker { color: rgba(226,232,240,.72); font-size: .78rem; font-weight: 700; }
+    .hero-value { margin-top: .55rem; font: 900 clamp(2rem, 9vw, 2.7rem)/1 'Outfit', sans-serif; letter-spacing: -.045em; }
+    .hero-meta { display: inline-flex; align-items: center; gap: .35rem; width: fit-content; color: #34d399; font-size: .76rem; font-weight: 800; }
+    .hero-slide--profit .hero-meta { color: #c4b5fd; }
+    .hero-slide--goal .hero-meta { color: #86efac; }
+    .hero-dots { position: absolute; bottom: .68rem; left: 0; right: 0; display: flex; justify-content: center; gap: .35rem; }
+    .hero-dot { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 99px; background: rgba(255,255,255,.32); transition: width var(--dur-base) var(--ease-standard), background var(--dur-base); }
+    .hero-dot[aria-current="true"] { width: 19px; background: #fff; }
+
+    .dashboard-section { display: flex; flex-direction: column; gap: .72rem; }
+    .dashboard-section-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding-inline: .1rem; }
+    .dashboard-section-title { color: var(--text-primary); font: 800 .98rem/1.2 'Outfit', sans-serif; }
+    .dashboard-section-link { color: var(--accent-cyan); font-size: .76rem; font-weight: 800; text-decoration: none; }
+
+    .dashboard-story-row { padding: .15rem .05rem .1rem; scroll-padding-left: .1rem; touch-action: pan-y; }
+    .dashboard-story-row { gap: 1rem; justify-content: flex-start; }
+    .dashboard-story-row .story-ring-wrap { width: 80px; text-decoration: none; }
+    .dashboard-story-row .story-ring { width: 57px; height: 57px; }
+    .dashboard-story-row .story-ring-inner { font-size: 1.1rem; color: var(--accent-cyan); }
+    .dashboard-story-row .story-ring-label { max-width: 80px; font-size: .68rem; white-space: normal; line-height: 1.15; }
+
+    .dashboard-metric-row { padding: .05rem .05rem .2rem; touch-action: pan-y; }
+    .dashboard-metric { display: flex; flex: 0 0 118px; flex-direction: column; gap: .52rem; min-height: 108px; padding: .82rem; border: 1px solid rgba(96,137,192,.18); border-radius: 15px; background: #121e34; box-shadow: 0 7px 16px rgba(0,0,0,.13); }
+    .dashboard-metric-icon { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 8px; background: rgba(2,132,199,.15); color: #38bdf8; font-size: .78rem; }
+    .dashboard-metric--warn .dashboard-metric-icon { background: rgba(245,158,11,.12); color: #f59e0b; }
+    .dashboard-metric--green .dashboard-metric-icon { background: rgba(16,185,129,.13); color: #34d399; }
+    .dashboard-metric--purple .dashboard-metric-icon { background: rgba(139,92,246,.13); color: #a78bfa; }
+    .dashboard-metric-value { overflow: hidden; color: #f8fafc; font: 800 1.12rem/1.08 'Outfit', sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+    .dashboard-metric-label { color: #94a3b8; font-size: .68rem; font-weight: 600; line-height: 1.2; }
+
+    .dashboard-card-row { padding: .05rem; touch-action: pan-y; }
+    .dashboard-product-card, .dashboard-cashier-card { flex: 0 0 146px; width: 146px; min-width: 0; min-height: 142px; padding: .85rem; border: 1px solid rgba(96,137,192,.19); border-radius: 16px; background: #121e34; box-shadow: 0 7px 16px rgba(0,0,0,.13); }
+    .dashboard-card-icon { display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: .72rem; border-radius: 10px; background: rgba(2,132,199,.16); color: #38bdf8; }
+    .dashboard-card-title { overflow: hidden; color: #f8fafc; font-size: .76rem; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+    .dashboard-product-card .dashboard-card-title { display: -webkit-box; min-height: 2.4em; line-height: 1.2; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    .dashboard-card-sub { margin-top: .24rem; color: #94a3b8; font-size: .68rem; }
+    .dashboard-card-value { margin-top: .52rem; color: #34d399; font: 800 .93rem 'Outfit', sans-serif; }
+    .dashboard-cashier-card { flex-basis: 175px; width: 175px; min-height: 128px; }
+    .dashboard-avatar { display: inline-grid; place-items: center; width: 31px; height: 31px; margin-right: .4rem; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff; font-size: .68rem; font-weight: 900; vertical-align: middle; }
+    .dashboard-cashier-card:nth-child(even) .dashboard-avatar { background: linear-gradient(135deg, #f97316, #ea580c); }
+
+    .dashboard-analytics { display: grid; grid-template-columns: minmax(0, 1fr); gap: .8rem; }
+    .dashboard-v3 .hub-chart-card, .dashboard-v3 .hub-payment-card, .dashboard-v3 .hub-warning-banner { border-radius: 17px; }
+    [data-theme="light"] .dashboard-ticker { border-color: #e2e8f0; background: #eef2f7; }
+    [data-theme="light"] .dashboard-metric, [data-theme="light"] .dashboard-product-card, [data-theme="light"] .dashboard-cashier-card { border-color: #dbe4ef; background: #fff; box-shadow: 0 7px 16px rgba(15,23,42,.08); }
+    [data-theme="light"] .dashboard-metric-value, [data-theme="light"] .dashboard-card-title { color: #0f172a; }
+    [data-theme="light"] .dashboard-metric-label, [data-theme="light"] .dashboard-card-sub { color: #64748b; }
+    [data-theme="light"] .dashboard-story-row .story-ring-inner { background: #fff; }
+    @media (min-width: 500px) {
+        .dashboard-story-row { width: 100%; margin-inline: 0; justify-content: flex-start; }
+        .dashboard-story-row .story-ring-wrap { width: 80px; }
+        .dashboard-story-row .story-ring-label { max-width: 80px; min-height: 2.2em; overflow: visible; white-space: normal; line-height: 1.1; }
+        .dashboard-card-row { display: grid; overflow: visible; }
+        .dashboard-metric-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; }
+        .dashboard-metric { width: auto; min-width: 0; }
+        .dashboard-product-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .dashboard-cashier-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .dashboard-product-card, .dashboard-cashier-card { width: auto; min-width: 0; }
+    }
+    @media (min-width: 560px) {
+        body.dashboard-page .dacar-bottom-nav { width: calc(100% - 2rem) !important; max-width: 760px !important; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="hub-dashboard-container">
-    
+<div class="legacy-dashboard" aria-hidden="true" hidden>
+
     <!-- TOP APP HEADER -->
     <div class="hub-header">
         <div class="hub-header-brand">
@@ -549,48 +694,9 @@
         <span>· обновлено только что</span>
     </div>
 
-    <!-- MARQUEE TICKER (Бегущая строка событий) -->
-    <div class="marquee-container" id="marqueeTicker" style="border-radius: var(--radius-md); background: rgba(2,132,199,0.07); border: 1px solid rgba(2,132,199,0.18); padding: 0.4rem 0; margin-bottom: 0.25rem;">
-        <div class="marquee-track" id="marqueeTrack">
-            <span class="marquee-item" style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
-                <i class="fa-solid fa-chart-line" style="color:var(--accent-cyan);"></i>
-                <span id="marqueeLastSale">{% if last_sale %}✅ Чек №{{ last_sale.order_number }} — {{ last_sale.total_amount|floatformat:0 }} ₸{% else %}Ждём первой продажи...{% endif %}</span>
-            </span>
-            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
-                <i class="fa-solid fa-box" style="color:var(--accent-orange);"></i>
-                {% if low_stock_count > 0 %}
-                <span>⚠️ Товаров на исходе: <strong>{{ low_stock_count }}</strong> позиций</span>
-                {% else %}
-                <span>Склад в порядке ✓</span>
-                {% endif %}
-            </span>
-            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
-                <i class="fa-solid fa-receipt" style="color:var(--accent-green);"></i>
-                <span>Чеков сегодня: <strong>{{ today_count }}</strong> · Ср. чек: <strong>{{ today_avg_check|floatformat:0 }} ₸</strong></span>
-            </span>
-            <!-- Дублируем для бесшовной петли -->
-            <span class="marquee-item" style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
-                <i class="fa-solid fa-chart-line" style="color:var(--accent-cyan);"></i>
-                <span>{% if last_sale %}✅ Чек №{{ last_sale.order_number }} — {{ last_sale.total_amount|floatformat:0 }} ₸{% else %}Ждём первой продажи...{% endif %}</span>
-            </span>
-            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
-                <i class="fa-solid fa-box" style="color:var(--accent-orange);"></i>
-                {% if low_stock_count > 0 %}
-                <span>⚠️ Товаров на исходе: <strong>{{ low_stock_count }}</strong> позиций</span>
-                {% else %}
-                <span>Склад в порядке ✓</span>
-                {% endif %}
-            </span>
-            <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;" aria-hidden="true">
-                <i class="fa-solid fa-receipt" style="color:var(--accent-green);"></i>
-                <span>Чеков сегодня: <strong>{{ today_count }}</strong> · Ср. чек: <strong>{{ today_avg_check|floatformat:0 }} ₸</strong></span>
-            </span>
-        </div>
-    </div>
-
     <!-- RESPONSIVE TABLET COCKPIT WRAPPER -->
     <div class="hub-tablet-grid">
-        
+
         <!-- LEFT COLUMN: Revenue Hero, 3 KPIs, Payment Methods -->
         <div class="hub-tablet-col">
             <!-- 1. HERO REVENUE CARD (Выручка сегодня + Semicircle Gauge) -->
@@ -607,9 +713,13 @@
                                 </linearGradient>
                             </defs>
                             <!-- Background track -->
-                            <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="8" stroke-linecap="round" />
+                            <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.12)"
+                                stroke-width="8" stroke-linecap="round" />
                             <!-- Dynamic fill arc -->
-                            <path id="hubGaugeArc" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="url(#hubGaugeGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="0" style="transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);" />
+                            <path id="hubGaugeArc" d="M 10 50 A 40 40 0 0 1 90 50" fill="none"
+                                stroke="url(#hubGaugeGrad)" stroke-width="8" stroke-linecap="round"
+                                stroke-dasharray="126" stroke-dashoffset="0"
+                                style="transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);" />
                         </svg>
                     </div>
 
@@ -626,12 +736,13 @@
                 </div>
 
                 <div class="hub-hero-target-text" id="heroTargetText">
-                    Цель дня 130% от вчерашней выручки — сейчас на отметке <strong><span id="heroTargetPct">{{ target_percent }}</span>%</strong>
+                    Цель дня 130% от вчерашней выручки — сейчас на отметке <strong><span id="heroTargetPct">{{
+                            target_percent }}</span>%</strong>
                 </div>
             </div>
 
-            <!-- 2. 3-COLUMN COMPACT KPI GRID (Horizontal Snap Scroll on mobile) -->
-            <div class="hub-mini-kpi-grid snap-row" role="region" aria-label="Ключевые показатели">
+            <!-- 2. 3-COLUMN COMPACT KPI GRID -->
+            <div class="hub-mini-kpi-grid">
                 <!-- Чеков сегодня -->
                 <div class="hub-mini-kpi-card">
                     <div class="hub-kpi-icon-box blue">
@@ -688,7 +799,8 @@
                                 <span class="hub-legend-dot" style="background: #F59E0B;"></span>
                                 <span>Kaspi QR</span>
                             </div>
-                            <span class="hub-legend-pct" id="legendQrPct">{{ payment_breakdown.qr_pct|default:"52" }}%</span>
+                            <span class="hub-legend-pct" id="legendQrPct">{{ payment_breakdown.qr_pct|default:"52"
+                                }}%</span>
                         </div>
 
                         <div class="hub-legend-row">
@@ -696,7 +808,8 @@
                                 <span class="hub-legend-dot" style="background: #10B981;"></span>
                                 <span>Наличные</span>
                             </div>
-                            <span class="hub-legend-pct" id="legendCashPct">{{ payment_breakdown.cash_pct|default:"37" }}%</span>
+                            <span class="hub-legend-pct" id="legendCashPct">{{ payment_breakdown.cash_pct|default:"37"
+                                }}%</span>
                         </div>
 
                         <div class="hub-legend-row">
@@ -704,7 +817,8 @@
                                 <span class="hub-legend-dot" style="background: #38BDF8;"></span>
                                 <span>Карта</span>
                             </div>
-                            <span class="hub-legend-pct" id="legendCardPct">{{ payment_breakdown.card_pct|default:"11" }}%</span>
+                            <span class="hub-legend-pct" id="legendCardPct">{{ payment_breakdown.card_pct|default:"11"
+                                }}%</span>
                         </div>
                     </div>
                 </div>
@@ -732,7 +846,8 @@
                 </a>
             </div>
             {% else %}
-            <div class="hub-warning-banner hub-stock-ok" id="hubWarningBanner" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25);">
+            <div class="hub-warning-banner hub-stock-ok" id="hubWarningBanner"
+                style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25);">
                 <div class="hub-warning-left">
                     <div class="hub-warning-icon-box" style="background: rgba(16, 185, 129, 0.18); color: #10B981;">
                         <i class="fa-solid fa-check"></i>
@@ -744,7 +859,8 @@
                         <div class="hub-warning-subtitle">Критичных остатков нет</div>
                     </div>
                 </div>
-                <a href="{% url 'm_product_list' %}" class="hub-warning-link" style="color: #10B981; background: rgba(16, 185, 129, 0.15);">
+                <a href="{% url 'm_product_list' %}" class="hub-warning-link"
+                    style="color: #10B981; background: rgba(16, 185, 129, 0.15);">
                     Склад &rarr;
                 </a>
             </div>
@@ -762,19 +878,25 @@
             </div>
 
             <!-- RECENT SALE REAL-TIME STREAM BANNER -->
-            <div class="hub-recent-sale-row" id="hubRecentSaleBanner" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 0.85rem 1.15rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+            <div class="hub-recent-sale-row" id="hubRecentSaleBanner"
+                style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 0.85rem 1.15rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
                 <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; flex: 1;">
                     <i class="fa-solid fa-bell" style="color: var(--accent-cyan); font-size: 0.95rem;"></i>
-                    <span style="color: var(--text-secondary); white-space: nowrap; font-size: 0.8rem;">Последний чек:</span>
-                    <strong style="color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: 0.82rem;" id="hubLastSaleText">
+                    <span style="color: var(--text-secondary); white-space: nowrap; font-size: 0.8rem;">Последний
+                        чек:</span>
+                    <strong
+                        style="color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: 0.82rem;"
+                        id="hubLastSaleText">
                         {% if recent_orders.0 %}
-                        №{{ recent_orders.0.order_number }} • {{ recent_orders.0.total_amount|floatformat:0 }} ₸ ({{ recent_orders.0.get_payment_method_display }})
+                        №{{ recent_orders.0.order_number }} • {{ recent_orders.0.total_amount|floatformat:0 }} ₸ ({{
+                        recent_orders.0.get_payment_method_display }})
                         {% else %}
                         Ожидание продаж...
                         {% endif %}
                     </strong>
                 </div>
-                <a href="{% url 'm_sales_orders_list' %}" style="color: var(--accent-cyan); font-weight: 700; text-decoration: none; white-space: nowrap; font-size: 0.85rem;">
+                <a href="{% url 'm_sales_orders_list' %}"
+                    style="color: var(--accent-cyan); font-weight: 700; text-decoration: none; white-space: nowrap; font-size: 0.85rem;">
                     Чеки &rarr;
                 </a>
             </div>
@@ -782,6 +904,96 @@
 
     </div>
 
+</div>
+</div><!-- /.legacy-dashboard -->
+
+<main class="dashboard-v3" aria-label="Дашборд DACAR">
+    <header class="hub-header">
+        <div class="hub-header-brand">
+            <div class="hub-avatar-logo"><i class="fa-solid fa-car-side"></i></div>
+            <div>
+                <div class="hub-brand-title">DACAR <span style="color:var(--accent-orange);">MARKET</span></div>
+                <div class="hub-brand-subtitle">Добрый день, {{ user.first_name|default:user.username }}</div>
+            </div>
+        </div>
+        <button type="button" class="dashboard-theme-toggle haptic-press" onclick="toggleDacarTheme()" aria-label="Переключить тему" title="Тёмная / светлая тема"><i class="fa-solid fa-moon" data-dacar-theme-icon style="color:#f59e0b;"></i></button>
+    </header>
+
+    <div class="dashboard-ticker marquee-container" role="status" aria-label="Последние события">
+        <div class="marquee-track">
+            <span class="dashboard-ticker-item"><i class="fa-solid fa-receipt" style="color:var(--accent-cyan);"></i>{% if recent_orders.0 %}<strong>Чек №{{ recent_orders.0.order_number }}</strong> — {{ recent_orders.0.total_amount|floatformat:0 }} ₸{% else %}Ожидание первой продажи{% endif %}</span>
+            <span class="dashboard-ticker-item"><i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>{% if low_stock_count %}Мало на складе: <strong>{{ low_stock_count }}</strong> поз.{% else %}Склад в порядке{% endif %}</span>
+            <span class="dashboard-ticker-item"><i class="fa-solid fa-chart-line" style="color:#34d399;"></i>Чеков сегодня: <strong>{{ today_count }}</strong> · Средний чек: <strong>{{ today_avg_check|floatformat:0 }} ₸</strong></span>
+            <span class="dashboard-ticker-item" aria-hidden="true"><i class="fa-solid fa-receipt" style="color:var(--accent-cyan);"></i>{% if recent_orders.0 %}<strong>Чек №{{ recent_orders.0.order_number }}</strong> — {{ recent_orders.0.total_amount|floatformat:0 }} ₸{% else %}Ожидание первой продажи{% endif %}</span>
+            <span class="dashboard-ticker-item" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>{% if low_stock_count %}Мало на складе: <strong>{{ low_stock_count }}</strong> поз.{% else %}Склад в порядке{% endif %}</span>
+        </div>
+    </div>
+
+    <section class="hero-carousel" id="dashboardHero" role="region" aria-roledescription="carousel" aria-label="Ключевые показатели">
+        <div class="hero-carousel-track">
+            <article class="hero-slide hero-slide--revenue">
+                <div><div class="hero-kicker">Выручка сегодня</div><div class="hero-value"><span id="dashHeroRevenue">{{ today_revenue|floatformat:0 }}</span> ₸</div></div>
+                <div class="hero-meta"><i class="fa-solid fa-arrow-trend-up"></i><span id="dashHeroGrowth">{{ growth_percent|floatformat:0 }}% к вчера</span></div>
+            </article>
+            <article class="hero-slide hero-slide--profit">
+                <div><div class="hero-kicker">Прибыль сегодня</div><div class="hero-value"><span id="dashHeroProfit">{{ today_profit|floatformat:0 }}</span> ₸</div></div>
+                <div class="hero-meta"><i class="fa-solid fa-sack-dollar"></i><span id="dashHeroMargin">Маржа {{ profit_margin }}%</span></div>
+            </article>
+            <article class="hero-slide hero-slide--goal">
+                <div><div class="hero-kicker">Цель дня</div><div class="hero-value"><span id="dashHeroTarget">{{ target_percent }}</span>%</div></div>
+                <div class="hero-meta"><i class="fa-solid fa-bullseye"></i>130% от вчерашней выручки</div>
+            </article>
+        </div>
+        <div class="hero-dots" aria-label="Переключение показателей">
+            <button class="hero-dot" type="button" aria-label="Выручка сегодня" aria-current="true"></button>
+            <button class="hero-dot" type="button" aria-label="Прибыль сегодня" aria-current="false"></button>
+            <button class="hero-dot" type="button" aria-label="Цель дня" aria-current="false"></button>
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <div class="dashboard-section-head"><h2 class="dashboard-section-title">Категории</h2></div>
+        <div class="dashboard-story-row snap-row" aria-label="Категории товаров">
+            {% for category in dashboard_categories %}
+            <a class="story-ring-wrap haptic-press" href="{% url 'm_product_list' %}?category={{ category.id }}"><span class="story-ring"><span class="story-ring-inner"><i class="fa-solid {% if category.slug == 'autochem' %}fa-bottle-droplet{% elif category.slug == 'interior' %}fa-soap{% elif category.slug == 'exterior' %}fa-car-side{% else %}{{ category.icon|default:'fa-tags' }}{% endif %}"></i></span></span><span class="story-ring-label">{% if category.slug == 'autochem' %}Химия{% else %}{{ category.name }}{% endif %}</span></a>
+            {% empty %}<span class="story-ring-wrap"><span class="story-ring seen"><span class="story-ring-inner"><i class="fa-solid fa-tags"></i></span></span><span class="story-ring-label">Категории</span></span>{% endfor %}
+            <a class="story-ring-wrap haptic-press" href="{% url 'm_product_list' %}"><span class="story-ring"><span class="story-ring-inner"><i class="fa-solid fa-ellipsis"></i></span></span><span class="story-ring-label">Ещё</span></a>
+        </div>
+    </section>
+
+    <section class="dashboard-section" aria-label="Краткие показатели">
+        <div class="dashboard-metric-row snap-row">
+            <article class="dashboard-metric"><span class="dashboard-metric-icon"><i class="fa-solid fa-receipt"></i></span><strong class="dashboard-metric-value" id="dashChecks">{{ today_count }}</strong><span class="dashboard-metric-label">чеков сегодня</span></article>
+            <article class="dashboard-metric dashboard-metric--green"><span class="dashboard-metric-icon"><i class="fa-solid fa-money-bill-wave"></i></span><strong class="dashboard-metric-value"><span id="dashAvg">{{ today_avg_check|floatformat:0 }}</span> ₸</strong><span class="dashboard-metric-label">средний чек</span></article>
+            <a class="dashboard-metric dashboard-metric--warn haptic-press" href="{% url 'm_product_list' %}?low_stock=1" style="text-decoration:none;"><span class="dashboard-metric-icon"><i class="fa-solid fa-triangle-exclamation"></i></span><strong class="dashboard-metric-value" id="dashStock">{{ low_stock_count }}</strong><span class="dashboard-metric-label">мало на складе</span></a>
+            <article class="dashboard-metric dashboard-metric--purple"><span class="dashboard-metric-icon"><i class="fa-solid fa-users"></i></span><strong class="dashboard-metric-value">{{ cashier_stats|length }}</strong><span class="dashboard-metric-label">кассиров в отчёте</span></article>
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <div class="dashboard-section-head"><h2 class="dashboard-section-title">Топ товаров</h2><a href="{% url 'm_product_list' %}" class="dashboard-section-link">Все</a></div>
+        <div class="dashboard-card-row dashboard-product-row snap-row" data-autoplay-row>
+            {% for product in top_products %}
+            <article class="dashboard-product-card"><span class="dashboard-card-icon"><i class="fa-solid {{ product.product__category__icon|default:'fa-bottle-droplet' }}"></i></span><div class="dashboard-card-title">{{ product.product__name }}</div><div class="dashboard-card-sub">{{ product.total_qty|floatformat:0 }} продажи</div><div class="dashboard-card-value">{{ product.total_sum|floatformat:0 }} ₸</div></article>
+            {% empty %}<article class="dashboard-product-card"><span class="dashboard-card-icon"><i class="fa-solid fa-box-open"></i></span><div class="dashboard-card-title">Нет продаж</div><div class="dashboard-card-sub">Топ появится после первой продажи</div></article>{% endfor %}
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <div class="dashboard-section-head"><h2 class="dashboard-section-title">Кассир дня</h2><a href="{% url 'm_sales_orders_list' %}" class="dashboard-section-link">Чеки</a></div>
+        <div class="dashboard-card-row dashboard-cashier-row snap-row" data-autoplay-row>
+            {% for cs in cashier_stats %}
+            <article class="dashboard-cashier-card"><div class="dashboard-card-title"><span class="dashboard-avatar">{% if cs.user %}{{ cs.user.first_name|first }}{{ cs.user.last_name|first }}{% else %}К{% endif %}</span>{% if cs.user %}{{ cs.user.get_full_name|default:cs.user.username }}{% else %}Удалённый кассир{% endif %}</div><div class="dashboard-card-value">{{ cs.revenue|floatformat:0 }} ₸</div><div class="dashboard-card-sub">{{ cs.count }} чек{{ cs.count|pluralize:"а,ов" }} · средний {{ cs.avg_check|floatformat:0 }} ₸</div></article>
+            {% empty %}<article class="dashboard-cashier-card"><div class="dashboard-card-title">Нет данных по кассирам</div></article>{% endfor %}
+        </div>
+    </section>
+
+    <section class="dashboard-analytics" aria-label="Аналитика">
+        {% if low_stock_count %}<div class="hub-warning-banner"><div class="hub-warning-left"><div class="hub-warning-icon-box"><i class="fa-solid fa-triangle-exclamation"></i></div><div><div class="hub-warning-title">{{ low_stock_count }} товара требуют дозаказа</div><div class="hub-warning-subtitle">Остаток ниже минимального порога</div></div></div><a href="{% url 'm_product_list' %}?low_stock=1" class="hub-warning-link">Склад</a></div>{% endif %}
+        <div class="hub-chart-card"><div class="hub-chart-header"><div class="hub-chart-title">Продажи по часам</div><div class="hub-chart-tag">сегодня</div></div><div style="height:165px;position:relative;"><canvas id="dashHourlyChart"></canvas></div></div>
+        <div class="hub-payment-card"><div class="hub-chart-header" style="margin-bottom:.75rem;"><div class="hub-chart-title">Способы оплаты</div></div><div class="hub-payment-body"><div class="hub-doughnut-wrap"><canvas id="dashPaymentChart"></canvas></div><div class="hub-payment-legend"><div class="hub-legend-row"><span class="hub-legend-label"><span class="hub-legend-dot" style="background:#f59e0b"></span>Kaspi QR</span><strong id="dashQrPct">{{ payment_breakdown.qr_pct }}%</strong></div><div class="hub-legend-row"><span class="hub-legend-label"><span class="hub-legend-dot" style="background:#10b981"></span>Наличные</span><strong id="dashCashPct">{{ payment_breakdown.cash_pct }}%</strong></div><div class="hub-legend-row"><span class="hub-legend-label"><span class="hub-legend-dot" style="background:#38bdf8"></span>Карта</span><strong id="dashCardPct">{{ payment_breakdown.card_pct }}%</strong></div></div></div></div>
+    </section>
+</main>
 </div>
 {% endblock %}
 
@@ -839,7 +1051,9 @@
     const initialHourlyData = {{ hourly_sales|safe|default:"[]" }};
 
     function initHourlyChart(dataArray) {
-        const ctx = document.getElementById('hubHourlyChart');
+        // The legacy layout remains in the DOM only for backwards-compatible
+        // event hooks; render the live chart into the visible dashboard instead.
+        const ctx = document.getElementById('dashHourlyChart');
         if (!ctx) return;
 
         let full24 = dataArray && dataArray.length === 24 ? dataArray : new Array(24).fill(0);
@@ -927,21 +1141,22 @@
     const initialCard = {{ payment_breakdown.card_pct|default:11 }};
 
     function initPaymentChart(qr, cash, card) {
-        const ctx = document.getElementById('hubPaymentChart');
+        const ctx = document.getElementById('dashPaymentChart');
         if (!ctx) return;
 
-        let total = qr + cash + card;
-        let dataVals = total > 0 ? [qr, cash, card] : [52, 37, 11];
+        const total = qr + cash + card;
+        const hasPayments = total > 0;
+        const dataVals = hasPayments ? [qr, cash, card] : [1];
 
         if (paymentChartInstance) paymentChartInstance.destroy();
 
         paymentChartInstance = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Kaspi QR', 'Наличные', 'Карта'],
+                labels: hasPayments ? ['Kaspi QR', 'Наличные', 'Карта'] : ['Нет оплат сегодня'],
                 datasets: [{
                     data: dataVals,
-                    backgroundColor: ['#F59E0B', '#10B981', '#38BDF8'],
+                    backgroundColor: hasPayments ? ['#F59E0B', '#10B981', '#38BDF8'] : ['#26354f'],
                     borderWidth: 0,
                     hoverOffset: 4
                 }]
@@ -1027,12 +1242,6 @@
             lastSaleEl.textContent = `№${data.last_order.order_number} • ${Math.round(data.last_order.total_amount).toLocaleString('ru-RU')} ₸ (${data.last_order.payment_method_display})`;
         }
 
-        // Marquee ticker last sale update
-        const marqueeLastSaleEl = document.getElementById('marqueeLastSale');
-        if (marqueeLastSaleEl && data.last_order) {
-            marqueeLastSaleEl.textContent = `✅ Чек №${data.last_order.order_number} — ${Math.round(data.last_order.total_amount).toLocaleString('ru-RU')} ₸`;
-        }
-
         // Charts
         if (data.hourly_sales) {
             initHourlyChart(data.hourly_sales);
@@ -1043,9 +1252,9 @@
             const cash = data.payment_breakdown.cash_pct || 0;
             const card = data.payment_breakdown.card_pct || 0;
             
-            const lQr = document.getElementById('legendQrPct');
-            const lCash = document.getElementById('legendCashPct');
-            const lCard = document.getElementById('legendCardPct');
+            const lQr = document.getElementById('dashQrPct');
+            const lCash = document.getElementById('dashCashPct');
+            const lCard = document.getElementById('dashCardPct');
             if (lQr) lQr.textContent = `${qr}%`;
             if (lCash) lCash.textContent = `${cash}%`;
             if (lCard) lCard.textContent = `${card}%`;
@@ -1053,5 +1262,76 @@
             initPaymentChart(qr, cash, card);
         }
     });
+</script>
+<script>
+    (() => {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const money = value => Math.round(Number(value || 0)).toLocaleString('ru-RU');
+        const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = money(value); };
+
+        function createHeroCarousel() {
+            const carousel = document.getElementById('dashboardHero');
+            if (!carousel) return;
+            const track = carousel.querySelector('.hero-carousel-track');
+            const dots = Array.from(carousel.querySelectorAll('.hero-dot'));
+            let index = 0;
+            let pointerStart = null;
+            let timer = null;
+            const move = next => {
+                index = (next + dots.length) % dots.length;
+                track.style.transform = `translateX(-${index * 100}%)`;
+                dots.forEach((dot, i) => dot.setAttribute('aria-current', String(i === index)));
+            };
+            const restart = () => {
+                if (reduceMotion) return;
+                clearInterval(timer);
+                timer = setInterval(() => { if (!document.hidden) move(index + 1); }, 5000);
+            };
+            dots.forEach((dot, i) => dot.addEventListener('click', () => { move(i); restart(); }));
+            carousel.addEventListener('pointerdown', event => { pointerStart = event.clientX; clearInterval(timer); }, {passive: true});
+            carousel.addEventListener('pointerup', event => {
+                if (pointerStart !== null && Math.abs(event.clientX - pointerStart) > 35) move(index + (event.clientX < pointerStart ? 1 : -1));
+                pointerStart = null; restart();
+            }, {passive: true});
+            carousel.addEventListener('pointercancel', restart, {passive: true});
+            restart();
+        }
+
+        function createRowAutoplay() {
+            if (reduceMotion) return;
+            document.querySelectorAll('[data-autoplay-row]').forEach(row => {
+                if (row.children.length < 2 || row.scrollWidth <= row.clientWidth + 8) return;
+                let paused = false;
+                const advance = () => {
+                    if (paused || document.hidden) return;
+                    const item = row.children[0];
+                    const step = item.getBoundingClientRect().width + 12;
+                    const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 8;
+                    row.scrollTo({left: atEnd ? 0 : row.scrollLeft + step, behavior: 'smooth'});
+                };
+                setInterval(advance, 4800);
+                ['pointerdown', 'mouseenter', 'focusin'].forEach(type => row.addEventListener(type, () => { paused = true; }, {passive: true}));
+                ['pointerup', 'mouseleave', 'focusout'].forEach(type => row.addEventListener(type, () => { paused = false; }, {passive: true}));
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createHeroCarousel();
+            createRowAutoplay();
+            [['dashHeroRevenue', {{ today_revenue|floatformat:0|default:0 }}], ['dashHeroProfit', {{ today_profit|floatformat:0|default:0 }}], ['dashChecks', {{ today_count|default:0 }}], ['dashAvg', {{ today_avg_check|floatformat:0|default:0 }}]].forEach(([id, value]) => animateNumber(document.getElementById(id), value, 820));
+        });
+
+        window.addEventListener('dacar:live_kpi', event => {
+            const data = event.detail || {};
+            if (data.revenue_today !== undefined) setText('dashHeroRevenue', data.revenue_today);
+            if (data.profit_today !== undefined) setText('dashHeroProfit', data.profit_today);
+            if (data.orders_count_today !== undefined) setText('dashChecks', data.orders_count_today);
+            if (data.avg_check_today !== undefined) setText('dashAvg', data.avg_check_today);
+            if (data.low_stock_count !== undefined) setText('dashStock', data.low_stock_count);
+            if (data.target_percent !== undefined) document.getElementById('dashHeroTarget').textContent = data.target_percent;
+            if (data.growth_percent !== undefined) document.getElementById('dashHeroGrowth').textContent = `${Math.round(data.growth_percent)}% к вчера`;
+            if (data.profit_today !== undefined && data.revenue_today) document.getElementById('dashHeroMargin').textContent = `Маржа ${Math.round(data.profit_today / data.revenue_today * 100)}%`;
+        });
+    })();
 </script>
 {% endblock %}

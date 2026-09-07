@@ -1,7 +1,8 @@
 {% extends 'mobile/base.html' %}
-{% load static %}
+{% load static l10n %}
 
 {% block title %}Склад и Остатки — DACAR Market{% endblock %}
+{% block body_class %}catalog-page{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -236,44 +237,163 @@
         align-items: center;
         justify-content: center;
     }
+
+    /* ===== WAREHOUSE V2 — mobile PWA ===== */
+    body.catalog-page .header-nav { display: none; }
+    body.catalog-page .main-container { max-width: 760px; padding-top: 1rem; }
+    .warehouse-header { align-items: flex-start; margin-bottom: 1rem; }
+    .warehouse-title-row { display: flex; align-items: center; gap: .7rem; }
+    .warehouse-title-icon { display: grid; width: 43px; height: 43px; place-items: center; flex: 0 0 auto; border-radius: 14px; background: linear-gradient(135deg, #0ea5e9, #0369a1); color: #fff; font-size: 1.12rem; box-shadow: 0 7px 18px rgba(2,132,199,.28); }
+    .warehouse-title-text h1 { margin: 0; color: var(--text-primary); font: 800 1.16rem/1.15 'Outfit', sans-serif; }
+    .warehouse-title-text p { margin: .25rem 0 0; color: var(--text-muted); font-size: .73rem; line-height: 1.35; }
+    .warehouse-theme-toggle { display: grid; width: 40px; height: 40px; padding: 0; place-items: center; border: 1px solid var(--card-border); border-radius: 50%; background: var(--card-bg); color: var(--text-primary); box-shadow: var(--shadow-xs); }
+    .warehouse-header-actions { display: flex; width: 100%; gap: .55rem; margin-top: .95rem; }
+    .warehouse-header-actions .btn { min-height: 42px; flex: 1; border-radius: 13px; }
+    .warehouse-header-actions .btn-primary { box-shadow: 0 8px 16px rgba(2,132,199,.22); }
+
+    .warehouse-summary-row { display: flex; gap: .75rem; margin: 0 -.1rem 1.05rem; padding: .05rem .1rem .2rem; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; }
+    .warehouse-summary-row::-webkit-scrollbar { display: none; }
+    .warehouse-summary-card { display: flex; min-width: 130px; flex: 0 0 130px; flex-direction: column; gap: .42rem; padding: .8rem; border: 1px solid var(--card-border); border-radius: 16px; background: var(--card-bg); box-shadow: var(--shadow-xs); scroll-snap-align: start; }
+    .warehouse-summary-card i { color: var(--accent-cyan); font-size: .88rem; }
+    .warehouse-summary-card strong { color: var(--text-primary); font: 800 1.25rem/1 'Outfit', sans-serif; }
+    .warehouse-summary-card span { color: var(--text-muted); font-size: .67rem; font-weight: 700; }
+    .warehouse-summary-card--warn i, .warehouse-summary-card--warn strong { color: #f59e0b; }
+    .warehouse-summary-card--danger i, .warehouse-summary-card--danger strong { color: var(--accent-red); }
+
+    .warehouse-filter-card { margin-bottom: 1rem; padding: .85rem; border-radius: 18px; background: var(--card-bg); }
+    .warehouse-filter-card .filter-search { position: relative; min-width: 100%; }
+    .warehouse-filter-card .filter-search i { position: absolute; z-index: 1; top: 50%; left: .85rem; color: var(--text-muted); transform: translateY(-50%); }
+    .warehouse-filter-card .filter-search input { min-height: 46px; padding-left: 2.5rem; border-radius: 13px; }
+    .warehouse-filter-card select { min-height: 42px; border-radius: 12px; }
+    .warehouse-filter-card .filter-submit { min-height: 42px; border-radius: 12px; }
+    .warehouse-result-bar { display: flex; align-items: center; justify-content: space-between; margin: .1rem 0 .75rem; color: var(--text-muted); font-size: .76rem; }
+    .warehouse-result-bar strong { color: var(--text-primary); }
+
+    .catalog-cards-mobile { display: grid !important; gap: .75rem; }
+    .product-list-card { position: relative; min-width: 0; margin: 0; padding: .9rem; border-radius: 17px; background: var(--card-bg); }
+    .product-list-card::before { position: absolute; top: .9rem; bottom: .9rem; left: 0; width: 3px; border-radius: 0 6px 6px 0; background: var(--accent-green); content: ''; }
+    .product-list-card:has(.stock-warn)::before { background: #f59e0b; }
+    .product-list-card:has(.stock-danger)::before { background: var(--accent-red); }
+    .product-list-card-header { padding-left: .15rem; }
+    .product-list-card-title { display: -webkit-box; overflow: hidden; min-height: 2.55em; color: var(--text-primary); font-size: .92rem; line-height: 1.28; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    .product-list-card-header .btn { display: grid; width: 34px; height: 34px; padding: 0 !important; place-items: center; border-radius: 10px !important; }
+    .product-list-card-badges { min-height: 22px; }
+    .product-list-card-codes { padding: .45rem .6rem; font-size: .66rem; }
+    .product-list-card-pricing { padding: .6rem 0; }
+    .product-card-price { color: var(--accent-cyan); font-size: 1.18rem; }
+    .product-list-card-actions .btn { min-height: 39px; font-size: .74rem; }
+
+    @media (min-width: 560px) and (max-width: 1200px) {
+        body.catalog-page .dacar-bottom-nav { width: calc(100% - 2rem) !important; max-width: 760px !important; }
+        .warehouse-header-actions { width: auto; margin-top: 0; }
+        .warehouse-header-actions .btn { min-width: 126px; flex: none; }
+        .catalog-cards-mobile { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        .warehouse-summary-row { overflow: visible; }
+        .warehouse-summary-card { flex: 1 1 0; min-width: 0; }
+    }
+
+    /* ===== COMPACT CATALOG — fast work with 100+ items ===== */
+    .warehouse-header { margin-bottom: .85rem; }
+    .warehouse-title-row { width: 100%; }
+    .warehouse-title-icon { display: none; }
+    .warehouse-title-text { flex: 1; }
+    .warehouse-title-text h1 { font-size: 1.35rem; }
+    .warehouse-title-text p { display: none; }
+    .warehouse-header-actions, .warehouse-summary-row { display: none; }
+    .warehouse-add-btn { display: grid; width: 46px; height: 46px; padding: 0; place-items: center; flex: 0 0 auto; border-radius: 15px; font-size: 1.25rem; box-shadow: 0 9px 20px rgba(2,132,199,.25); }
+    .warehouse-search-card { margin-bottom: .8rem; padding: .7rem; border-radius: 18px; }
+    .warehouse-search-line { display: flex; align-items: center; gap: .45rem; }
+    .warehouse-search-line .filter-search { flex: 1; min-width: 0; }
+    .warehouse-search-line .filter-search input { font-size: .9rem; }
+    .warehouse-search-action { display: grid; width: 42px; height: 42px; padding: 0; place-items: center; flex: 0 0 auto; border: 0; border-radius: 12px; background: rgba(2,132,199,.12); color: var(--accent-cyan); font-size: 1rem; }
+    .warehouse-advanced-filters { display: none; width: 100%; margin-top: .7rem; }
+    .warehouse-advanced-filters.is-open { display: flex; }
+    .warehouse-category-row { display: flex; gap: .85rem; margin: .2rem -.1rem .9rem; padding: .1rem .1rem .3rem; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; }
+    .warehouse-category-row::-webkit-scrollbar { display: none; }
+    .warehouse-category-link { display: flex; width: 72px; flex: 0 0 72px; flex-direction: column; align-items: center; gap: .42rem; color: var(--text-muted); font-size: .67rem; font-weight: 700; line-height: 1.1; text-align: center; text-decoration: none; scroll-snap-align: start; }
+    .warehouse-category-icon { display: grid; width: 56px; height: 56px; place-items: center; border: 3px solid transparent; border-radius: 50%; background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box, var(--story-ring-gradient) border-box; color: var(--accent-cyan); font-size: 1.1rem; }
+    .warehouse-category-link.is-active { color: var(--text-primary); }
+    .warehouse-category-link.is-active .warehouse-category-icon { background: rgba(2,132,199,.16); border-color: var(--accent-cyan); }
+    .warehouse-filter-pills { display: flex; gap: .6rem; margin: 0 0 1rem; overflow-x: auto; scrollbar-width: none; }
+    .warehouse-filter-pills::-webkit-scrollbar { display: none; }
+    .warehouse-filter-pill { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; padding: 0 .95rem; border: 1px solid var(--card-border); border-radius: 999px; background: var(--card-bg); color: var(--text-muted); font-size: .78rem; font-weight: 800; text-decoration: none; white-space: nowrap; }
+    .warehouse-filter-pill.is-active { border-color: var(--accent-orange); background: var(--accent-orange); color: #fff; }
+    .warehouse-result-bar { margin-bottom: .55rem; }
+    .catalog-cards-mobile { gap: .6rem; }
+    .warehouse-product-swipe { position: relative; overflow: hidden; border-radius: 17px; }
+    .warehouse-swipe-actions { position: absolute; inset: 0; display: flex; align-items: stretch; justify-content: flex-end; background: #10243a; }
+    .warehouse-swipe-actions button, .warehouse-swipe-actions a { display: grid; width: 64px; place-items: center; border: 0; color: #fff; text-decoration: none; font-size: 1rem; }
+    .warehouse-swipe-actions .swipe-in { background: #059669; }
+    .warehouse-swipe-actions .swipe-transfer { background: #ea580c; }
+    .warehouse-swipe-actions .swipe-edit { background: #334155; }
+    .warehouse-product-card { position: relative; z-index: 1; display: flex; min-height: 100px; flex-direction: row; align-items: center; gap: .75rem; margin: 0; padding: .8rem .85rem; border-radius: 17px; touch-action: pan-y; transition: transform .22s var(--ease-standard); will-change: transform; }
+    .warehouse-product-card::before { display: none; }
+    .warehouse-product-icon { display: grid; width: 58px; height: 58px; place-items: center; flex: 0 0 auto; border-radius: 16px; background: rgba(2,132,199,.14); color: var(--accent-cyan); font-size: 1.25rem; }
+    .warehouse-product-icon--interior { background: rgba(139,92,246,.14); color: #a78bfa; }
+    .warehouse-product-icon--exterior { background: rgba(234,88,12,.14); color: var(--accent-orange); }
+    .warehouse-product-main { min-width: 0; flex: 1; }
+    .warehouse-product-card .product-list-card-title { min-height: 0; margin: 0; font-size: .9rem; }
+    .warehouse-product-meta { display: block; overflow: hidden; margin-top: .28rem; color: var(--text-muted); font-size: .74rem; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+    .warehouse-product-side { display: flex; min-width: 76px; flex: 0 0 auto; flex-direction: column; align-items: flex-end; gap: .4rem; }
+    .warehouse-product-card .product-card-price { font-size: 1.08rem; line-height: 1; white-space: nowrap; }
+    .warehouse-product-card .product-card-stock-pill { padding: 3px 7px; font-size: .68rem; }
+    .warehouse-swipe-hint { margin: .7rem 0 .85rem; color: var(--text-muted); font-size: .72rem; text-align: center; }
+    .warehouse-action-sheet-head { display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem; padding-bottom:.8rem; border-bottom:1px solid var(--card-border); }
+    .warehouse-action-sheet-head span { display:block; color:var(--text-muted); font-size:.7rem; font-weight:700; }
+    .warehouse-action-sheet-head strong { display:block; overflow:hidden; margin:.2rem 0; color:var(--text-primary); font:800 1rem/1.2 'Outfit',sans-serif; text-overflow:ellipsis; white-space:nowrap; }
+    .warehouse-action-sheet-head small { color:var(--text-muted); font-size:.72rem; }
+    .warehouse-action-sheet-head b { color:var(--accent-cyan); }
+    .warehouse-action-close { display:grid; width:34px; height:34px; padding:0; place-items:center; border:1px solid var(--card-border); border-radius:50%; background:var(--btn-secondary-bg); color:var(--text-muted); }
+    .warehouse-action-options { display:flex; flex-direction:column; gap:.55rem; margin-top:.85rem; }
+    .warehouse-action-option { display:flex; width:100%; align-items:center; gap:.7rem; padding:.72rem; border:1px solid var(--card-border); border-radius:14px; background:var(--card-bg); color:var(--text-primary); text-align:left; text-decoration:none; }
+    .warehouse-action-option > span { display:grid; width:42px; height:42px; place-items:center; flex:0 0 auto; border-radius:13px; font-size:1rem; }
+    .warehouse-action-option > div { min-width:0; flex:1; }
+    .warehouse-action-option strong { display:block; font:800 .82rem/1.2 'Outfit',sans-serif; }
+    .warehouse-action-option small { display:block; overflow:hidden; margin-top:.2rem; color:var(--text-muted); font-size:.68rem; text-overflow:ellipsis; white-space:nowrap; }
+    .warehouse-action-option > i:last-child { color:var(--text-muted); font-size:.72rem; }
+    .warehouse-action-option.action-receive > span { background:rgba(16,185,129,.13); color:var(--accent-green); }
+    .warehouse-action-option.action-transfer > span { background:rgba(234,88,12,.13); color:var(--accent-orange); }
+    .warehouse-action-option.action-edit > span { background:rgba(2,132,199,.13); color:var(--accent-cyan); }
+    @media (min-width: 560px) and (max-width: 1200px) {
+        .warehouse-category-link { width: 80px; flex-basis: 80px; }
+        .catalog-cards-mobile { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        .warehouse-product-card { min-height: 112px; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="catalog-page-header">
-    <div>
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 4px;">
-            <h1 style="font-size: 1.45rem; font-weight: 800; font-family: 'Outfit', sans-serif; margin: 0; color: var(--text-main);">
-                Склад и Остатки
-            </h1>
-            <button type="button" class="pos-help-btn" id="catalogHelpBtn" title="Справка по складу" onclick="openCatalogHelpModal()">
-                <i class="fa-solid fa-question"></i>
-            </button>
+<div class="catalog-page-header warehouse-header">
+    <div class="warehouse-title-row">
+        <div class="warehouse-title-text">
+            <h1>Склад и остатки</h1>
+            <p>Остатки, приёмка и отгрузка товаров</p>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">
-            Учет остатков, сканирование и отгрузка партий в магазин DACAR
-        </p>
-    </div>
-
-    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        <button type="button" class="btn btn-secondary" onclick="openWarehouseScanner()" style="font-weight: 700; border: 1px solid var(--accent-cyan); color: var(--accent-cyan); background: rgba(2, 132, 199, 0.08);">
-            <i class="fa-solid fa-camera"></i> <span>Сканер</span>
-        </button>
-        <a href="{% url 'm_product_create' %}" class="btn btn-primary" style="font-weight: 700;">
-            <i class="fa-solid fa-plus-circle"></i> Новый товар
-        </a>
+        <button type="button" class="warehouse-theme-toggle haptic-press" onclick="toggleDacarTheme()" aria-label="Переключить тему" title="Тёмная / светлая тема"><i class="fa-solid fa-moon" data-dacar-theme-icon style="color:#f59e0b;"></i></button>
+        <button type="button" class="pos-help-btn" id="catalogHelpBtn" title="Справка по складу" onclick="openCatalogHelpModal()"><i class="fa-solid fa-question"></i></button>
+        <a href="{% url 'm_product_create' %}" class="btn btn-primary warehouse-add-btn haptic-press" aria-label="Добавить товар" title="Добавить товар"><i class="fa-solid fa-plus"></i></a>
     </div>
 </div>
 
 <!-- FILTERS -->
-<div class="dacar-card" style="margin-bottom: 1.25rem; padding: 1rem; border-radius: var(--radius-xl);">
+<div class="dacar-card warehouse-filter-card warehouse-search-card">
     <form method="GET" class="filter-bar-form" id="catalogFilterForm">
-        <div class="filter-search">
-            <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Поиск по названию, артикулу или штрихкоду..." autocomplete="off">
+        <div class="warehouse-search-line">
+            <div class="filter-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Название, SKU, штрихкод..." autocomplete="off"></div>
+            <button type="button" class="warehouse-search-action" onclick="openWarehouseScanner()" aria-label="Сканировать штрихкод" title="Сканировать"><i class="fa-solid fa-qrcode"></i></button>
+            <button type="button" class="warehouse-search-action" onclick="toggleCatalogFilters()" aria-label="Дополнительные фильтры" title="Фильтры"><i class="fa-solid fa-sliders"></i></button>
+        </div>
+        <div class="warehouse-advanced-filters" id="catalogAdvancedFilters">
+            <div class="filter-select"><select name="brand" class="form-control">
+                <option value="">Все бренды</option>
+                {% for b in brands %}<option value="{{ b.id }}" {% if selected_brand == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
+            </select></div>
+            <label style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted);cursor:pointer;white-space:nowrap;"><input type="checkbox" name="low_stock" value="1" {% if low_stock_filter == '1' %}checked{% endif %}><span>Мало на складе</span></label>
+            <button type="submit" class="btn btn-secondary filter-submit"><i class="fa-solid fa-filter"></i> Применить</button>
         </div>
 
-        <div class="filter-select">
-            <select name="category" class="form-control" onchange="document.getElementById('catalogFilterForm').submit();">
+        <div class="filter-select" hidden>
+            <select name="category" class="form-control">
                 <option value="">Все категории</option>
                 {% for cat in categories %}
                 <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
@@ -281,87 +401,50 @@
             </select>
         </div>
 
-        <div class="filter-select">
-            <select name="brand" class="form-control" onchange="document.getElementById('catalogFilterForm').submit();">
-                <option value="">Все бренды</option>
-                {% for b in brands %}
-                <option value="{{ b.id }}" {% if selected_brand == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;">
-            <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: var(--text-muted); cursor: pointer;">
-                <input type="checkbox" name="low_stock" value="1" {% if low_stock_filter == '1' %}checked{% endif %} onchange="document.getElementById('catalogFilterForm').submit();">
-                <span>Мало на складе</span>
-            </label>
-            <button type="submit" class="btn btn-secondary" style="padding: 7px 14px; font-weight: 700;">
-                <i class="fa-solid fa-filter"></i> Найти
-            </button>
-        </div>
     </form>
 </div>
 
+<nav class="warehouse-category-row" aria-label="Категории склада">
+    <a href="{% url 'm_product_list' %}" class="warehouse-category-link {% if not selected_category %}is-active{% endif %}"><span class="warehouse-category-icon"><i class="fa-solid fa-border-all"></i></span><span>Все</span></a>
+    {% for cat in categories %}
+    <a href="{% url 'm_product_list' %}?category={{ cat.id }}" class="warehouse-category-link {% if selected_category == cat.id|stringformat:'s' %}is-active{% endif %}"><span class="warehouse-category-icon"><i class="fa-solid {% if cat.slug == 'autochem' %}fa-spray-can{% elif cat.slug == 'interior' %}fa-brush{% elif cat.slug == 'exterior' %}fa-car-side{% else %}fa-boxes-stacked{% endif %}"></i></span><span>{{ cat.name }}</span></a>
+    {% endfor %}
+</nav>
+
+<nav class="warehouse-filter-pills" aria-label="Быстрые фильтры">
+    <a class="warehouse-filter-pill {% if not low_stock_filter %}is-active{% endif %}" href="{% url 'm_product_list' %}">Все</a>
+    <a class="warehouse-filter-pill {% if low_stock_filter == '1' %}is-active{% endif %}" href="{% url 'm_product_list' %}?low_stock=1">Мало на складе{% if low_stock_count %} · {{ low_stock_count }}{% endif %}</a>
+    <a class="warehouse-filter-pill" href="{% url 'm_product_list' %}?q={{ search|urlencode }}">Активные</a>
+</nav>
+
 <!-- TOTAL PRODUCTS BAR -->
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; font-size: 0.85rem; color: var(--text-muted);">
-    <div>Найдено позиций: <strong>{{ total_products }}</strong></div>
+<div class="warehouse-result-bar">
+    <div>Найдено: <strong>{{ total_products }}</strong></div>
     <div>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages|default:1 }}</div>
 </div>
 
 <!-- MOBILE PRODUCT CARDS -->
 <div class="catalog-cards-mobile">
     {% for product in page_obj %}
-    <div class="product-list-card" id="card-product-{{ product.id }}">
-        <div class="product-list-card-header">
-            <div class="product-list-card-title">{{ product.name }}</div>
-            <a href="{% url 'm_product_edit' product.id %}" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; border-radius: var(--radius-sm);" title="Редактировать">
-                <i class="fa-solid fa-pen"></i>
-            </a>
+    <div class="warehouse-product-swipe">
+        <div class="warehouse-swipe-actions" aria-hidden="true">
+            <button type="button" class="swipe-in" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'IN')" aria-label="Принять товар"><i class="fa-solid fa-plus"></i></button>
+            <button type="button" class="swipe-transfer" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'TRANSFER_TO_SHOP')" aria-label="Отправить в магазин"><i class="fa-solid fa-truck"></i></button>
+            <a class="swipe-edit" href="{% url 'm_product_edit' product.id %}" aria-label="Редактировать товар"><i class="fa-solid fa-pen"></i></a>
         </div>
-
-        <div class="product-list-card-badges">
-            <span class="badge badge-cyan">{{ product.category.name|default:"Автохимия" }}</span>
-            {% if product.brand %}
-            <span class="badge badge-orange">{{ product.brand.name }}</span>
-            {% endif %}
-        </div>
-
-        <div class="product-list-card-codes">
-            <span class="product-code-badge"><i class="fa-solid fa-barcode"></i> {{ product.barcode }}</span>
-            <span class="product-code-badge"><i class="fa-solid fa-hashtag"></i> {{ product.sku }}</span>
-        </div>
-
-        <div class="product-list-card-pricing">
-            <div>
-                <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">ЦЕНА:</span>
+        <article class="product-list-card warehouse-product-card" id="card-product-{{ product.id }}" data-product-id="{{ product.id }}" data-product-name="{{ product.name|escapejs }}" data-product-stock="{{ product.stock_qty|unlocalize }}" data-product-edit-url="{% url 'm_product_edit' product.id %}" role="button" tabindex="0" aria-label="Действия с товаром {{ product.name }}">
+            <div class="warehouse-product-icon {% if product.category.slug == 'interior' %}warehouse-product-icon--interior{% elif product.category.slug == 'exterior' %}warehouse-product-icon--exterior{% endif %}"><i class="fa-solid {% if product.category.slug == 'autochem' %}fa-spray-can{% elif product.category.slug == 'interior' %}fa-brush{% elif product.category.slug == 'exterior' %}fa-car-side{% else %}fa-boxes-stacked{% endif %}"></i></div>
+            <div class="warehouse-product-main">
+                <div class="product-list-card-title">{{ product.name }}</div>
+                <span class="warehouse-product-meta">{{ product.sku }} · {{ product.stock_qty|floatformat:0 }} {{ product.unit }}</span>
+            </div>
+            <div class="warehouse-product-side">
                 <span class="product-card-price">{{ product.retail_price|floatformat:0 }} ₸</span>
+                {% if product.stock_qty <= 0 %}<span class="product-card-stock-pill stock-danger" id="stock-pill-{{ product.id }}">нет</span>
+                {% elif product.is_low_stock %}<span class="product-card-stock-pill stock-warn" id="stock-pill-{{ product.id }}">мало</span>
+                {% else %}<span class="product-card-stock-pill stock-ok" id="stock-pill-{{ product.id }}"><i class="fa-solid fa-circle-check"></i></span>{% endif %}
             </div>
-            <div>
-                <span style="font-size: 0.72rem; color: var(--text-muted); display: block; text-align: right;">ОСТАТОК:</span>
-                {% if product.stock_qty <= 0 %}
-                <span class="product-card-stock-pill stock-danger" id="stock-pill-{{ product.id }}">
-                    <i class="fa-solid fa-circle-xmark"></i> 0 {{ product.unit }}
-                </span>
-                {% elif product.is_low_stock %}
-                <span class="product-card-stock-pill stock-warn" id="stock-pill-{{ product.id }}">
-                    <i class="fa-solid fa-triangle-exclamation"></i> {{ product.stock_qty|floatformat:0 }} {{ product.unit }}
-                </span>
-                {% else %}
-                <span class="product-card-stock-pill stock-ok" id="stock-pill-{{ product.id }}">
-                    <i class="fa-solid fa-circle-check"></i> {{ product.stock_qty|floatformat:0 }} {{ product.unit }}
-                </span>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="product-list-card-actions">
-            <button type="button" class="btn btn-success" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty }}, 'IN')" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.35);">
-                <i class="fa-solid fa-plus"></i> Принять
-            </button>
-            <button type="button" class="btn btn-secondary" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty }}, 'TRANSFER_TO_SHOP')" style="background: rgba(234, 88, 12, 0.12); color: var(--accent-orange); border: 1px solid rgba(234, 88, 12, 0.35);">
-                <i class="fa-solid fa-truck"></i> В магазин
-            </button>
-        </div>
+        </article>
     </div>
     {% empty %}
     <div class="dacar-card" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); border-radius: var(--radius-xl);">
@@ -371,6 +454,7 @@
     </div>
     {% endfor %}
 </div>
+{% if page_obj %}<p class="warehouse-swipe-hint"><i class="fa-solid fa-arrows-left-right"></i> Свайпните товар влево для действий</p>{% endif %}
 
 <!-- DESKTOP TABLE -->
 <div class="catalog-table-wrapper dacar-card" style="padding: 0; overflow: hidden; border-radius: var(--radius-xl);">
@@ -408,10 +492,10 @@
                     {% endif %}
                 </td>
                 <td style="text-align: right;">
-                    <button type="button" class="btn btn-success" style="padding: 4px 10px; font-size: 0.78rem;" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty }}, 'IN')">
+                    <button type="button" class="btn btn-success" style="padding: 4px 10px; font-size: 0.78rem;" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'IN')">
                         <i class="fa-solid fa-plus"></i> Принять
                     </button>
-                    <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem; border-color: var(--accent-orange); color: var(--accent-orange);" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty }}, 'TRANSFER_TO_SHOP')">
+                    <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem; border-color: var(--accent-orange); color: var(--accent-orange);" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'TRANSFER_TO_SHOP')">
                         <i class="fa-solid fa-truck"></i> В магазин
                     </button>
                     <a href="{% url 'm_product_edit' product.id %}" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.78rem;">
@@ -442,6 +526,16 @@
 {% endif %}
 
 <!-- STOCK ACTION BOTTOM SHEET -->
+<div class="sheet-backdrop" id="productActionBackdrop" onclick="closeProductActions()"></div>
+<div class="bottom-sheet" id="productActionSheet">
+    <div class="bottom-sheet-handle"></div>
+    <div class="warehouse-action-sheet-head"><div><span>Действия с товаром</span><strong id="productActionName"></strong><small>Остаток: <b id="productActionStock">0</b></small></div><button type="button" class="warehouse-action-close" onclick="closeProductActions()" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="warehouse-action-options">
+        <button type="button" class="warehouse-action-option action-receive" onclick="startProductStockAction('IN')"><span><i class="fa-solid fa-boxes-packing"></i></span><div><strong>Принять на склад</strong><small>Добавить поступивший товар</small></div><i class="fa-solid fa-chevron-right"></i></button>
+        <button type="button" class="warehouse-action-option action-transfer" onclick="startProductStockAction('TRANSFER_TO_SHOP')"><span><i class="fa-solid fa-truck"></i></span><div><strong>Отгрузить в магазин</strong><small>Передать товар водителю</small></div><i class="fa-solid fa-chevron-right"></i></button>
+        <a href="#" class="warehouse-action-option action-edit" id="productActionEditLink"><span><i class="fa-solid fa-pen"></i></span><div><strong>Редактировать карточку</strong><small>Цена, остаток, категория</small></div><i class="fa-solid fa-chevron-right"></i></a>
+    </div>
+</div>
 <div class="sheet-backdrop" id="stockActionBackdrop" onclick="closeStockModal()"></div>
 <div class="bottom-sheet" id="stockActionModal">
     <div class="bottom-sheet-handle"></div>
@@ -592,12 +686,48 @@
         document.body.style.overflow = '';
     }
 
+    let activeProductAction = null;
+
+    function parseStockQuantity(value) {
+        // Старые страницы могли отдать число в локальном виде «12,000».
+        // Нормализуем его на случай, если PWA ещё использует такой кэш.
+        return Number(String(value ?? '0').trim().replace(/\s/g, '').replace(',', '.')) || 0;
+    }
+
+    function formatStockQuantity(value) {
+        return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 3 }).format(parseStockQuantity(value));
+    }
+
+    function openProductActions(productId, productName, currentStock, editUrl) {
+        const normalizedStock = parseStockQuantity(currentStock);
+        activeProductAction = { productId, productName, currentStock: normalizedStock, editUrl };
+        document.getElementById('productActionName').textContent = productName;
+        document.getElementById('productActionStock').textContent = `${formatStockQuantity(normalizedStock)} шт`;
+        document.getElementById('productActionEditLink').href = editUrl;
+        document.getElementById('productActionBackdrop').classList.add('show');
+        document.getElementById('productActionSheet').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeProductActions() {
+        document.getElementById('productActionBackdrop')?.classList.remove('show');
+        document.getElementById('productActionSheet')?.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    function startProductStockAction(actionType) {
+        if (!activeProductAction) return;
+        const { productId, productName, currentStock } = activeProductAction;
+        closeProductActions();
+        openStockModal(productId, productName, currentStock, actionType);
+    }
+
     function openStockModal(productId, productName, currentStock, actionType) {
-        currentModalStock = parseFloat(currentStock) || 0;
+        currentModalStock = parseStockQuantity(currentStock);
         document.getElementById('modalStockProductId').value = productId;
         document.getElementById('modalStockActionType').value = actionType;
         document.getElementById('modalStockProductName').textContent = productName;
-        document.getElementById('modalStockCurrentQty').textContent = `${currentModalStock} шт`;
+        document.getElementById('modalStockCurrentQty').textContent = `${formatStockQuantity(currentModalStock)} шт`;
         document.getElementById('modalStockQtyInput').value = '';
         document.getElementById('modalStockComment').value = '';
         document.getElementById('stockConflictAlert').style.display = 'none';
@@ -615,7 +745,7 @@
             submitBtn.className = 'btn btn-primary';
             submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), #C2410C)';
             submitBtn.innerHTML = '<i class="fa-solid fa-truck"></i> Отгрузить водителю';
-            qtyLabel.textContent = `Сколько штук передать в магазин (макс: ${currentModalStock} шт) *`;
+            qtyLabel.textContent = `Сколько штук передать в магазин (макс: ${formatStockQuantity(currentModalStock)} шт) *`;
         } else {
             titleText.textContent = 'Приемка на склад';
             titleText.style.color = 'var(--accent-green)';
@@ -689,7 +819,7 @@
         submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Сохранение...';
 
         try {
-            const res = await fetch('/catalog/api/stock-action/', {
+            const res = await fetch("{% url 'm_api_stock_action' %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -740,6 +870,21 @@
                         pill.className = 'product-card-stock-pill stock-ok';
                         pill.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.stock_qty} ${data.unit}`;
                     }
+                }
+
+                // Синхронизируем число в карточке: повторное открытие приёмки
+                // сразу покажет обновлённый остаток, без перезагрузки страницы.
+                const card = document.getElementById(`card-product-${productId}`);
+                if (card) {
+                    card.dataset.productStock = String(data.stock_qty);
+                    const meta = card.querySelector('.warehouse-product-meta');
+                    if (meta) {
+                        const sku = meta.textContent.split(' · ')[0].trim();
+                        meta.textContent = `${sku} · ${formatStockQuantity(data.stock_qty)} ${data.unit}`;
+                    }
+                }
+                if (activeProductAction && String(activeProductAction.productId) === String(productId)) {
+                    activeProductAction.currentStock = parseStockQuantity(data.stock_qty);
                 }
 
                 closeStockModal();
@@ -870,9 +1015,40 @@
         if (warehouseQrCode) warehouseQrCode.stop().catch(() => {});
     }
 
+    function toggleCatalogFilters() {
+        document.getElementById('catalogAdvancedFilters')?.classList.toggle('is-open');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.warehouse-product-swipe').forEach(wrapper => {
+            const card = wrapper.querySelector('.warehouse-product-card');
+            let startX = 0;
+            let startY = 0;
+            let opened = false;
+            card.addEventListener('pointerdown', event => { startX = event.clientX; startY = event.clientY; }, { passive: true });
+            card.addEventListener('pointerup', event => {
+                const delta = event.clientX - startX;
+                if (delta < -42) opened = true;
+                if (delta > 42) opened = false;
+                if (Math.abs(delta) < 12 && Math.abs(event.clientY - startY) < 12 && !opened) {
+                    openProductActions(Number(card.dataset.productId), card.dataset.productName, parseStockQuantity(card.dataset.productStock), card.dataset.productEditUrl);
+                }
+                card.style.transform = opened ? 'translateX(-192px)' : '';
+            }, { passive: true });
+            card.addEventListener('pointercancel', () => { card.style.transform = ''; opened = false; }, { passive: true });
+            card.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openProductActions(Number(card.dataset.productId), card.dataset.productName, parseStockQuantity(card.dataset.productStock), card.dataset.productEditUrl);
+                }
+            });
+        });
+    });
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeStockModal();
+            closeProductActions();
             closeWarehouseScanner();
             closeCatalogHelpModal();
         }

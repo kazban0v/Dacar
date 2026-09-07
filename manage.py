@@ -7,6 +7,10 @@ import sys
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    if 'runserver' in sys.argv:
+        # Local development needs Django's static-file server. Production uses
+        # its own web server and does not execute this branch.
+        os.environ.setdefault('DJANGO_DEBUG', '1')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

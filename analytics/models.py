@@ -45,3 +45,29 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"[{self.created_at.strftime('%Y-%m-%d %H:%M')}] {self.user} - {self.get_action_type_display()}"
+
+
+class NotificationState(models.Model):
+    """Per-user state for the notification centre.
+
+    Notifications themselves are built from real audit and stock records.  This
+    small model only remembers what each user has read or hidden.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notification_state',
+        verbose_name='Пользователь',
+    )
+    read_before = models.DateTimeField(null=True, blank=True, verbose_name='Прочитано до')
+    cleared_before = models.DateTimeField(null=True, blank=True, verbose_name='Удалено до')
+    dismissed_keys = models.JSONField(default=list, blank=True, verbose_name='Скрытые уведомления')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')
+
+    class Meta:
+        verbose_name = 'Состояние уведомлений'
+        verbose_name_plural = 'Состояния уведомлений'
+
+    def __str__(self):
+        return f'Уведомления: {self.user}'

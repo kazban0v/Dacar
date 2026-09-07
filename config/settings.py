@@ -2,13 +2,17 @@
 Django settings for DACAR Detailing Market POS & Inventory Accounting System.
 """
 
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-dacar-detailing-market-pos-system-secret-key-2026'
 
-DEBUG = False
+# In production the setting remains disabled unless it is explicitly enabled.
+# manage.py sets DJANGO_DEBUG=1 only for the local `runserver` command, so
+# Django can serve local static assets such as the mobile motion stylesheet.
+DEBUG = os.environ.get('DJANGO_DEBUG', '0') == '1'
 
 ALLOWED_HOSTS = ['*']
 
@@ -134,4 +138,3 @@ SHOP_PHONE = '+7 (706) 806-66-36'
 # Reverse Proxy headers support (Nginx -> Gunicorn)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
-
