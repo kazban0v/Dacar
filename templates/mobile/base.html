@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#0284C7">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="DACAR Mobile">
     <meta name="application-name" content="DACAR Mobile">
 
@@ -1166,6 +1166,20 @@
                 padding-bottom: calc(76px + var(--safe-bottom)) !important;
             }
         }
+
+        /* iOS standalone mode: pages with their own header must stay outside
+           the status bar / Dynamic Island and the Home indicator. */
+        body.dashboard-page .main-container,
+        body.catalog-page .main-container,
+        body.receipts-page .main-container,
+        body.staff-page .main-container {
+            padding-top: calc(1rem + var(--safe-top)) !important;
+        }
+
+        .dacar-bottom-nav {
+            padding-left: calc(8px + var(--safe-left));
+            padding-right: calc(8px + var(--safe-right));
+        }
     </style>
     <link rel="stylesheet" href="{% static 'css/dacar-core.css' %}">
     {% block extra_head %}{% endblock %}
@@ -1474,6 +1488,22 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeMobileNav();
         });
+
+        // iOS can restore a focused search field from the previous PWA page.
+        // Release that stale focus so bottom-navigation taps never open the keyboard.
+        function releaseStaleMobileFocus() {
+            const active = document.activeElement;
+            if (active && active.matches('input, textarea, select')) active.blur();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            releaseStaleMobileFocus();
+            document.querySelectorAll('.bottom-nav-item').forEach(link => {
+                link.addEventListener('pointerdown', releaseStaleMobileFocus, { passive: true });
+                link.addEventListener('touchstart', releaseStaleMobileFocus, { passive: true });
+            });
+        });
+        window.addEventListener('pageshow', () => requestAnimationFrame(releaseStaleMobileFocus));
 
         // ===== LIVE KPI STREAM & SALE SOUND ALERTS =====
         let lastKnownOrderId = null;
