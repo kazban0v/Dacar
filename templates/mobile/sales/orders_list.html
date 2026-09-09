@@ -7,7 +7,7 @@
 <style>
     body.receipts-page .header-nav { display: none; }
     body.receipts-page .main-container { max-width: 760px; padding-top: 1rem; }
-    .receipts-shell { max-width: 680px; margin: 0 auto; padding-bottom: calc(94px + var(--safe-bottom)); }
+    .receipts-shell { max-width: 680px; margin: 0 auto; padding-bottom: 1rem; }
     .receipts-topbar { display:flex; align-items:center; justify-content:space-between; gap:.75rem; margin-bottom:1rem; }
     .receipts-title { display:flex; align-items:center; min-width:0; }
     .receipts-title-icon { display:grid; width:43px; height:43px; flex:0 0 auto; place-items:center; border-radius:14px; background:linear-gradient(135deg,#0ea5e9,#075985); color:#fff; box-shadow:0 8px 18px rgba(2,132,199,.25); }
@@ -18,7 +18,7 @@
     .receipt-search i { padding-left:.25rem; color:var(--text-muted); }
     .receipt-search input { min-width:0; flex:1; min-height:36px; padding:0; border:0; outline:0; background:transparent; color:var(--text-primary); font:700 .86rem 'Outfit',sans-serif; }
     .receipt-search input::placeholder { color:var(--text-muted); font-weight:500; }
-    .receipt-search button { display:grid; width:37px; height:37px; padding:0; place-items:center; border:0; border-radius:11px; background:var(--accent-cyan); color:#fff; }
+    .receipt-search button { display:grid; width:37px; height:37px; padding:0; place-items:center; border:0; border-radius:11px; background:var(--accent-cyan-strong); color:#fff; }
     .receipt-filter-row { display:flex; gap:.5rem; margin-bottom:.85rem; overflow-x:auto; scrollbar-width:none; }
     .receipt-filter-row::-webkit-scrollbar { display:none; }
     .receipt-filter-chip { display:inline-flex; min-height:34px; align-items:center; gap:.35rem; padding:0 .76rem; flex:0 0 auto; border:1px solid var(--card-border); border-radius:999px; background:var(--card-bg); color:var(--text-muted); text-decoration:none; font-size:.74rem; font-weight:800; white-space:nowrap; }
@@ -30,7 +30,7 @@
     .receipt-advanced select { min-width:0; min-height:41px; border-radius:12px; }
     .receipt-advanced .btn { grid-column:span 2; min-height:39px; border-radius:12px; }
     .receipts-list-head { display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin:.3rem 0 .65rem; }
-    .receipts-list-head h2 { margin:0; color:var(--text-primary); font:800 .95rem/1.2 'Outfit',sans-serif; }
+    .receipts-list-head h2 { margin:0; color:var(--text-primary); font:800 1rem/1.2 'Outfit',sans-serif; }
     .receipts-list-head span { color:var(--text-muted); font-size:.72rem; }
     .receipt-list { display:flex; flex-direction:column; gap:.7rem; }
     .receipt-card { position:relative; overflow:hidden; border:1px solid var(--card-border); border-radius:22px; background:var(--card-bg); box-shadow:var(--shadow-xs); animation:rise .35s ease both; }
@@ -41,7 +41,7 @@
     .receipt-time { color:var(--text-muted); font:700 .75rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; white-space:nowrap; }
     .receipt-summary-body { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.45rem .8rem; margin-top:.72rem; }
     .receipt-meta { display:flex; min-width:0; align-items:center; gap:.45rem; margin:0; color:var(--text-muted); font-size:.84rem; font-weight:700; }
-    .receipt-cashier-avatar { display:grid; width:34px; height:34px; flex:0 0 auto; place-items:center; border-radius:50%; background:linear-gradient(135deg,#0ea5e9,#0284c7); color:#fff; font:900 .76rem/1 'Outfit',sans-serif; }
+    .receipt-cashier-avatar { display:grid; width:34px; height:34px; flex:0 0 auto; place-items:center; border-radius:50%; background:linear-gradient(135deg,#075985,#0369a1); color:#fff; font:900 .76rem/1 'Outfit',sans-serif; }
     .receipt-meta-name { min-width:0; flex:1 1 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .receipt-payment { display:inline-flex; flex:0 0 auto; align-items:center; gap:.28rem; color:var(--text-muted); font-size:.78rem; font-weight:700; white-space:nowrap; }
     .receipt-payment::before { color:#94a3b8; content:'·'; }
@@ -108,7 +108,7 @@
         <div class="receipt-metrics"><div class="receipt-metric"><strong>{{ order_stats.receipt_count|default:0 }}</strong><span>чеков</span></div><div class="receipt-metric"><strong>{{ order_stats.refunded_count|default:0 }}</strong><span>возвратов</span></div></div>
     </section>
 
-    <form method="GET" class="receipt-search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" name="q" value="{{ search|default:'' }}" placeholder="Номер чека, штрихкод или кассир" autocomplete="off"><input type="hidden" name="status" value="{{ status_filter|default:'' }}"><input type="hidden" name="payment_method" value="{{ payment_filter|default:'' }}"><button type="submit" class="haptic-press" aria-label="Найти"><i class="fa-solid fa-arrow-right"></i></button></form>
+    <form method="GET" class="receipt-search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" name="q" value="{{ search|default:'' }}" placeholder="Номер чека, штрихкод или кассир" autocomplete="off" enterkeyhint="search" data-pwa-manual-focus readonly><input type="hidden" name="status" value="{{ status_filter|default:'' }}"><input type="hidden" name="payment_method" value="{{ payment_filter|default:'' }}"><button type="submit" class="haptic-press" aria-label="Найти"><i class="fa-solid fa-arrow-right"></i></button></form>
 
     <nav class="receipt-filter-row" aria-label="Статус чеков">
         <a href="{% url 'm_sales_orders_list' %}" class="receipt-filter-chip {% if not status_filter and not payment_filter and not search %}is-active{% endif %}"><i class="fa-solid fa-layer-group"></i> Все</a>
@@ -151,7 +151,7 @@
 <div id="refundModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
     <div class="dacar-card modal-box-responsive" style="border: 1px solid var(--accent-red); box-shadow: 0 12px 32px rgba(0,0,0,0.8);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.75rem;">
-            <h3 style="font-size: 1.1rem; color: var(--accent-red); margin: 0; display: flex; align-items: center; gap: 0.5rem; font-weight: 800;">
+            <h3 style="font-size: 1rem; color: var(--accent-red); margin: 0; display: flex; align-items: center; gap: 0.5rem; font-weight: 700;">
                 <i class="fa-solid fa-rotate-left"></i> Оформление возврата по чеку
             </h3>
             <i class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-muted); font-size: 1.2rem; padding: 4px;" onclick="closeRefundModal()"></i>
@@ -183,7 +183,7 @@
 <div id="refundReasonViewModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
     <div class="dacar-card modal-box-responsive" style="border: 1px solid var(--accent-orange); box-shadow: 0 12px 36px rgba(0,0,0,0.85);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.75rem;">
-            <h3 style="font-size: 1.1rem; color: var(--accent-orange); margin: 0; display: flex; align-items: center; gap: 0.5rem; font-weight: 800;">
+            <h3 style="font-size: 1rem; color: var(--accent-orange); margin: 0; display: flex; align-items: center; gap: 0.5rem; font-weight: 700;">
                 <i class="fa-solid fa-circle-info"></i> Причина и детали возврата
             </h3>
             <i class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-muted); font-size: 1.2rem; padding: 4px;" onclick="closeRefundReasonViewModal()"></i>
@@ -228,11 +228,11 @@
     <div style="background: var(--card-bg, #ffffff); border-radius: var(--radius-xl); max-width: 500px; width: 100%; padding: 1.75rem; box-shadow: 0 25px 60px rgba(0,0,0,0.3); border: 1px solid var(--card-border); max-height: calc(100dvh - 3rem); overflow-y: auto;">
         <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border);">
             <div style="display: flex; align-items: center; gap: 0.6rem;">
-                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan)); display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.1rem; font-weight: 900; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #9A3412, #0369A1); display: flex; align-items: center; justify-content: center; color: #FFF; font-size: 1.1rem; font-weight: 900; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
                     <i class="fa-solid fa-receipt"></i>
                 </div>
                 <div>
-                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Справка по чекам и возвратам</h3>
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-main);">Справка по чекам и возвратам</h3>
                     <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Реестр продаж и правила возвратов</p>
                 </div>
             </div>

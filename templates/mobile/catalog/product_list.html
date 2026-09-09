@@ -243,7 +243,7 @@
     body.catalog-page .main-container { max-width: 760px; padding-top: 1rem; }
     .warehouse-header { align-items: flex-start; margin-bottom: 1rem; }
     .warehouse-title-row { display: flex; align-items: center; gap: .7rem; }
-    .warehouse-title-icon { display: grid; width: 43px; height: 43px; place-items: center; flex: 0 0 auto; border-radius: 14px; background: linear-gradient(135deg, #0ea5e9, #0369a1); color: #fff; font-size: 1.12rem; box-shadow: 0 7px 18px rgba(2,132,199,.28); }
+    .warehouse-title-icon { display: grid; width: 43px; height: 43px; place-items: center; flex: 0 0 auto; border-radius: 14px; background: linear-gradient(135deg, #075985, #0369a1); color: #fff; font-size: 1.12rem; box-shadow: 0 7px 18px rgba(2,132,199,.28); }
     .warehouse-title-text h1 { margin: 0; color: var(--text-primary); font: 800 1.16rem/1.15 'Outfit', sans-serif; }
     .warehouse-title-text p { margin: .25rem 0 0; color: var(--text-muted); font-size: .73rem; line-height: 1.35; }
     .warehouse-theme-toggle { display: grid; width: 40px; height: 40px; padding: 0; place-items: center; border: 1px solid var(--card-border); border-radius: 50%; background: var(--card-bg); color: var(--text-primary); box-shadow: var(--shadow-xs); }
@@ -317,14 +317,14 @@
     .warehouse-filter-pills { display: flex; gap: .6rem; margin: 0 0 1rem; overflow-x: auto; scrollbar-width: none; }
     .warehouse-filter-pills::-webkit-scrollbar { display: none; }
     .warehouse-filter-pill { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; padding: 0 .95rem; border: 1px solid var(--card-border); border-radius: 999px; background: var(--card-bg); color: var(--text-muted); font-size: .78rem; font-weight: 800; text-decoration: none; white-space: nowrap; }
-    .warehouse-filter-pill.is-active { border-color: var(--accent-orange); background: var(--accent-orange); color: #fff; }
+    .warehouse-filter-pill.is-active { border-color: var(--accent-orange-strong); background: var(--accent-orange-strong); color: #fff; }
     .warehouse-result-bar { margin-bottom: .55rem; }
     .catalog-cards-mobile { gap: .6rem; }
     .warehouse-product-swipe { position: relative; overflow: hidden; border-radius: 17px; }
     .warehouse-swipe-actions { position: absolute; inset: 0; display: flex; align-items: stretch; justify-content: flex-end; background: #10243a; }
     .warehouse-swipe-actions button, .warehouse-swipe-actions a { display: grid; width: 64px; place-items: center; border: 0; color: #fff; text-decoration: none; font-size: 1rem; }
-    .warehouse-swipe-actions .swipe-in { background: #059669; }
-    .warehouse-swipe-actions .swipe-transfer { background: #ea580c; }
+    .warehouse-swipe-actions .swipe-in { background: #047857; }
+    .warehouse-swipe-actions .swipe-transfer { background: #c2410c; }
     .warehouse-swipe-actions .swipe-edit { background: #334155; }
     .warehouse-product-card { position: relative; z-index: 1; display: flex; min-height: 100px; flex-direction: row; align-items: center; gap: .75rem; margin: 0; padding: .8rem .85rem; border-radius: 17px; touch-action: pan-y; transition: transform .22s var(--ease-standard); will-change: transform; }
     .warehouse-product-card::before { display: none; }
@@ -379,7 +379,7 @@
 <div class="dacar-card warehouse-filter-card warehouse-search-card">
     <form method="GET" class="filter-bar-form" id="catalogFilterForm">
         <div class="warehouse-search-line">
-            <div class="filter-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Название, SKU, штрихкод..." autocomplete="off"></div>
+            <div class="filter-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Название, SKU, штрихкод..." autocomplete="off" enterkeyhint="search" data-pwa-manual-focus readonly></div>
             <button type="button" class="warehouse-search-action" onclick="openWarehouseScanner()" aria-label="Сканировать штрихкод" title="Сканировать"><i class="fa-solid fa-qrcode"></i></button>
             <button type="button" class="warehouse-search-action" onclick="toggleCatalogFilters()" aria-label="Дополнительные фильтры" title="Фильтры"><i class="fa-solid fa-sliders"></i></button>
         </div>
@@ -540,7 +540,7 @@
 <div class="bottom-sheet" id="stockActionModal">
     <div class="bottom-sheet-handle"></div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.75rem;">
-        <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 0.5rem;" id="stockModalTitle">
+        <h3 style="font-size: 1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 0.5rem;" id="stockModalTitle">
             <i class="fa-solid fa-boxes-packing" id="stockModalIcon"></i>
             <span id="stockModalTitleText">Операция со складом</span>
         </h3>
@@ -608,7 +608,7 @@
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.6rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-camera" style="color: var(--accent-cyan); font-size: 1.1rem;"></i>
-                <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: #FFF;">Сканер штрихкодов</h3>
+                <h3 style="font-size: 1rem; font-weight: 700; margin: 0; color: #FFF;">Сканер штрихкодов</h3>
             </div>
             <button type="button" style="background: rgba(255, 255, 255, 0.1); border: none; font-size: 1.2rem; color: #FFF; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="closeWarehouseScanner()">&times;</button>
         </div>
@@ -633,11 +633,11 @@
     <div style="background: var(--card-bg, #ffffff); border-radius: var(--radius-xl); max-width: 500px; width: 100%; padding: 1.75rem; box-shadow: 0 25px 60px rgba(0,0,0,0.4); border: 1px solid var(--card-border); max-height: calc(100dvh - 3rem); overflow-y: auto;">
         <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border);">
             <div style="display: flex; align-items: center; gap: 0.6rem;">
-                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan)); display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.1rem; font-weight: 900;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #9A3412, #0369A1); display: flex; align-items: center; justify-content: center; color: #FFF; font-size: 1.1rem; font-weight: 900;">
                     <i class="fa-solid fa-warehouse"></i>
                 </div>
                 <div>
-                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Справка по складу</h3>
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-main);">Справка по складу</h3>
                     <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Приемка и отгрузка в магазин</p>
                 </div>
             </div>
@@ -743,7 +743,7 @@
             iconEl.className = 'fa-solid fa-truck';
             iconEl.style.color = 'var(--accent-orange)';
             submitBtn.className = 'btn btn-primary';
-            submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), #C2410C)';
+            submitBtn.style.background = 'linear-gradient(135deg, #9A3412, var(--accent-orange-strong))';
             submitBtn.innerHTML = '<i class="fa-solid fa-truck"></i> Отгрузить водителю';
             qtyLabel.textContent = `Сколько штук передать в магазин (макс: ${formatStockQuantity(currentModalStock)} шт) *`;
         } else {
@@ -752,7 +752,7 @@
             iconEl.className = 'fa-solid fa-boxes-packing';
             iconEl.style.color = 'var(--accent-green)';
             submitBtn.className = 'btn btn-success';
-            submitBtn.style.background = 'linear-gradient(135deg, var(--accent-green), #047857)';
+            submitBtn.style.background = 'linear-gradient(135deg, #065F46, var(--accent-green-strong))';
             submitBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Принять на склад';
             qtyLabel.textContent = 'Сколько штук поступило от поставщика *';
         }

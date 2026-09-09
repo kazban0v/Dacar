@@ -50,6 +50,7 @@
             --text-secondary: #94A3B8;
             --text-muted: #94A3B8;
             --text-tertiary: #64748B;
+            --link-color: #38BDF8;
 
             /* Inputs & Forms */
             --input-bg: #131C2E;
@@ -72,10 +73,16 @@
             --glass-border: rgba(255, 255, 255, 0.08);
 
             /* Accents */
-            --accent-cyan: #0284C7;
-            --accent-orange: #EA580C;
-            --accent-green: #10B981;
-            --accent-red: #EF4444;
+            /* Text accents stay bright on dark surfaces. The "strong" variants
+               are reserved for solid controls carrying white text. */
+            --accent-cyan: #38BDF8;
+            --accent-cyan-strong: #0369A1;
+            --accent-orange: #FB923C;
+            --accent-orange-strong: #C2410C;
+            --accent-green: #34D399;
+            --accent-green-strong: #047857;
+            --accent-red: #FB7185;
+            --accent-red-strong: #BE123C;
             --accent-purple: #8B5CF6;
             --glow-color: rgba(2, 132, 199, 0.15);
 
@@ -111,13 +118,14 @@
             --text-main: #0F172A;
             --text-secondary: #64748B;
             --text-muted: #64748B;
-            --text-tertiary: #94A3B8;
+            --text-tertiary: #64748B;
+            --link-color: #0369A1;
 
             /* Inputs & Forms */
             --input-bg: #FFFFFF;
             --input-border: #CBD5E1;
             --input-text: #0F172A;
-            --input-placeholder: #94A3B8;
+            --input-placeholder: #64748B;
             --select-option-bg: #FFFFFF;
             --select-option-text: #0F172A;
 
@@ -134,10 +142,14 @@
             --glass-border: rgba(0, 0, 0, 0.06);
 
             /* Accents */
-            --accent-cyan: #0284C7;
-            --accent-orange: #EA580C;
-            --accent-green: #059669;
-            --accent-red: #DC2626;
+            --accent-cyan: #0369A1;
+            --accent-cyan-strong: #0369A1;
+            --accent-orange: #C2410C;
+            --accent-orange-strong: #C2410C;
+            --accent-green: #047857;
+            --accent-green-strong: #047857;
+            --accent-red: #B91C1C;
+            --accent-red-strong: #B91C1C;
             --accent-purple: #7C3AED;
             --glow-color: rgba(2, 132, 199, 0.08);
 
@@ -174,6 +186,23 @@
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
+
+        /* Never fall back to the browser's inaccessible default blue links. */
+        a {
+            color: var(--link-color);
+        }
+
+        /* A compact semantic type scale keeps headings distinct from body text. */
+        h1,
+        h2,
+        h3 {
+            font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+            line-height: 1.2;
+        }
+
+        h1 { font-size: 1.35rem; font-weight: 800; }
+        h2 { font-size: 1.125rem; font-weight: 800; }
+        h3 { font-size: 1rem; font-weight: 700; }
 
         /* ===== HEADER / NAVIGATION ===== */
         .header-nav {
@@ -219,6 +248,11 @@
             letter-spacing: 0.04em;
         }
 
+        [data-theme="light"] .brand-badge {
+            background: linear-gradient(135deg, #9A3412, #0369A1);
+            color: #FFFFFF;
+        }
+
         /* Desktop nav */
         .nav-links {
             display: flex;
@@ -251,7 +285,7 @@
         }
 
         .nav-link.pos-btn {
-            background: linear-gradient(135deg, #0EA5E9, #0284C7);
+            background: linear-gradient(135deg, #075985, var(--accent-cyan-strong));
             color: #FFF;
             font-weight: 700;
             box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
@@ -751,7 +785,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent-orange), #F97316);
+            background: linear-gradient(135deg, #9A3412, var(--accent-orange-strong));
             color: #FFF;
             box-shadow: 0 2px 10px rgba(234, 88, 12, 0.25);
         }
@@ -785,12 +819,12 @@
         }
 
         .btn-danger:hover {
-            background: var(--accent-red);
+            background: var(--accent-red-strong);
             color: #FFF;
         }
 
         .btn-success {
-            background: var(--accent-green);
+            background: var(--accent-green-strong);
             color: #FFF;
             font-weight: 700;
         }
@@ -1029,7 +1063,7 @@
             -webkit-backdrop-filter: blur(16px);
             border-top: 1px solid var(--card-border);
             z-index: 1000;
-            padding: 6px 8px calc(6px + var(--safe-bottom));
+            padding: 4px 8px max(3px, var(--safe-bottom));
             box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
             justify-content: space-around;
             align-items: center;
@@ -1041,12 +1075,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 3px;
+            gap: 1px;
             color: var(--text-muted);
             text-decoration: none;
             font-size: 0.68rem;
             font-weight: 600;
-            padding: 4px 2px;
+            padding: 1px 2px;
             border-radius: var(--radius-md);
             transition: all 0.16s ease;
             -webkit-tap-highlight-color: transparent;
@@ -1055,8 +1089,8 @@
         }
 
         .bottom-nav-item .nav-icon-wrap {
-            width: 32px;
-            height: 28px;
+            width: 30px;
+            height: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1088,7 +1122,7 @@
             }
 
             .main-container {
-                padding-bottom: calc(76px + var(--safe-bottom)) !important;
+                padding-bottom: calc(56px + var(--safe-bottom)) !important;
             }
         }
 
@@ -1163,7 +1197,7 @@
             }
 
             .main-container {
-                padding-bottom: calc(76px + var(--safe-bottom)) !important;
+                padding-bottom: calc(56px + var(--safe-bottom)) !important;
             }
         }
 
@@ -1494,6 +1528,14 @@
         function releaseStaleMobileFocus() {
             const active = document.activeElement;
             if (active && active.matches('input, textarea, select')) active.blur();
+            document.querySelectorAll('[data-pwa-manual-focus]').forEach(input => {
+                input.readOnly = true;
+            });
+        }
+
+        function unlockManualMobileFocus(event) {
+            const input = event.target.closest('[data-pwa-manual-focus]');
+            if (input) input.readOnly = false;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1503,7 +1545,20 @@
                 link.addEventListener('touchstart', releaseStaleMobileFocus, { passive: true });
             });
         });
-        window.addEventListener('pageshow', () => requestAnimationFrame(releaseStaleMobileFocus));
+        document.addEventListener('pointerdown', unlockManualMobileFocus, true);
+        document.addEventListener('touchstart', unlockManualMobileFocus, { capture: true, passive: true });
+        document.addEventListener('keydown', event => {
+            const input = event.target.closest?.('[data-pwa-manual-focus]');
+            if (input) input.readOnly = false;
+        }, true);
+        document.addEventListener('focusout', event => {
+            if (event.target.matches?.('[data-pwa-manual-focus]')) event.target.readOnly = true;
+        }, true);
+        window.addEventListener('pageshow', () => {
+            releaseStaleMobileFocus();
+            requestAnimationFrame(releaseStaleMobileFocus);
+            setTimeout(releaseStaleMobileFocus, 120);
+        });
 
         // ===== LIVE KPI STREAM & SALE SOUND ALERTS =====
         let lastKnownOrderId = null;

@@ -587,8 +587,10 @@
     body.dashboard-page .hub-dashboard-container { display: none; }
     .dashboard-v3 { display: flex; flex-direction: column; gap: 1.15rem; padding-bottom: 1rem; }
     .dashboard-v3 .hub-header { padding: .2rem 0 .15rem; }
+    .dashboard-header-actions { display: flex; align-items: center; gap: .45rem; }
     .dashboard-theme-toggle { display: grid; width: 40px; height: 40px; padding: 0; place-items: center; border: 1px solid var(--card-border); border-radius: 50%; background: var(--card-bg); color: var(--text-primary); box-shadow: var(--shadow-xs); }
-    .dashboard-v3 .hub-avatar-logo { width: 42px; height: 42px; background: linear-gradient(135deg, #0ea5e9, #0369a1); }
+    .dashboard-logout-button { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid rgba(239,68,68,.3); border-radius: 50%; background: rgba(239,68,68,.09); color: #fb7185; text-decoration: none; box-shadow: var(--shadow-xs); }
+    .dashboard-v3 .hub-avatar-logo { width: 42px; height: 42px; background: linear-gradient(135deg, #075985, #0369a1); }
     .dashboard-v3 .hub-brand-title { font-size: 1.05rem; }
     .dashboard-v3 .hub-brand-subtitle { font-size: .72rem; }
     .dashboard-v3 .hub-status-row { margin: -.1rem 0 0; font-size: .75rem; }
@@ -618,7 +620,7 @@
 
     .dashboard-section { display: flex; flex-direction: column; gap: .72rem; }
     .dashboard-section-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding-inline: .1rem; }
-    .dashboard-section-title { color: var(--text-primary); font: 800 .98rem/1.2 'Outfit', sans-serif; }
+    .dashboard-section-title { color: var(--text-primary); font: 800 1rem/1.2 'Outfit', sans-serif; }
     .dashboard-section-link { color: var(--accent-cyan); font-size: .76rem; font-weight: 800; text-decoration: none; }
 
     .dashboard-story-row { padding: .15rem .05rem .1rem; scroll-padding-left: .1rem; touch-action: pan-y; }
@@ -645,8 +647,8 @@
     .dashboard-card-sub { margin-top: .24rem; color: #94a3b8; font-size: .68rem; }
     .dashboard-card-value { margin-top: .52rem; color: #34d399; font: 800 .93rem 'Outfit', sans-serif; }
     .dashboard-cashier-card { flex-basis: 175px; width: 175px; min-height: 128px; }
-    .dashboard-avatar { display: inline-grid; place-items: center; width: 31px; height: 31px; margin-right: .4rem; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff; font-size: .68rem; font-weight: 900; vertical-align: middle; }
-    .dashboard-cashier-card:nth-child(even) .dashboard-avatar { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .dashboard-avatar { display: inline-grid; place-items: center; width: 31px; height: 31px; margin-right: .4rem; border-radius: 50%; background: linear-gradient(135deg, #075985, #1d4ed8); color: #fff; font-size: .68rem; font-weight: 900; vertical-align: middle; }
+    .dashboard-cashier-card:nth-child(even) .dashboard-avatar { background: linear-gradient(135deg, #9a3412, #c2410c); }
 
     .dashboard-analytics { display: grid; grid-template-columns: minmax(0, 1fr); gap: .8rem; }
     .dashboard-v3 .hub-chart-card, .dashboard-v3 .hub-payment-card, .dashboard-v3 .hub-warning-banner { border-radius: 17px; }
@@ -916,7 +918,10 @@
                 <div class="hub-brand-subtitle">Добрый день, {{ user.first_name|default:user.username }}</div>
             </div>
         </div>
-        <button type="button" class="dashboard-theme-toggle haptic-press" onclick="toggleDacarTheme()" aria-label="Переключить тему" title="Тёмная / светлая тема"><i class="fa-solid fa-moon" data-dacar-theme-icon style="color:#f59e0b;"></i></button>
+        <div class="dashboard-header-actions">
+            <button type="button" class="dashboard-theme-toggle haptic-press" onclick="toggleDacarTheme()" aria-label="Переключить тему" title="Тёмная / светлая тема"><i class="fa-solid fa-moon" data-dacar-theme-icon style="color:#f59e0b;"></i></button>
+            <a href="{% url 'm_logout' %}" class="dashboard-logout-button haptic-press" aria-label="Выйти из аккаунта" title="Выйти" onclick="return confirm('Выйти из аккаунта?')"><i class="fa-solid fa-right-from-bracket"></i></a>
+        </div>
     </header>
 
     <div class="dashboard-ticker marquee-container" role="status" aria-label="Последние события">

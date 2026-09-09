@@ -62,7 +62,7 @@
     }
 
     .staff-pill:hover, .staff-pill.active {
-        background: var(--accent-cyan);
+        background: var(--accent-cyan-strong);
         color: #FFF;
         border-color: var(--accent-cyan);
         box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
@@ -84,7 +84,7 @@
 
     .avatar-admin   { background: linear-gradient(135deg, #EA580C, #F97316); }
     .avatar-manager { background: linear-gradient(135deg, #0284C7, #38BDF8); }
-    .avatar-cashier { background: linear-gradient(135deg, #059669, #34D399); }
+    .avatar-cashier { background: linear-gradient(135deg, #065F46, #047857); }
 
     /* Desktop Table vs Mobile Cards */
     .staff-table-wrapper {
@@ -313,7 +313,7 @@
     }
 
     .pos-help-btn:hover {
-        background: var(--accent-cyan);
+        background: var(--accent-cyan-strong);
         color: #FFF;
         transform: scale(1.08);
         box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
@@ -322,14 +322,15 @@
     /* ===== STAFF V2 — mobile PWA ===== */
     body.staff-page .header-nav { display: none; }
     body.staff-page .main-container { max-width: 760px; padding-top: 1rem; }
-    .staff-redesign { max-width:680px; margin:0 auto; padding-bottom:calc(98px + var(--safe-bottom)); }
+    .staff-redesign { max-width:680px; margin:0 auto; padding-bottom:1rem; }
     .staff-redesign-topbar { display:flex; align-items:center; justify-content:space-between; gap:.7rem; margin-bottom:.95rem; }
     .staff-redesign-title { display:flex; align-items:center; min-width:0; }
     .staff-redesign-icon { display:grid; width:43px; height:43px; flex:0 0 auto; place-items:center; border-radius:14px; background:linear-gradient(135deg,#7c3aed,#2563eb); color:#fff; box-shadow:0 8px 18px rgba(124,58,237,.24); }
     .staff-redesign-title h1 { margin:0; color:var(--text-primary); font:800 1.35rem/1.15 'Outfit',sans-serif; }
     .staff-top-actions { display:flex; gap:.42rem; }
     .staff-icon-button { display:grid; width:39px; height:39px; padding:0; place-items:center; border:1px solid var(--card-border); border-radius:50%; background:var(--card-bg); color:var(--text-primary); }
-    .staff-add-button { display:inline-flex; min-height:39px; align-items:center; gap:.4rem; padding:0 .7rem; border:0; border-radius:13px; background:var(--accent-cyan); color:#fff; font-size:.74rem; font-weight:800; }
+    .staff-logout-button { border-color:rgba(239,68,68,.3); background:rgba(239,68,68,.09); color:#fb7185; text-decoration:none; }
+    .staff-add-button { display:inline-flex; min-height:39px; align-items:center; gap:.4rem; padding:0 .7rem; border:0; border-radius:13px; background:var(--accent-cyan-strong); color:#fff; font-size:.74rem; font-weight:800; }
     .staff-hero { position:relative; overflow:hidden; margin-bottom:.75rem; padding:1rem; border:1px solid rgba(124,58,237,.24); border-radius:21px; background:linear-gradient(135deg,#1e1246,#112a55 58%,#082d45); color:#fff; box-shadow:0 14px 30px rgba(37,99,235,.15); }
     .staff-hero::after { position:absolute; top:-56px; right:-36px; width:155px; height:155px; border:24px solid rgba(147,197,253,.13); border-radius:50%; content:''; }
     .staff-hero-label { position:relative; z-index:1; color:rgba(255,255,255,.63); font-size:.72rem; font-weight:700; }
@@ -348,7 +349,7 @@
     .staff-role-chip { display:inline-flex; min-height:34px; align-items:center; gap:.35rem; padding:0 .72rem; flex:0 0 auto; border:1px solid var(--card-border); border-radius:999px; background:var(--card-bg); color:var(--text-muted); font:800 .72rem 'Outfit',sans-serif; white-space:nowrap; }
     .staff-role-chip.active { border-color:var(--accent-cyan); background:rgba(2,132,199,.13); color:var(--accent-cyan); }
     .staff-section-head { display:flex; align-items:center; justify-content:space-between; margin:.2rem 0 .62rem; }
-    .staff-section-head h2 { margin:0; color:var(--text-primary); font:800 .95rem/1.2 'Outfit',sans-serif; }
+    .staff-section-head h2 { margin:0; color:var(--text-primary); font:800 1rem/1.2 'Outfit',sans-serif; }
     .staff-section-head span { color:var(--text-muted); font-size:.7rem; }
     .staff-v2-list { display:flex; flex-direction:column; gap:.62rem; }
     .staff-v2-card { overflow:hidden; border:1px solid var(--card-border); border-radius:17px; background:var(--card-bg); box-shadow:var(--shadow-xs); }
@@ -359,8 +360,8 @@
     .staff-v2-card details[open] summary::after { transform:rotate(180deg); }
     .staff-v2-card-top { display:flex; align-items:center; gap:.62rem; padding-right:1.35rem; }
     .staff-v2-avatar { display:grid; width:41px; height:41px; flex:0 0 auto; place-items:center; border-radius:14px; color:#fff; font:800 .88rem 'Outfit',sans-serif; }
-    .staff-v2-avatar.admin { background:linear-gradient(135deg,#f97316,#ea580c); }
-    .staff-v2-avatar.cashier { background:linear-gradient(135deg,#10b981,#059669); }
+    .staff-v2-avatar.admin { background:linear-gradient(135deg,#9a3412,#c2410c); }
+    .staff-v2-avatar.cashier { background:linear-gradient(135deg,#065f46,#047857); }
     .staff-v2-person { min-width:0; flex:1; }
     .staff-v2-name { overflow:hidden; color:var(--text-primary); font:800 .88rem/1.2 'Outfit',sans-serif; text-overflow:ellipsis; white-space:nowrap; }
     .staff-v2-login { margin-top:.18rem; color:var(--text-muted); font-size:.7rem; }
@@ -382,8 +383,8 @@
     .staff-v3-card-body { display:grid; grid-template-columns:52px minmax(0,1fr) 68px 44px 20px; align-items:center; gap:.56rem; min-height:96px; padding:.75rem .8rem; }
     .staff-v2-avatar { display:flex; width:52px; height:52px; align-items:center; justify-content:center; box-sizing:border-box; border-radius:50%; font-size:.92rem; line-height:1; text-align:center; }
     .staff-v2-avatar.admin { background:linear-gradient(135deg,#7c3aed,#4f46e5); }
-    .staff-v2-avatar.cashier { background:linear-gradient(135deg,#0284c7,#0ea5e9); }
-    .staff-v2-avatar.cashier.warm { background:linear-gradient(135deg,#f97316,#ea580c); }
+    .staff-v2-avatar.cashier { background:linear-gradient(135deg,#075985,#0369a1); }
+    .staff-v2-avatar.cashier.warm { background:linear-gradient(135deg,#9a3412,#c2410c); }
     .staff-v3-person { min-width:0; }
     .staff-v3-name-row { display:flex; align-items:center; gap:.4rem; min-width:0; }
     .staff-v2-name { min-width:0; font-size:.93rem; text-overflow:ellipsis; }
@@ -399,7 +400,7 @@
     .staff-toggle-form { margin:0; }
     .staff-toggle { position:relative; display:block; width:44px; height:28px; padding:0; border:0; border-radius:999px; background:#26354d; cursor:pointer; transition:background .2s ease; }
     .staff-toggle::after { position:absolute; top:4px; left:4px; width:22px; height:22px; border-radius:50%; background:#94a3b8; box-shadow:0 1px 3px rgba(0,0,0,.25); content:''; transition:transform .2s ease, background .2s ease; }
-    .staff-toggle.is-on { background:#0284c7; }
+    .staff-toggle.is-on { background:var(--accent-cyan-strong); }
     .staff-toggle.is-on::after { background:#fff; transform:translateX(14px); }
     .staff-more-button { width:22px; height:42px; padding:0; border:0; background:transparent; color:var(--text-muted); cursor:pointer; font-size:1.15rem; }
     .staff-v3-card-body.is-inactive { opacity:.58; }
@@ -427,7 +428,7 @@
     .staff-add-sheet { display:none; margin:.75rem 0; padding:.85rem; border:1px solid var(--card-border); border-radius:18px; background:var(--card-bg); box-shadow:var(--shadow-sm); }
     .staff-add-sheet.is-open { display:block; animation:rise .25s ease; }
     .staff-add-sheet-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:.75rem; }
-    .staff-add-sheet-head h2 { margin:0; color:var(--text-primary); font:800 .92rem 'Outfit',sans-serif; }
+    .staff-add-sheet-head h2 { margin:0; color:var(--text-primary); font:800 1rem/1.2 'Outfit',sans-serif; }
     .staff-add-sheet-grid { display:grid; grid-template-columns:1fr 1fr; gap:.65rem; }
     .staff-add-sheet .full { grid-column:1 / -1; }
     .staff-add-sheet label { display:block; margin-bottom:.3rem; color:var(--text-muted); font-size:.71rem; font-weight:700; }
@@ -442,7 +443,7 @@
 <div class="staff-redesign">
     <header class="staff-redesign-topbar">
         <div class="staff-redesign-title"><h1>Штат</h1></div>
-        <div class="staff-top-actions"><button type="button" class="staff-icon-button haptic-press" onclick="toggleDacarTheme()" aria-label="Переключить тему"><i class="fa-solid fa-moon" data-dacar-theme-icon style="color:#f59e0b;"></i></button><button type="button" class="staff-icon-button haptic-press" onclick="openUsersHelpModal()" aria-label="Справка по персоналу"><i class="fa-solid fa-question"></i></button><button type="button" class="staff-add-button haptic-press" id="toggleAddUserBtn" onclick="toggleAddUserForm()"><i class="fa-solid fa-user-plus"></i> <span id="toggleAddUserBtnText">Добавить</span></button></div>
+        <div class="staff-top-actions"><button type="button" class="staff-icon-button haptic-press" onclick="toggleDacarTheme()" aria-label="Переключить тему"><i class="fa-solid fa-moon" data-dacar-theme-icon style="color:#f59e0b;"></i></button><button type="button" class="staff-icon-button haptic-press" onclick="openUsersHelpModal()" aria-label="Справка по персоналу"><i class="fa-solid fa-question"></i></button><a href="{% url 'm_logout' %}" class="staff-icon-button staff-logout-button haptic-press" aria-label="Выйти из аккаунта" title="Выйти" onclick="return confirm('Выйти из аккаунта?')"><i class="fa-solid fa-right-from-bracket"></i></a><button type="button" class="staff-add-button haptic-press" id="toggleAddUserBtn" onclick="toggleAddUserForm()"><i class="fa-solid fa-user-plus"></i> <span id="toggleAddUserBtnText">Добавить</span></button></div>
     </header>
 
     <section class="staff-add-sheet" id="staffAddSheet"><div class="staff-add-sheet-head"><h2><i class="fa-solid fa-user-plus" style="color:var(--accent-cyan);"></i> Новый сотрудник</h2><button type="button" class="staff-icon-button" style="width:31px;height:31px;" onclick="toggleAddUserForm()" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button></div><form method="POST">{% csrf_token %}<input type="hidden" name="action" value="create"><div class="staff-add-sheet-grid"><div><label>Логин *</label><input type="text" name="username" class="form-control" required placeholder="cashier3" autocomplete="username"></div><div><label>Роль</label><select name="role" class="form-control">{% for r_val, r_lbl in roles %}<option value="{{ r_val }}">{{ r_lbl }}</option>{% endfor %}</select></div><div><label>Имя</label><input type="text" name="first_name" class="form-control" placeholder="Иван"></div><div><label>Фамилия</label><input type="text" name="last_name" class="form-control" placeholder="Петров"></div><div class="full"><label>Телефон</label><input type="tel" name="phone" class="form-control" placeholder="+7 (707) 000-00-00"></div><div class="full"><label>Пароль *</label><div class="password-input-group"><input type="password" name="password" id="staffPasswordInputV2" class="form-control" required placeholder="••••••••" autocomplete="new-password" style="padding-right:36px;"><button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('staffPasswordInputV2', this)" aria-label="Показать пароль"><i class="fa-regular fa-eye"></i></button></div></div></div><button type="submit" class="btn btn-primary"><i class="fa-solid fa-user-check"></i> Создать сотрудника</button></form></section>
@@ -511,7 +512,7 @@
     <!-- CREATE USER CARD -->
     <div class="dacar-card add-user-card" id="addUserCard">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.45rem;">
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.45rem;">
                 <i class="fa-solid fa-user-plus" style="color: var(--accent-orange);"></i> Новый сотрудник
             </h3>
             <button type="button" class="btn btn-secondary mobile-add-btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="toggleAddUserForm()">
@@ -577,7 +578,7 @@
     <div class="dacar-card staff-list-container">
         <!-- HEADER & LIVE SEARCH -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
-            <h3 style="font-size: 1.1rem; font-weight: 700;">
+            <h3 style="font-size: 1rem; font-weight: 700;">
                 Сотрудники <span class="badge badge-cyan" style="font-size: 0.75rem; margin-left: 0.25rem;">{{ users_list.count }}</span>
             </h3>
         </div>
@@ -944,11 +945,11 @@
     <div style="background: var(--card-bg, #ffffff); border-radius: var(--radius-xl); max-width: 500px; width: 100%; padding: 1.75rem; box-shadow: 0 25px 60px rgba(0,0,0,0.3); border: 1px solid var(--card-border); max-height: calc(100dvh - 3rem); overflow-y: auto;">
         <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid var(--card-border);">
             <div style="display: flex; align-items: center; gap: 0.6rem;">
-                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-orange), var(--accent-cyan)); display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.1rem; font-weight: 900; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #9A3412, #0369A1); display: flex; align-items: center; justify-content: center; color: #FFF; font-size: 1.1rem; font-weight: 900; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
                     <i class="fa-solid fa-users-gear"></i>
                 </div>
                 <div>
-                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Справка по персоналу и ролям</h3>
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-main);">Справка по персоналу и ролям</h3>
                     <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">Разграничение прав и безопасность</p>
                 </div>
             </div>

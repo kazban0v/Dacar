@@ -196,7 +196,7 @@
     transition: all var(--dur-base) var(--ease-standard);
     white-space: nowrap;
 }
-.seg-btn.active { background: var(--accent-cyan, #0284C7); color: #fff; box-shadow: var(--elevation-1); }
+.seg-btn.active { background: var(--accent-cyan-strong, #0369A1); color: #fff; box-shadow: var(--elevation-1); }
 
 /* ===== BOTTOM SHEET ===== */
 .dacar-sheet-backdrop {
