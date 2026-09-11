@@ -582,7 +582,7 @@
     /* ===== DASHBOARD V3 — mobile first, based on approved reference ===== */
     body.dashboard-page { background: var(--bg-main); }
     body.dashboard-page .header-nav { display: none; }
-    body.dashboard-page .main-container { max-width: 760px; padding-top: 1rem; }
+    body.dashboard-page .main-container { max-width: 760px; padding-top: calc(.75rem + var(--safe-top)); }
     /* The old dashboard is retained only for backwards-compatible JS hooks. */
     body.dashboard-page .hub-dashboard-container { display: none; }
     .dashboard-v3 { display: flex; flex-direction: column; gap: 1.15rem; padding-bottom: 1rem; }
@@ -595,6 +595,34 @@
     .dashboard-v3 .hub-brand-subtitle { font-size: .72rem; }
     .dashboard-v3 .hub-status-row { margin: -.1rem 0 0; font-size: .75rem; }
 
+    .dashboard-island-status { display:flex; align-items:center; justify-content:space-between; gap:.65rem; min-height:34px; margin:-.2rem 0 .05rem; padding:.38rem .65rem; border:1px solid rgba(96,137,192,.2); border-radius:999px; background:linear-gradient(90deg,rgba(18,35,61,.92),rgba(27,22,57,.92)); color:var(--text-secondary); font-size:.67rem; box-shadow:0 5px 16px rgba(0,0,0,.14); }
+    .dashboard-island-ai { display:inline-flex; align-items:center; gap:.38rem; min-width:0; border:0; background:transparent; color:#c4b5fd; font:800 .68rem 'Inter',sans-serif; cursor:pointer; }
+    .dashboard-island-ai i { display:grid; width:22px; height:22px; place-items:center; border-radius:50%; background:linear-gradient(135deg,#8b5cf6,#4f46e5); color:#fff; font-size:.63rem; }
+    .dashboard-island-note { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    .mobile-ai-fab { position:fixed; right:calc(1rem + var(--safe-right)); bottom:calc(72px + var(--safe-bottom)); z-index:1001; display:grid; width:50px; height:50px; place-items:center; border:1px solid rgba(196,181,253,.7); border-radius:50%; background:linear-gradient(135deg,#8b5cf6,#4f46e5); color:#fff; box-shadow:0 10px 24px rgba(79,70,229,.4); font-size:1rem; cursor:pointer; transition:transform .18s ease,box-shadow .18s ease; }
+    .mobile-ai-fab:active { transform:scale(.93); }
+    .mobile-ai-fab:focus-visible { outline:3px solid rgba(196,181,253,.75); outline-offset:3px; }
+    .mobile-ai-sheet { position:fixed; right:0; bottom:0; left:0; z-index:10002; max-width:760px; max-height:calc(100dvh - var(--safe-top) - 1rem); margin:0 auto; padding:1rem 1rem calc(1rem + var(--safe-bottom)); overflow-y:auto; border:1px solid var(--card-border); border-bottom:0; border-radius:24px 24px 0 0; background:var(--card-bg); box-shadow:0 -18px 50px rgba(0,0,0,.42); }
+    .mobile-ai-sheet[hidden], .mobile-ai-backdrop[hidden] { display:none; }
+    .mobile-ai-backdrop { position:fixed; inset:0; z-index:10001; background:rgba(0,0,0,.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); }
+    .mobile-ai-sheet-head { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding-bottom:.75rem; border-bottom:1px solid var(--card-border); }
+    .mobile-ai-sheet-title { display:flex; align-items:center; gap:.55rem; color:var(--text-primary); font:800 1rem 'Outfit',sans-serif; }
+    .mobile-ai-sheet-title i { display:grid; width:30px; height:30px; place-items:center; border-radius:10px; background:linear-gradient(135deg,#8b5cf6,#4f46e5); color:#fff; font-size:.8rem; }
+    .mobile-ai-close { display:grid; width:32px; height:32px; place-items:center; border:1px solid var(--card-border); border-radius:10px; background:transparent; color:var(--text-muted); }
+    .mobile-ai-prompts { display:flex; gap:.4rem; overflow-x:auto; padding:.8rem 0; scrollbar-width:none; }
+    .mobile-ai-prompts::-webkit-scrollbar { display:none; }
+    .mobile-ai-prompt { flex:0 0 auto; padding:.42rem .62rem; border:1px solid var(--card-border); border-radius:999px; background:var(--card-bg); color:var(--text-secondary); font:700 .67rem 'Inter',sans-serif; }
+    .mobile-ai-answer { min-height:100px; padding:.8rem; border:1px solid var(--card-border); border-radius:14px; background:color-mix(in srgb,#8b5cf6 4%,var(--card-bg)); color:var(--text-primary); font-size:.77rem; line-height:1.55; white-space:pre-wrap; }
+    .mobile-ai-answer.is-loading { color:var(--text-muted); }
+    .mobile-ai-answer.is-error { border-color:#ef4444; color:#fb7185; }
+    .mobile-ai-input-row { display:flex; align-items:flex-end; gap:.45rem; margin-top:.75rem; }
+    .mobile-ai-input { min-height:42px; max-height:96px; flex:1; resize:vertical; padding:.65rem .7rem; border:1px solid var(--card-border); border-radius:12px; background:var(--input-bg); color:var(--text-primary); font:600 .74rem 'Inter',sans-serif; outline:0; }
+    .mobile-ai-input:focus { border-color:#8b5cf6; box-shadow:0 0 0 3px rgba(139,92,246,.15); }
+    .mobile-ai-send { display:grid; width:42px; height:42px; flex:0 0 42px; place-items:center; border:0; border-radius:12px; background:#7c3aed; color:#fff; }
+    .mobile-ai-send:disabled { opacity:.5; }
+    @media (max-width:420px) { .dashboard-island-note { max-width:42%; } .mobile-ai-fab { right:calc(.8rem + var(--safe-right)); } }
+
     .dashboard-ticker { overflow: hidden; margin-inline: -.1rem; border-block: 1px solid rgba(148,163,184,.12); background: rgba(20,32,57,.68); }
     .dashboard-ticker .marquee-track { padding: .48rem 0; gap: 2.1rem; }
     .dashboard-ticker-item { display: inline-flex; align-items: center; gap: .42rem; color: var(--text-secondary); white-space: nowrap; font-size: .72rem; font-weight: 600; }
@@ -602,7 +630,7 @@
 
     .hero-carousel { position: relative; overflow: hidden; border: 1px solid rgba(70,120,190,.2); border-radius: 21px; background: #0f1a2e; box-shadow: 0 14px 32px rgba(0,0,0,.22); touch-action: pan-y; }
     .hero-carousel-track { display: flex; transition: transform var(--dur-slow) var(--ease-standard); }
-    .hero-slide { position: relative; display: flex; flex: 0 0 100%; flex-direction: column; justify-content: space-between; min-height: 166px; padding: 1.2rem 1.25rem 2rem; overflow: hidden; isolation: isolate; color: #fff; }
+    .hero-slide { position: relative; display: flex; flex: 0 0 100%; flex-direction: column; justify-content: space-between; min-height: 166px; padding: 1.2rem 1.25rem 2rem; overflow: hidden; isolation: isolate; color: #fff; }.hero-slide-link{color:inherit;text-decoration:none;cursor:pointer}.hero-slide-link:focus-visible{outline:3px solid rgba(56,189,248,.6);outline-offset:3px}
     .hero-slide::before { content: ''; position: absolute; z-index: -1; width: 185px; height: 185px; right: -68px; top: -85px; border-radius: 50%; background: radial-gradient(circle, rgba(56,189,248,.26), transparent 70%); }
     .hero-slide--revenue { background: linear-gradient(135deg, #12345f, #0d1930 70%); }
     .hero-slide--profit { background: linear-gradient(135deg, #2c164f, #171128 70%); }
@@ -924,6 +952,15 @@
         </div>
     </header>
 
+    {% if user.is_admin_user %}
+    <div class="dashboard-island-status" role="status" aria-label="Статус AI-аналитика">
+        <button class="dashboard-island-ai haptic-press" id="mobileAiIslandTrigger" type="button" aria-haspopup="dialog">
+            <i class="fa-solid fa-robot" aria-hidden="true"></i><span>AI-аналитик готов</span>
+        </button>
+        <span class="dashboard-island-note">Показатели обновлены · спросите о продажах</span>
+    </div>
+    {% endif %}
+
     <div class="dashboard-ticker marquee-container" role="status" aria-label="Последние события">
         <div class="marquee-track">
             <span class="dashboard-ticker-item"><i class="fa-solid fa-receipt" style="color:var(--accent-cyan);"></i>{% if recent_orders.0 %}<strong>Чек №{{ recent_orders.0.order_number }}</strong> — {{ recent_orders.0.total_amount|floatformat:0 }} ₸{% else %}Ожидание первой продажи{% endif %}</span>
@@ -936,14 +973,14 @@
 
     <section class="hero-carousel" id="dashboardHero" role="region" aria-roledescription="carousel" aria-label="Ключевые показатели">
         <div class="hero-carousel-track">
-            <article class="hero-slide hero-slide--revenue">
+            <a class="hero-slide hero-slide--revenue hero-slide-link" href="{% url 'm_sales_orders_list' %}?period=today" aria-label="Открыть чеки за сегодня">
                 <div><div class="hero-kicker">Выручка сегодня</div><div class="hero-value"><span id="dashHeroRevenue">{{ today_revenue|floatformat:0 }}</span> ₸</div></div>
                 <div class="hero-meta"><i class="fa-solid fa-arrow-trend-up"></i><span id="dashHeroGrowth">{{ growth_percent|floatformat:0 }}% к вчера</span></div>
-            </article>
-            <article class="hero-slide hero-slide--profit">
+            </a>
+            <a class="hero-slide hero-slide--profit hero-slide-link" href="{% url 'm_sales_orders_list' %}?period=today" aria-label="Открыть чеки для анализа прибыли">
                 <div><div class="hero-kicker">Прибыль сегодня</div><div class="hero-value"><span id="dashHeroProfit">{{ today_profit|floatformat:0 }}</span> ₸</div></div>
-                <div class="hero-meta"><i class="fa-solid fa-sack-dollar"></i><span id="dashHeroMargin">Маржа {{ profit_margin }}%</span></div>
-            </article>
+                <div class="hero-meta"><i class="fa-solid fa-sack-dollar"></i><span id="dashHeroMargin">{% if margin_available %}Маржа {{ profit_margin|floatformat:0 }}%{% else %}Маржа не рассчитывается{% endif %}</span></div>
+            </a>
             <article class="hero-slide hero-slide--goal">
                 <div><div class="hero-kicker">Цель дня</div><div class="hero-value"><span id="dashHeroTarget">{{ target_percent }}</span>%</div></div>
                 <div class="hero-meta"><i class="fa-solid fa-bullseye"></i>130% от вчерашней выручки</div>
@@ -968,10 +1005,10 @@
 
     <section class="dashboard-section" aria-label="Краткие показатели">
         <div class="dashboard-metric-row snap-row">
-            <article class="dashboard-metric"><span class="dashboard-metric-icon"><i class="fa-solid fa-receipt"></i></span><strong class="dashboard-metric-value" id="dashChecks">{{ today_count }}</strong><span class="dashboard-metric-label">чеков сегодня</span></article>
-            <article class="dashboard-metric dashboard-metric--green"><span class="dashboard-metric-icon"><i class="fa-solid fa-money-bill-wave"></i></span><strong class="dashboard-metric-value"><span id="dashAvg">{{ today_avg_check|floatformat:0 }}</span> ₸</strong><span class="dashboard-metric-label">средний чек</span></article>
+            <a class="dashboard-metric haptic-press" href="{% url 'm_sales_orders_list' %}?period=today" style="text-decoration:none;" aria-label="Открыть чеки за сегодня"><span class="dashboard-metric-icon"><i class="fa-solid fa-receipt"></i></span><strong class="dashboard-metric-value" id="dashChecks">{{ today_count }}</strong><span class="dashboard-metric-label">чеков сегодня</span></a>
+            <a class="dashboard-metric dashboard-metric--green haptic-press" href="{% url 'm_sales_orders_list' %}?period=today" style="text-decoration:none;" aria-label="Открыть чеки для среднего чека"><span class="dashboard-metric-icon"><i class="fa-solid fa-money-bill-wave"></i></span><strong class="dashboard-metric-value"><span id="dashAvg">{{ today_avg_check|floatformat:0 }}</span> ₸</strong><span class="dashboard-metric-label">средний чек</span></a>
             <a class="dashboard-metric dashboard-metric--warn haptic-press" href="{% url 'm_product_list' %}?low_stock=1" style="text-decoration:none;"><span class="dashboard-metric-icon"><i class="fa-solid fa-triangle-exclamation"></i></span><strong class="dashboard-metric-value" id="dashStock">{{ low_stock_count }}</strong><span class="dashboard-metric-label">мало на складе</span></a>
-            <article class="dashboard-metric dashboard-metric--purple"><span class="dashboard-metric-icon"><i class="fa-solid fa-users"></i></span><strong class="dashboard-metric-value">{{ cashier_stats|length }}</strong><span class="dashboard-metric-label">кассиров в отчёте</span></article>
+            <a class="dashboard-metric dashboard-metric--purple haptic-press" href="{% url 'm_users_list' %}" style="text-decoration:none;" aria-label="Открыть персонал"><span class="dashboard-metric-icon"><i class="fa-solid fa-users"></i></span><strong class="dashboard-metric-value">{{ cashier_stats|length }}</strong><span class="dashboard-metric-label">кассиров в отчёте</span></a>
         </div>
     </section>
 
@@ -1000,6 +1037,16 @@
     </section>
 </main>
 </div>
+{% if user.is_admin_user %}
+<button class="mobile-ai-fab haptic-press" id="mobileAiFab" type="button" aria-label="Открыть AI-аналитика" aria-haspopup="dialog" title="AI-аналитик"><i class="fa-solid fa-robot" aria-hidden="true"></i></button>
+<div class="mobile-ai-backdrop" id="mobileAiBackdrop" hidden></div>
+<section class="mobile-ai-sheet" id="mobileAiSheet" hidden role="dialog" aria-modal="true" aria-labelledby="mobileAiTitle">
+    <div class="mobile-ai-sheet-head"><h2 class="mobile-ai-sheet-title" id="mobileAiTitle"><i class="fa-solid fa-robot" aria-hidden="true"></i> AI-аналитик</h2><button class="mobile-ai-close" id="mobileAiClose" type="button" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="mobile-ai-prompts" aria-label="Быстрые вопросы"><button class="mobile-ai-prompt" type="button" data-mobile-ai-question="Сделай краткий итог по продажам за сегодня.">Итоги</button><button class="mobile-ai-prompt" type="button" data-mobile-ai-question="Какие риски по возвратам и выручке ты видишь?">Риски</button><button class="mobile-ai-prompt" type="button" data-mobile-ai-question="Какие товары стоит проверить на складе?">Склад</button><button class="mobile-ai-prompt" type="button" data-mobile-ai-question="Кто из кассиров показал лучший результат?">Кассиры</button></div>
+    <div class="mobile-ai-answer" id="mobileAiAnswer">Выберите быстрый вопрос или напишите свой.</div>
+    <div class="mobile-ai-input-row"><textarea class="mobile-ai-input" id="mobileAiInput" rows="2" placeholder="Спросите о показателях..."></textarea><button class="mobile-ai-send" id="mobileAiSend" type="button" aria-label="Отправить вопрос"><i class="fa-solid fa-arrow-up"></i></button></div>
+</section>
+{% endif %}
 {% endblock %}
 
 {% block extra_scripts %}
@@ -1335,8 +1382,43 @@
             if (data.low_stock_count !== undefined) setText('dashStock', data.low_stock_count);
             if (data.target_percent !== undefined) document.getElementById('dashHeroTarget').textContent = data.target_percent;
             if (data.growth_percent !== undefined) document.getElementById('dashHeroGrowth').textContent = `${Math.round(data.growth_percent)}% к вчера`;
-            if (data.profit_today !== undefined && data.revenue_today) document.getElementById('dashHeroMargin').textContent = `Маржа ${Math.round(data.profit_today / data.revenue_today * 100)}%`;
+            if (data.margin_today !== undefined) document.getElementById('dashHeroMargin').textContent = data.margin_today === null ? 'Маржа не рассчитывается' : `Маржа ${Math.round(data.margin_today)}%`;
         });
+    })();
+</script>
+<script>
+    (() => {
+        const sheet = document.getElementById('mobileAiSheet');
+        const backdrop = document.getElementById('mobileAiBackdrop');
+        const fab = document.getElementById('mobileAiFab');
+        const islandTrigger = document.getElementById('mobileAiIslandTrigger');
+        const close = document.getElementById('mobileAiClose');
+        const input = document.getElementById('mobileAiInput');
+        const send = document.getElementById('mobileAiSend');
+        const answer = document.getElementById('mobileAiAnswer');
+        if (!sheet || !backdrop || !input || !send || !answer) return;
+        const endpoint = '{% url "m_api_ai_insight" %}?period=today';
+        const csrf = document.querySelector('#mobileCsrf input[name="csrfmiddlewaretoken"]')?.value || '';
+        const open = () => { sheet.hidden = false; backdrop.hidden = false; document.body.style.overflow = 'hidden'; setTimeout(() => input.focus(), 60); };
+        const hide = () => { sheet.hidden = true; backdrop.hidden = true; document.body.style.overflow = ''; };
+        const ask = async question => {
+            if (!question || send.disabled) return;
+            send.disabled = true; answer.className = 'mobile-ai-answer is-loading'; answer.textContent = 'Анализирую показатели…';
+            try {
+                const response = await fetch(endpoint, {method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json','X-CSRFToken':csrf}, body:JSON.stringify({question})});
+                const type = response.headers.get('content-type') || '';
+                const data = type.includes('application/json') ? await response.json() : {error:`Сервер вернул ошибку (${response.status})`};
+                if (!response.ok) throw new Error(data.error || 'AI временно недоступен.');
+                answer.className = 'mobile-ai-answer'; answer.textContent = data.answer || 'AI не вернул текстовый ответ.';
+            } catch (error) { answer.className = 'mobile-ai-answer is-error'; answer.textContent = error.message || 'AI временно недоступен.'; }
+            finally { send.disabled = false; }
+        };
+        [fab, islandTrigger].filter(Boolean).forEach(button => button.addEventListener('click', open));
+        close?.addEventListener('click', hide); backdrop.addEventListener('click', hide);
+        document.querySelectorAll('[data-mobile-ai-question]').forEach(button => button.addEventListener('click', () => { input.value = button.dataset.mobileAiQuestion; ask(input.value); }));
+        send.addEventListener('click', () => ask(input.value.trim()));
+        input.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); ask(input.value.trim()); } });
+        document.addEventListener('keydown', event => { if (event.key === 'Escape' && !sheet.hidden) hide(); });
     })();
 </script>
 {% endblock %}

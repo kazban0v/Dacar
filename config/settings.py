@@ -5,7 +5,15 @@ Django settings for DACAR Detailing Market POS & Inventory Accounting System.
 import os
 from pathlib import Path
 
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - dependency is installed in normal environments
+    load_dotenv = None
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+if load_dotenv:
+    load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = 'django-insecure-dacar-detailing-market-pos-system-secret-key-2026'
 

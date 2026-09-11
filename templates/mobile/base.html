@@ -1359,6 +1359,8 @@
         {% endif %}
     </div>
 
+    <div hidden id="mobileCsrf">{% csrf_token %}</div>
+
     <main class="main-container" id="mainContent" role="main">
         {% block content %}{% endblock %}
     </main>
@@ -1639,7 +1641,7 @@
         // Register PWA Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('{% static "sw.js" %}')
+                navigator.serviceWorker.register('{% url "pwa_sw" %}', {scope: '/'})
                     .then(reg => console.log('DACAR PWA ServiceWorker active:', reg.scope))
                     .catch(err => console.log('DACAR PWA ServiceWorker failed:', err));
             });

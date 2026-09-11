@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, get_object_or_404
+from django.urls import reverse
 from config.rendering import render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -14,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from decimal import Decimal
 from datetime import datetime, timedelta
+from urllib.parse import urlencode
 import json
 
 from sales.raw_printer import print_order_direct, get_target_printer_name
@@ -101,6 +103,10 @@ def sales_orders_list_view(request):
     payment_filter = request.GET.get('payment_method')
     cashier_filter = request.GET.get('cashier_id')
     date_filter = request.GET.get('date', '').strip()
+    date_from_filter = request.GET.get('date_from', '').strip()
+    date_to_filter = request.GET.get('date_to', '').strip()
+    event_filter = request.GET.get('event', '').strip()
+    discounted_filter = request.GET.get('discounted', '').strip()
     cashier_period = request.GET.get('period', 'today')
     if cashier_period not in {'today', 'yesterday', 'week'}:
         cashier_period = 'today'
@@ -136,6 +142,8 @@ def sales_orders_list_view(request):
     if search:
         orders = orders.filter(
             Q(order_number__icontains=search) |
+            Q(items__product__name__icontains=search) |
+            Q(items__product__sku__icontains=search) |
             Q(items__product__barcode=search) |
             Q(cashier__first_name__icontains=search) |
             Q(cashier__username__icontains=search)
@@ -147,9 +155,40 @@ def sales_orders_list_view(request):
         orders = orders.filter(payment_method=payment_filter)
     if cashier_filter and request.user.is_admin_user:
         orders = orders.filter(cashier_id=cashier_filter)
+    if discounted_filter == '1' and request.user.is_admin_user:
+        orders = orders.filter(discount_amount__gt=0)
 
     selected_date = None
-    if date_filter and request.user.is_admin_user:
+    selected_date_from = None
+    selected_date_to = None
+    if date_from_filter and date_to_filter and request.user.is_admin_user:
+        try:
+            selected_date_from = datetime.strptime(date_from_filter, '%Y-%m-%d').date()
+            selected_date_to = datetime.strptime(date_to_filter, '%Y-%m-%d').date()
+            if selected_date_from > selected_date_to:
+                selected_date_from, selected_date_to = selected_date_to, selected_date_from
+                date_from_filter = selected_date_from.isoformat()
+                date_to_filter = selected_date_to.isoformat()
+            if event_filter == 'refund':
+                orders = orders.filter(
+                    Q(refunded_at__date__gte=selected_date_from, refunded_at__date__lte=selected_date_to)
+                    | Q(
+                        refunded_at__isnull=True,
+                        created_at__date__gte=selected_date_from,
+                        created_at__date__lte=selected_date_to,
+                    )
+                )
+            else:
+                orders = orders.filter(
+                    created_at__date__gte=selected_date_from,
+                    created_at__date__lte=selected_date_to,
+                )
+            date_filter = ''
+        except ValueError:
+            date_from_filter = ''
+            date_to_filter = ''
+            event_filter = ''
+    elif date_filter and request.user.is_admin_user:
         try:
             selected_date = datetime.strptime(date_filter, '%Y-%m-%d').date()
             orders = orders.filter(created_at__date=selected_date)
@@ -177,6 +216,27 @@ def sales_orders_list_view(request):
     paginator = Paginator(orders, 15)
     page_obj = paginator.get_page(page_number)
 
+    base_filters = {
+        key: value for key, value in {
+            'q': search,
+            'payment_method': payment_filter,
+            'cashier_id': cashier_filter,
+            'date': date_filter,
+            'date_from': date_from_filter,
+            'date_to': date_to_filter,
+            'discounted': discounted_filter,
+        }.items() if value
+    }
+    pagination_filters = dict(base_filters)
+    if status_filter:
+        pagination_filters['status'] = status_filter
+    if event_filter:
+        pagination_filters['event'] = event_filter
+    orders_url = reverse('sales_orders_list')
+    all_url = f"{orders_url}?{urlencode(base_filters)}" if base_filters else orders_url
+    completed_params = {**base_filters, 'status': SaleOrder.Status.COMPLETED}
+    refunded_params = {**base_filters, 'status': SaleOrder.Status.REFUNDED, 'event': 'refund'}
+
     return render(request, 'sales/orders_list.html', {
         'page_obj': page_obj,
         'orders': page_obj.object_list,
@@ -185,6 +245,12 @@ def sales_orders_list_view(request):
         'payment_filter': payment_filter,
         'cashier_filter': cashier_filter,
         'date_filter': date_filter,
+        'date_from_filter': date_from_filter,
+        'date_to_filter': date_to_filter,
+        'selected_date_from': selected_date_from,
+        'selected_date_to': selected_date_to,
+        'event_filter': event_filter,
+        'discounted_filter': discounted_filter,
         'selected_date': selected_date,
         'cashier_period': cashier_period,
         'cashier_period_label': cashier_period_label,
@@ -192,7 +258,11 @@ def sales_orders_list_view(request):
         'shift_start': shift_start,
         'order_stats': order_stats,
         'statuses': SaleOrder.Status.choices,
-        'payment_methods': SaleOrder.PaymentMethod.choices
+        'payment_methods': SaleOrder.PaymentMethod.choices,
+        'orders_all_url': all_url,
+        'orders_completed_url': f"{orders_url}?{urlencode(completed_params)}",
+        'orders_refunded_url': f"{orders_url}?{urlencode(refunded_params)}",
+        'pagination_query': urlencode(pagination_filters),
     })
 
 
