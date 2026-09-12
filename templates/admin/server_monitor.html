@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/server-monitor.css' %}">{% endblock %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Главная</a> › Состояние сервера</div>{% endblock %}
+{% block content %}
+<section class="monitor" id="server-monitor" data-endpoint="{% url 'admin:server_monitor_data' %}">
+    <header class="monitor-heading">
+        <div><span class="monitor-eyebrow">DACAR · SYSTEM HEALTH</span><h1>Состояние сервера</h1><p id="machine-label">Подключаемся к метрикам…</p></div>
+        <div class="monitor-controls"><span class="monitor-live" id="live-status" role="status">Ожидание</span><button type="button" id="pause-monitor">Пауза</button><a href="{% url 'admin:index' %}">← К управлению</a></div>
+    </header>
+    <div class="monitor-banner" id="monitor-notice" role="status">Только чтение. Никаких изменений товаров, чеков и пользователей.</div>
+    <div class="monitor-cards">
+        <article class="metric-card"><div class="metric-name"><span class="metric-icon blue">CPU</span>Процессор</div><strong id="cpu-value">—</strong><div class="metric-track"><span id="cpu-bar"></span></div><p id="cpu-detail">Первому замеру нужна пара отсчётов</p></article>
+        <article class="metric-card"><div class="metric-name"><span class="metric-icon purple">RAM</span>Память</div><strong id="ram-value">—</strong><div class="metric-track purple"><span id="ram-bar"></span></div><p id="ram-detail">Доступная память с учётом освобождаемого кэша</p></article>
+        <article class="metric-card"><div class="metric-name"><span class="metric-icon amber">SSD</span>Диск приложения</div><strong id="disk-value">—</strong><div class="metric-track amber"><span id="disk-bar"></span></div><p id="disk-detail">Свободное пространство</p></article>
+        <article class="metric-card"><div class="metric-name"><span class="metric-icon teal">SWP</span>Swap</div><strong id="swap-value">—</strong><div class="metric-track teal"><span id="swap-bar"></span></div><p id="swap-detail">Резерв на диске, не дополнительная RAM</p></article>
+    </div>
+    <div class="monitor-section-title"><div><h2>Ресурсы во времени</h2><p>Точки истории раз в минуту · последние данные каждые 10 секунд</p></div><div class="monitor-period" aria-label="Период графика"><button type="button" data-hours="1" aria-pressed="true">Час</button><button type="button" data-hours="24" aria-pressed="false">Сутки</button></div></div>
+    <div class="monitor-charts">
+        <article class="monitor-panel"><div class="chart-title"><h3>Процессор и память</h3><div class="chart-legend"><span class="blue-dot">CPU</span><span class="purple-dot">RAM</span></div></div><canvas id="resources-chart" role="img" aria-label="История использования процессора и памяти в процентах"></canvas><p class="chart-summary" id="resources-summary">История появится после первых замеров.</p></article>
+        <article class="monitor-panel"><div class="chart-title"><h3>Сетевой трафик</h3><div class="chart-legend"><span class="blue-dot">Входящий</span><span class="teal-dot">Исходящий</span></div></div><canvas id="network-chart" role="img" aria-label="История входящего и исходящего сетевого трафика"></canvas><p class="chart-summary" id="network-summary">Суммарно по интерфейсам, кроме loopback. Не только трафик сайта.</p></article>
+    </div>
+    <div class="monitor-bottom">
+        <article class="monitor-panel"><h3>Приложение и база данных</h3><dl class="monitor-facts"><div><dt>Django</dt><dd id="app-status">Ожидание ответа</dd></div><div><dt>База данных · SELECT 1</dt><dd id="database-status">—</dd></div><div><dt>Время работы машины</dt><dd id="uptime-value">—</dd></div><div><dt>Последний замер</dt><dd id="updated-at">—</dd></div></dl></article>
+        <article class="monitor-panel"><h3>На что обратить внимание</h3><ul class="monitor-alerts" id="monitor-alerts"><li>Ожидаем первый замер.</li></ul><p class="monitor-footnote">Это текущие сигналы, не внешние уведомления. При полном отключении сервера эта страница тоже недоступна.</p></article>
+    </div>
+    <footer class="monitor-footer">Обновление приостанавливается в скрытой вкладке. Без фонового сборщика история накапливается только при открытом мониторинге; пропуски не дорисовываются. Графики строятся на вашем устройстве.</footer>
+</section>
+<script src="{% static 'js/server-monitor.js' %}" defer></script>
+{% endblock %}
