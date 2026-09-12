@@ -1,0 +1,47 @@
+{% extends "admin/base.html" %}
+{% load static i18n %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | DACAR Admin{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/admin-dacar.css' %}">
+{% endblock %}
+
+{% block branding %}
+  <div id="site-name">
+    <a href="{% url 'admin:index' %}" class="dc-brand" aria-label="DACAR Admin — панель управления">
+      <span class="dc-brand-mark" aria-hidden="true">D</span>
+      <span class="dc-brand-copy">
+        <strong>DACAR <em>MARKET</em></strong>
+        <small>ADMIN CONSOLE</small>
+      </span>
+    </a>
+  </div>
+  {% if user.is_anonymous %}{% include "admin/color_theme_toggle.html" %}{% endif %}
+{% endblock %}
+
+{% block usertools %}
+  {% if has_permission %}
+    <div id="user-tools" class="dc-user-tools">
+      <a class="dc-site-link" href="{% url 'dashboard' %}">Открыть сайт <span aria-hidden="true">↗</span></a>
+      <span class="dc-user-chip"><span class="dc-user-avatar">{{ user.get_short_name|default:user.username|first|upper }}</span><span>{{ user.get_short_name|default:user.username }}</span></span>
+      <form id="logout-form" method="post" action="{% url 'admin:logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="dc-logout">Выйти</button>
+      </form>
+      {% include "admin/color_theme_toggle.html" %}
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block nav-global %}
+  {% if has_permission %}
+    <nav class="dc-global-nav" aria-label="Быстрые разделы">
+      <a href="{% url 'admin:index' %}"{% if request.resolver_match.url_name == 'index' %} aria-current="page"{% endif %}>Панель</a>
+      {% if user.is_superuser %}<a href="{% url 'admin:server_monitor' %}"{% if request.resolver_match.url_name == 'server_monitor' %} aria-current="page"{% endif %}>Мониторинг</a>{% endif %}
+      <a href="{% url 'pos' %}">Касса</a>
+      <a href="{% url 'sales_orders_list' %}">Чеки</a>
+    </nav>
+  {% endif %}
+{% endblock %}

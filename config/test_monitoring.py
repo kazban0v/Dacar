@@ -3,7 +3,7 @@ from pathlib import Path
 import sqlite3
 import tempfile
 import time
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.contrib import admin
 from django.contrib.auth import get_user_model
@@ -21,6 +21,7 @@ def measurement(timestamp=None):
     }
 
 
+@override_settings(TELEGRAM_ALERTS_ENABLED=False)
 class MetricsStorageTests(SimpleTestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
@@ -40,6 +41,50 @@ class MetricsStorageTests(SimpleTestCase):
         self.assertNotIn('history', two)
         self.assertEqual(len(one['history']), 1)
         self.assertEqual(self.path.stat().st_mode & 0o777, 0o600)
+
+    def test_threshold_alerts_are_persistent_and_recover(self):
+        stamp = time.time()
+        high = {**measurement(stamp), 'cpu_percent': 96, 'memory_percent': 91,
+                'disk_percent': 88, 'database_ok': False}
+        with patch('config.monitoring._collect', return_value=high):
+            result = get_metrics(history=True)
+        self.assertEqual({item['fingerprint'] for item in result['alerts']},
+                         {'cpu_high', 'memory_high', 'disk_high', 'database_down'})
+        self.assertTrue(all(item['active'] == 1 for item in result['alerts']))
+
+        recovered = {**measurement(stamp + 61), 'database_ok': True}
+        with patch('config.monitoring.time.time', return_value=stamp + 61), \
+                patch('config.monitoring._collect', return_value=recovered):
+            result = get_metrics(history=True)
+        self.assertTrue(any(item['fingerprint'] == 'database_down' and not item['active']
+                            for item in result['alerts']))
+        self.assertFalse(any(item['fingerprint'] == 'database_down' and item['active']
+                             for item in result['alerts']))
+
+    @override_settings(TELEGRAM_ALERTS_ENABLED=True, TELEGRAM_BOT_TOKEN='test-token',
+                       TELEGRAM_CHAT_ID='123')
+    def test_telegram_sends_only_new_and_recovered_alerts(self):
+        stamp = time.time()
+        high = {**measurement(stamp), 'cpu_percent': 96}
+        response = MagicMock()
+        response.__enter__.return_value.status = 200
+        with patch('config.monitoring.urlrequest.urlopen', return_value=response) as send, \
+                patch('config.monitoring._collect', return_value=high):
+            get_metrics()
+            get_metrics()
+        self.assertEqual(send.call_count, 1)
+        recovered = {**measurement(stamp + 61), 'cpu_percent': 12}
+        with patch('config.monitoring.urlrequest.urlopen', return_value=response) as send, \
+                patch('config.monitoring.time.time', return_value=stamp + 61), \
+                patch('config.monitoring._collect', return_value=recovered):
+            get_metrics()
+        self.assertEqual(send.call_count, 1)
+
+    def test_alert_store_is_separate_from_business_database(self):
+        with patch('config.monitoring._collect', return_value=measurement()):
+            get_metrics()
+        with sqlite3.connect(self.path) as db:
+            self.assertEqual(db.execute('SELECT count(*) FROM alerts').fetchone()[0], 0)
 
     def test_one_history_row_per_minute_and_retention(self):
         stamp = 1800000020.0
@@ -90,7 +135,7 @@ class MonitorAdminTests(TestCase):
     def setUpTestData(cls):
         user = get_user_model()
         cls.owner = user.objects.create_user(username='monitor_owner', is_staff=True, is_superuser=True)
-        cls.staff = user.objects.create_user(username='monitor_staff', is_staff=True)
+        cls.staff = user.objects.create_user(username='monitor_staff', is_staff=True, role='ADMIN')
         cls.cashier = user.objects.create_user(username='monitor_cashier')
 
     def test_anonymous_and_cashier_do_not_collect(self):
@@ -157,3 +202,30 @@ class MonitorAdminTests(TestCase):
         request = RequestFactory().get('/admin/')
         request.user = self.owner
         self.assertFalse(admin.site._registry[AuditLog].has_add_permission(request))
+
+
+@override_settings(TELEGRAM_BOT_TOKEN='test-token', TELEGRAM_CHAT_ID='855861024',
+                   TELEGRAM_WEBHOOK_SECRET='webhook-secret')
+class TelegramMonitorTests(TestCase):
+    def _post(self, payload, secret='webhook-secret', chat_id='855861024'):
+        return self.client.post(
+            reverse('telegram_monitor_webhook', kwargs={'secret': secret}),
+            data=json.dumps(payload), content_type='application/json',
+            HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN=secret,
+        )
+
+    def test_start_command_is_read_only_and_replies_with_keyboard(self):
+        update = {'message': {'chat': {'id': 855861024}, 'text': '/start'}}
+        with patch('config.telegram_monitor._api', return_value=True) as api:
+            response = self._post(update)
+        self.assertEqual(response.status_code, 200)
+        api.assert_called_once()
+        self.assertEqual(api.call_args.args[0], 'sendMessage')
+        self.assertIn('reply_markup', api.call_args.args[1])
+
+    def test_wrong_secret_or_chat_cannot_trigger_bot_actions(self):
+        update = {'message': {'chat': {'id': 999}, 'text': '/status'}}
+        with patch('config.telegram_monitor._api') as api:
+            self.assertEqual(self._post(update, secret='wrong').status_code, 404)
+            self.assertEqual(self._post(update).status_code, 200)
+        api.assert_not_called()

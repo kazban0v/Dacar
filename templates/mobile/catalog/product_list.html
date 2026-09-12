@@ -371,7 +371,7 @@
         </div>
         <button type="button" class="warehouse-theme-toggle haptic-press" onclick="toggleDacarTheme()" aria-label="Переключить тему" title="Тёмная / светлая тема"><i class="fa-solid fa-moon" data-dacar-theme-icon style="color:#f59e0b;"></i></button>
         <button type="button" class="pos-help-btn" id="catalogHelpBtn" title="Справка по складу" onclick="openCatalogHelpModal()"><i class="fa-solid fa-question"></i></button>
-        <a href="{% url 'm_product_create' %}" class="btn btn-primary warehouse-add-btn haptic-press" aria-label="Добавить товар" title="Добавить товар"><i class="fa-solid fa-plus"></i></a>
+        {% if user.is_admin_user %}<a href="{% url 'm_product_create' %}" class="btn btn-primary warehouse-add-btn haptic-press" aria-label="Добавить товар" title="Добавить товар"><i class="fa-solid fa-plus"></i></a>{% endif %}
     </div>
 </div>
 
@@ -427,12 +427,12 @@
 <div class="catalog-cards-mobile">
     {% for product in page_obj %}
     <div class="warehouse-product-swipe">
-        <div class="warehouse-swipe-actions" aria-hidden="true">
+        {% if user.is_admin_user %}<div class="warehouse-swipe-actions" aria-hidden="true">
             <button type="button" class="swipe-in" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'IN')" aria-label="Принять товар"><i class="fa-solid fa-plus"></i></button>
             <button type="button" class="swipe-transfer" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'TRANSFER_TO_SHOP')" aria-label="Отправить в магазин"><i class="fa-solid fa-truck"></i></button>
             <a class="swipe-edit" href="{% url 'm_product_edit' product.id %}" aria-label="Редактировать товар"><i class="fa-solid fa-pen"></i></a>
-        </div>
-        <article class="product-list-card warehouse-product-card" id="card-product-{{ product.id }}" data-product-id="{{ product.id }}" data-product-name="{{ product.name|escapejs }}" data-product-stock="{{ product.stock_qty|unlocalize }}" data-product-edit-url="{% url 'm_product_edit' product.id %}" role="button" tabindex="0" aria-label="Действия с товаром {{ product.name }}">
+        </div>{% endif %}
+        <article class="product-list-card warehouse-product-card" id="card-product-{{ product.id }}" data-product-id="{{ product.id }}" data-product-name="{{ product.name|escapejs }}" data-product-stock="{{ product.stock_qty|unlocalize }}" data-product-edit-url="{% url 'm_product_edit' product.id %}" {% if user.is_admin_user %}role="button" tabindex="0" aria-label="Действия с товаром {{ product.name }}"{% endif %}>
             <div class="warehouse-product-icon {% if product.category.slug == 'interior' %}warehouse-product-icon--interior{% elif product.category.slug == 'exterior' %}warehouse-product-icon--exterior{% endif %}"><i class="fa-solid {% if product.category.slug == 'autochem' %}fa-spray-can{% elif product.category.slug == 'interior' %}fa-brush{% elif product.category.slug == 'exterior' %}fa-car-side{% else %}fa-boxes-stacked{% endif %}"></i></div>
             <div class="warehouse-product-main">
                 <div class="product-list-card-title">{{ product.name }}</div>
@@ -492,6 +492,7 @@
                     {% endif %}
                 </td>
                 <td style="text-align: right;">
+                    {% if user.is_admin_user %}
                     <button type="button" class="btn btn-success" style="padding: 4px 10px; font-size: 0.78rem;" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'IN')">
                         <i class="fa-solid fa-plus"></i> Принять
                     </button>
@@ -501,6 +502,7 @@
                     <a href="{% url 'm_product_edit' product.id %}" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.78rem;">
                         <i class="fa-solid fa-pen"></i>
                     </a>
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}
@@ -675,6 +677,7 @@
 {% block extra_scripts %}
 <script>
     let currentModalStock = 0;
+    const canManageStock = {{ user.is_admin_user|yesno:'true,false' }};
 
     // Modal controls
     function openCatalogHelpModal() {
@@ -699,6 +702,7 @@
     }
 
     function openProductActions(productId, productName, currentStock, editUrl) {
+        if (!canManageStock) return;
         const normalizedStock = parseStockQuantity(currentStock);
         activeProductAction = { productId, productName, currentStock: normalizedStock, editUrl };
         document.getElementById('productActionName').textContent = productName;
@@ -723,6 +727,7 @@
     }
 
     function openStockModal(productId, productName, currentStock, actionType) {
+        if (!canManageStock) return;
         currentModalStock = parseStockQuantity(currentStock);
         document.getElementById('modalStockProductId').value = productId;
         document.getElementById('modalStockActionType').value = actionType;
@@ -1022,6 +1027,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.warehouse-product-swipe').forEach(wrapper => {
             const card = wrapper.querySelector('.warehouse-product-card');
+            if (!canManageStock) return;
             let startX = 0;
             let startY = 0;
             let opened = false;

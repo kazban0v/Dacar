@@ -15,6 +15,15 @@ class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.ReadOnlyField(source='category.name')
     brand_name = serializers.ReadOnlyField(source='brand.name', default='')
 
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get('request')
+        # Закупочная цена — внутренняя информация магазина.  Не отдаём её
+        # кассиру даже если он напрямую вызвал API поиска товара.
+        if request is not None and not request.user.is_admin_user:
+            fields.pop('purchase_price', None)
+        return fields
+
     class Meta:
         model = Product
         fields = [

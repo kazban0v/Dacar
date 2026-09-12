@@ -15,25 +15,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 if load_dotenv:
     load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = 'django-insecure-dacar-detailing-market-pos-system-secret-key-2026'
+from config.security_settings import security_settings
 
-# In production the setting remains disabled unless it is explicitly enabled.
-# manage.py sets DJANGO_DEBUG=1 only for the local `runserver` command, so
-# Django can serve local static assets such as the mobile motion stylesheet.
-DEBUG = os.environ.get('DJANGO_DEBUG', '0') == '1'
-
-ALLOWED_HOSTS = ['*']
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.trycloudflare.com',
-    'https://*.loca.lt',
-    'https://*.ngrok-free.app',
-    'https://dacar-market.kz',
-    'http://dacar-market.kz',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-    'http://10.0.2.2:8000',
-]
+globals().update(security_settings(os.environ))
 
 # Application definition
 
@@ -61,6 +45,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'users.login_throttle.LoginThrottleMiddleware',
     'config.middleware.MobileLoginRedirectMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -137,16 +122,29 @@ REST_FRAMEWORK = {
 }
 
 # POS Thermal Printer Configuration
-THERMAL_PRINTER_NAME = None  # None allows auto-detecting the default printer in macOS
+THERMAL_PRINTER_NAME = os.environ.get('THERMAL_PRINTER_NAME') or None
+# EPT371U's installed TSPL2 driver uses normal browser/OS printing.
+# Opt in only after confirming that the selected device accepts ESC/POS.
+THERMAL_PRINT_TRANSPORT = os.environ.get('THERMAL_PRINT_TRANSPORT', 'browser')
 SHOP_NAME = 'DACAR ДЕТЕЙЛИНГ МАРКЕТ'
 SHOP_TAGLINE = ''
 SHOP_ADDRESS = 'г. Актобе, ул. Алтын Орда 19д'
 SHOP_PHONE = '+7 (706) 806-66-36'
 
-# Reverse Proxy headers support (Nginx -> Gunicorn)
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-USE_X_FORWARDED_HOST = True
+# Login counters are shared by workers, not stored in process-local cache.
+LOGIN_THROTTLE_DB_PATH = BASE_DIR / 'runtime' / 'security' / 'login.sqlite3'
+LOGIN_THROTTLE_PAIR_LIMIT = 5
+LOGIN_THROTTLE_IP_LIMIT = 60
+LOGIN_THROTTLE_WINDOW = 300
 
 # Private, bounded monitoring history, separate from business data.
 MONITOR_DB_PATH = BASE_DIR / 'runtime' / 'monitor' / 'metrics.sqlite3'
 MONITOR_LABEL = os.environ.get('MONITOR_LABEL', '')
+
+# Optional Telegram delivery for monitor alert transitions. Keep credentials in .env only.
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '').strip()
+TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', '').strip()
+TELEGRAM_WEBHOOK_SECRET = os.environ.get('TELEGRAM_WEBHOOK_SECRET', '').strip()
+TELEGRAM_ALERTS_ENABLED = os.environ.get('TELEGRAM_ALERTS_ENABLED', '').strip().lower() in {
+    '1', 'true', 'yes', 'on'
+}

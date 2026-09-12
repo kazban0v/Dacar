@@ -5,6 +5,22 @@ from decimal import Decimal
 import uuid
 import datetime
 
+
+class FinancialLock(models.Model):
+    """Singleton write lock, including SQLite where SELECT FOR UPDATE is a no-op."""
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1)
+    sequence = models.PositiveBigIntegerField(default=0)
+
+
+class OperationReceipt(models.Model):
+    key = models.CharField(max_length=64, unique=True)
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    kind = models.CharField(max_length=16)
+    fingerprint = models.CharField(max_length=64)
+    order = models.ForeignKey('SaleOrder', null=True, on_delete=models.SET_NULL)
+    result = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
 class SaleOrder(models.Model):
     class Status(models.TextChoices):
         COMPLETED = 'COMPLETED', 'Проведен (Оплачен)'
@@ -57,6 +73,10 @@ class SaleOrder(models.Model):
                 seq = 1
         else:
             seq = 1
+        counter = FinancialLock.objects.get(pk=1)
+        seq = max(seq, counter.sequence + 1)
+        counter.sequence = seq
+        counter.save(update_fields=['sequence'])
         return f"{prefix}{seq:04d}"
 
     @property

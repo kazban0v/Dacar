@@ -41,12 +41,17 @@ class CheckoutAPIView(APIView):
     def post(self, request):
         serializer = SaleCheckoutSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            order = serializer.save()
+            from rest_framework.exceptions import APIException
+            try:
+                order = serializer.save()
+            except APIException as exc:
+                detail = exc.detail
+                return Response({'success': False, 'errors': detail}, status=exc.status_code)
             
             # Optional direct raw ESC/POS printing upon checkout
             auto_print = request.data.get('auto_print', False)
             print_status = None
-            if auto_print:
+            if auto_print is True and not serializer.replayed:
                 try:
                     p_name = get_target_printer_name()
                     print_order_direct(order, printer_name=p_name)
@@ -57,13 +62,14 @@ class CheckoutAPIView(APIView):
             from django.core.cache import cache
             cache.delete('dacar_live_kpi')
 
-            order_serializer = SaleOrderSerializer(order)
+            order_serializer = SaleOrderSerializer(order, context={'request': request})
             return Response({
                 'success': True,
                 'message': f'Чек № {order.order_number} успешно проведен!',
                 'print_status': print_status,
+                'replayed': serializer.replayed,
                 'order': order_serializer.data
-            }, status=status.HTTP_201_CREATED)
+            }, status=status.HTTP_200_OK if serializer.replayed else status.HTTP_201_CREATED)
         return Response({
             'success': False,
             'errors': serializer.errors
@@ -85,7 +91,7 @@ class OrderDirectPrintAPIView(APIView):
             print_order_direct(order, printer_name=printer_name)
             return Response({
                 'success': True,
-                'message': f'Чек № {order.order_number} мгновенно отправлен на принтер ({printer_name})!',
+                'message': f'Чек № {order.order_number} передан в очередь печати ({printer_name}). Проверьте выход бумаги.',
                 'printer_name': printer_name
             })
         except Exception as e:
@@ -282,20 +288,18 @@ def order_detail_print_view(request, pk):
 @login_required
 def order_refund_view(request, pk):
     """
-    Refund Engine for administrators and managers.
+    Refund Engine for administrators.
     Requires specifying a refund_reason. Creates a permanent log in AuditLog and StockMovement.
     """
-    order = get_object_or_404(SaleOrder, pk=pk)
-
     # Determine if we're on mobile based on URL path
     is_mobile = request.path.startswith('/m/')
     orders_list_url = 'm_sales_orders_list' if is_mobile else 'sales_orders_list'
 
-    # Permission check: ADMIN and MANAGER can refund. CASHIER cannot.
-    is_mgr_or_admin = request.user.is_admin_user or getattr(request.user, 'role', '') == 'MANAGER'
-    if not is_mgr_or_admin:
-        messages.error(request, 'Оформление возврата разрешено только Управляющему или Администратору.')
+    if not request.user.is_admin_user:
+        messages.error(request, 'Оформление возврата разрешено только администратору.')
         return redirect(orders_list_url)
+
+    order = get_object_or_404(SaleOrder, pk=pk)
 
     if order.status == SaleOrder.Status.REFUNDED:
         messages.warning(request, f'Чек № {order.order_number} уже был возвращен ранее.')
@@ -303,43 +307,22 @@ def order_refund_view(request, pk):
 
     if request.method == 'POST':
         refund_reason = request.POST.get('refund_reason', '').strip()
-        if not refund_reason or len(refund_reason) < 4:
-            messages.error(request, 'Пожалуйста, укажите подробную причину возврата (не менее 4 символов).')
+        if not 4 <= len(refund_reason) <= 255:
+            messages.error(request, 'Укажите причину возврата: от 4 до 255 символов.')
             return redirect(orders_list_url)
-
-        with transaction.atomic():
-            order.status = SaleOrder.Status.REFUNDED
-            order.refund_reason = refund_reason
-            order.refunded_by = request.user
-            order.refunded_at = timezone.now()
-            order.save(update_fields=['status', 'refund_reason', 'refunded_by', 'refunded_at', 'updated_at'])
-
-            # Return items to stock inventory
-            for item in order.items.all():
-                product = item.product
-                product.stock_qty += item.quantity
-                product.save(update_fields=['stock_qty', 'updated_at'])
-
-                StockMovement.objects.create(
-                    product=product,
-                    movement_type=StockMovement.MovementType.RETURN,
-                    quantity=item.quantity,
-                    cost_price=item.purchase_price_snapshot,
-                    comment=f"Возврат по чеку {order.order_number}. Причина: {refund_reason}",
-                    created_by=request.user
-                )
-
-            # Audit Log Entry
-            AuditLog.log(
-                request,
-                AuditLog.ActionType.REFUND,
-                f"Оформлен возврат по чеку № {order.order_number} на сумму {order.total_amount} ₸. Провел: {request.user}. Причина: '{refund_reason}'"
-            )
-
-            from django.core.cache import cache
-            cache.delete('dacar_live_kpi')
-
-        messages.success(request, f'Возврат по чеку № {order.order_number} на сумму {order.total_amount} ₸ успешно оформлен. Остатки товаров восстановлены.')
+        from sales.operations import refund
+        from rest_framework.exceptions import APIException
+        try:
+            order, replayed = refund(request, pk, refund_reason)
+        except APIException as exc:
+            messages.error(request, str(exc.detail))
+            return redirect(orders_list_url)
+        if replayed:
+            messages.info(request, 'Возврат уже оформлен. Повторного изменения остатков нет.')
+            return redirect(orders_list_url)
+        from django.core.cache import cache
+        cache.delete('dacar_live_kpi')
+        messages.success(request, f'Возврат по чеку № {order.order_number} оформлен. Остатки восстановлены.')
         return redirect(orders_list_url)
 
     return render(request, 'sales/refund_confirm.html', {

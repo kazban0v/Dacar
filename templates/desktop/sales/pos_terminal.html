@@ -2150,6 +2150,8 @@
     }
 
     function renderCart() {
+        // A changed cart starts a new idempotent checkout attempt.
+        window.checkoutSyncId = null;
         cartItemsList.innerHTML = '';
         if (cart.length === 0) {
             cartItemsList.appendChild(emptyCartMessage);
@@ -2188,14 +2190,16 @@
 
     function updateCartTotals() {
         let subtotal = 0;
+        let itemDiscounts = 0;
         let totalItems = 0;
         cart.forEach(item => {
             subtotal += (item.quantity * item.unit_price);
+            itemDiscounts += item.discount || 0;
             totalItems += item.quantity;
         });
 
         const globalDiscount = parseFloat(globalDiscountInput.value) || 0;
-        const finalTotal = Math.max(0, subtotal - globalDiscount);
+        const finalTotal = Math.max(0, subtotal - itemDiscounts - globalDiscount);
 
         summarySubtotal.innerText = `${formatMoney(subtotal)} ₸`;
         summaryFinalTotal.innerText = `${formatMoney(finalTotal)} ₸`;
@@ -2293,6 +2297,7 @@
         let subtotal = 0;
         cart.forEach(item => {
             subtotal += (item.quantity * item.unit_price);
+            subtotal -= item.discount || 0;
         });
         const globalDiscount = parseFloat(globalDiscountInput.value) || 0;
         return Math.max(0, subtotal - globalDiscount);
@@ -2333,7 +2338,9 @@
             paid = finalTotal;
         }
 
+        if (!window.checkoutSyncId) window.checkoutSyncId = (window.crypto && typeof window.crypto.randomUUID === 'function' ? window.crypto.randomUUID() : 'checkout-' + Date.now() + '-' + Math.random().toString(36).slice(2));
         const payload = {
+            client_sync_id: window.checkoutSyncId,
             items: cart.map(i => ({
                 product_id: i.product_id,
                 quantity: i.quantity,
@@ -2360,6 +2367,7 @@
                 showThermalReceipt(data.order);
                 // Reset Cart
                 cart = [];
+                window.checkoutSyncId = null;
                 globalDiscountInput.value = 0;
                 paidAmountInput.value = '';
                 renderCart();
@@ -2387,11 +2395,13 @@
             const tr = document.createElement('tr');
             const rawQty = parseFloat(item.quantity);
             const formattedQty = (rawQty % 1 === 0) ? parseInt(rawQty, 10) : rawQty;
-            tr.innerHTML = `
-                <td style="padding: 0.2rem 0;">${item.product_name}</td>
-                <td style="text-align: center;">${formattedQty}</td>
-                <td style="text-align: right;">${formatMoney(item.total_amount)} ₸</td>
-            `;
+            [item.product_name || 'Удалённый товар', formattedQty, formatMoney(item.total_amount) + ' ₸'].forEach((value, index) => {
+                const td = document.createElement('td');
+                td.textContent = value;
+                td.style.textAlign = ['left', 'center', 'right'][index];
+                td.style.padding = '0.2rem 0';
+                tr.appendChild(td);
+            });
             tbody.appendChild(tr);
         });
 
@@ -2409,219 +2419,23 @@
         posSearchInput.focus();
     }
 
-    async function printThermalReceipt() {
+    function printThermalReceipt() {
         if (!lastPrintedOrderId) {
-            alert('Нет чека для печати.');
+            showPosToast('Нет чека для печати.', 'error');
             return;
         }
-        try {
-            const response = await fetch(`/sales/api/orders/${lastPrintedOrderId}/print-raw/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
-            if (response.ok && data.success) {
-                // Успешно отправлено на сервер (и lpr на macOS)
-                // Можно добавить небольшое уведомление, но alert тоже подойдет
-                console.log('Печать успешна:', data);
-            } else {
-                showPosToast('Ошибка печати: ' + (data.error || 'Неизвестная ошибка'), 'error');
-                printThermalReceiptFallback();
-            }
-        } catch (err) {
-            console.error('Ошибка сети при прямой печати', err);
-            showPosToast('Ошибка связи с сервером', 'error');
-            printThermalReceiptFallback();
-        }
+        // Open synchronously on the click: Safari blocks windows opened after an API wait.
+        // One server-rendered receipt is shared by POS, orders, desktop and mobile.
+        const page = window.open('/sales/orders/' + lastPrintedOrderId + '/print/', '_blank');
+        if (!page) showPosToast('Разрешите всплывающее окно для печати чека.', 'error');
     }
 
     function printThermalReceiptFallback() {
-        let oldFrame = document.getElementById('receiptPrintFrame');
-        if (oldFrame) oldFrame.remove();
-
-        const receiptBox = document.querySelector('.receipt-modal-box');
-        if (!receiptBox) return;
-
-        const printContent = receiptBox.cloneNode(true);
-        const noPrintBtns = printContent.querySelectorAll('.no-print');
-        noPrintBtns.forEach(b => b.remove());
-
-        const iframe = document.createElement('iframe');
-        iframe.id = 'receiptPrintFrame';
-        iframe.style.position = 'fixed';
-        iframe.style.right = '0';
-        iframe.style.bottom = '0';
-        iframe.style.width = '0';
-        iframe.style.height = '0';
-        iframe.style.border = '0';
-        document.body.appendChild(iframe);
-
-        const doc = iframe.contentWindow.document;
-        doc.open();
-        doc.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>Чек Europrint</title>
-                <style>
-                    @page {
-                        size: 80mm auto;
-                        margin: 0 !important;
-                    }
-                    html, body {
-                        width: 80mm;
-                        height: auto !important;
-                        min-height: 0 !important;
-                        max-height: none !important;
-                        margin: 0 auto !important;
-                        padding: 0 !important;
-                        font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
-                        font-size: 13px;
-                        font-weight: 700;
-                        line-height: 1.35;
-                        color: #000;
-                        background: #FFF;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                    }
-                    tr, .receipt-modal-box {
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
-                    }
-                    .receipt-modal-box {
-                        width: 72mm;
-                        height: auto !important;
-                        min-height: 0 !important;
-                        max-height: none !important;
-                        margin: 0 auto;
-                        padding: 2mm 0;
-                        font-weight: 700;
-                        color: #000;
-                        box-shadow: none !important;
-                        border-radius: 0 !important;
-                    }
-                    }
-                    .receipt-header {
-                        text-align: center;
-                        border-bottom: 1px dashed #000;
-                        padding-bottom: 6px;
-                        margin-bottom: 6px;
-                    }
-                    .receipt-header h3 {
-                        font-size: 16px;
-                        font-weight: 900;
-                        margin: 0 0 2px 0;
-                        letter-spacing: 0.04em;
-                        text-transform: uppercase;
-                    }
-                    .receipt-header p {
-                        font-size: 11px;
-                        margin: 1px 0;
-                    }
-                    .receipt-meta-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        border-bottom: 1px solid #000;
-                        margin-bottom: 6px;
-                        padding-bottom: 4px;
-                    }
-                    .receipt-meta-table td {
-                        padding: 2px 0;
-                        font-size: 12px;
-                        font-weight: 700;
-                    }
-                    table.receipt-items-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        table-layout: fixed;
-                        margin-bottom: 6px;
-                    }
-                    table.receipt-items-table thead tr {
-                        border-bottom: 1px solid #000;
-                    }
-                    table.receipt-items-table th {
-                        font-size: 11px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.04em;
-                        padding: 3px 1px;
-                        font-weight: 700;
-                    }
-                    table.receipt-items-table th:first-child, table.receipt-items-table td:first-child { width: 55%; text-align: left; }
-                    table.receipt-items-table th:nth-child(2), table.receipt-items-table td:nth-child(2) { width: 15%; text-align: center; }
-                    table.receipt-items-table th:last-child, table.receipt-items-table td:last-child { width: 30%; text-align: right; }
-                    table.receipt-items-table tr, table.receipt-items-table td, table.receipt-items-table th {
-                        word-break: break-word;
-                        padding: 3px 1px;
-                        font-size: 12px;
-                        font-weight: 700;
-                        color: #000;
-                    }
-                    .receipt-totals-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        border-top: 1px dashed #000;
-                        margin-top: 4px;
-                        padding-top: 4px;
-                    }
-                    .receipt-totals-table td {
-                        padding: 2px 0;
-                        font-size: 12px;
-                        font-weight: 700;
-                    }
-                    .receipt-totals-table tr.receipt-grand-total-row td {
-                        font-size: 16px;
-                        font-weight: 900;
-                        padding: 5px 0;
-                        border-top: 1px solid #000;
-                        border-bottom: 1px solid #000;
-                    }
-                    .receipt-footer {
-                        text-align: center;
-                        border-top: 1px dashed #000;
-                        margin-top: 8px;
-                        padding-top: 6px;
-                        padding-bottom: 4mm;
-                    }
-                    .receipt-footer p {
-                        font-size: 10px;
-                        margin: 1px 0;
-                    }
-                    .receipt-footer p:first-child {
-                        font-weight: 900;
-                        font-size: 11px;
-                    }
-                    .no-print, .receipt-actions {
-                        display: none !important;
-                    }
-                </style>
-            </head>
-            <body>
-                ${printContent.outerHTML}
-                <script>
-                    window.onload = function() {
-                        window.focus();
-                        window.print();
-                        setTimeout(function() {
-                            if (window.frameElement) window.frameElement.remove();
-                        }, 1000);
-                    };
-                <\/script>
-            </body>
-            </html>
-        `);
-        doc.close();
+        printThermalReceipt();
     }
 
     function openReceiptInNewTab() {
-        if (lastPrintedOrderId) {
-            window.open('/sales/orders/' + lastPrintedOrderId + '/print/', '_blank');
-        } else {
-            printThermalReceipt();
-        }
+        printThermalReceipt();
     }
 
     // Utility Helpers

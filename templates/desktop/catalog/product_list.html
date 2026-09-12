@@ -78,7 +78,7 @@
     <header class="stock-v2-header">
         <div>
             <h1 class="stock-v2-title">Склад и остатки</h1>
-            <p class="stock-v2-summary">{{ all_products_count }} товаров · {{ low_stock_count }} с низким остатком · сумма склада {{ inventory_value|floatformat:0 }} ₸</p>
+            <p class="stock-v2-summary">{{ all_products_count }} товаров · {{ low_stock_count }} с низким остатком{% if user.is_admin_user %} · сумма склада {{ inventory_value|floatformat:0 }} ₸{% endif %}</p>
         </div>
         {% if user.is_admin_user %}<a href="{% url 'product_create' %}" class="btn btn-primary stock-v2-add"><i class="fa-solid fa-plus"></i> Добавить товар</a>{% endif %}
     </header>
@@ -108,20 +108,20 @@
 
     <section class="stock-table-card">
         <div class="stock-table-scroll"><table class="stock-table">
-            <thead><tr><th>Товар</th><th>Категория</th><th>Остаток</th><th>Закупка</th><th>Розница</th><th>Маржа</th>{% if user.is_admin_user %}<th aria-label="Действия"></th>{% endif %}</tr></thead>
+            <thead><tr><th>Товар</th><th>Категория</th><th>Остаток</th>{% if user.is_admin_user %}<th>Закупка</th>{% endif %}<th>Розница</th>{% if user.is_admin_user %}<th>Маржа</th><th aria-label="Действия"></th>{% endif %}</tr></thead>
             <tbody>
                 {% for p in products %}
                 <tr class="{% if p.is_low_stock %}stock-is-low{% endif %}">
                     <td><div class="stock-product"><span class="stock-product-icon"><i class="fa-solid {{ p.category.icon|default:'fa-box' }}"></i></span><div><div class="stock-product-name" title="{{ p.name }}">{{ p.name }}</div><div class="stock-product-sku">{{ p.sku }}</div></div></div></td>
                     <td class="stock-category-name">{{ p.category.name|default:'—' }}</td>
                     <td class="stock-number {% if p.is_low_stock %}stock-low{% endif %}">{{ p.stock_qty|floatformat:0 }} {{ p.unit }}{% if p.is_low_stock %} <i class="fa-solid fa-triangle-exclamation" title="Низкий остаток"></i>{% endif %}</td>
-                    <td class="stock-cost">{{ p.purchase_price|floatformat:0 }} ₸</td>
+                    {% if user.is_admin_user %}<td class="stock-cost">{{ p.purchase_price|floatformat:0 }} ₸</td>{% endif %}
                     <td class="stock-price">{{ p.retail_price|floatformat:0 }} ₸</td>
-                    <td class="stock-margin">+{{ p.margin|floatformat:0 }} ₸</td>
+                    {% if user.is_admin_user %}<td class="stock-margin">+{{ p.margin|floatformat:0 }} ₸</td>{% endif %}
                     {% if user.is_admin_user %}<td><div class="stock-actions"><button class="stock-action stock-refill" type="button" onclick="openStockRefillModal('{{ p.id }}','{{ p.name|escapejs }}','{{ p.stock_qty|floatformat:0 }}')" title="Пополнить"><i class="fa-solid fa-plus"></i></button><a class="stock-action" href="{% url 'product_edit' p.id %}" title="Редактировать"><i class="fa-solid fa-pen"></i></a></div></td>{% endif %}
                 </tr>
                 {% empty %}
-                <tr><td colspan="{% if user.is_admin_user %}7{% else %}6{% endif %}"><div class="stock-empty"><i class="fa-solid fa-box-open"></i><p>Товары не найдены</p><small>Попробуйте изменить поиск или фильтр.</small></div></td></tr>
+                <tr><td colspan="{% if user.is_admin_user %}7{% else %}4{% endif %}"><div class="stock-empty"><i class="fa-solid fa-box-open"></i><p>Товары не найдены</p><small>Попробуйте изменить поиск или фильтр.</small></div></td></tr>
                 {% endfor %}
             </tbody>
         </table></div>

@@ -1,11 +1,77 @@
 {% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block coltype %}colM{% endblock %}
+{% block bodyclass %}{{ block.super }} dc-dashboard{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+
 {% block content %}
-{% if user.is_superuser %}
-<div class="module" style="padding:18px 20px;margin-bottom:24px;border:1px solid var(--hairline-color);border-radius:10px">
-    <h2 style="background:none;color:var(--body-fg);padding:0;margin:0 0 8px">Состояние сервера</h2>
-    <p style="margin:0 0 12px;color:var(--body-quiet-color)">Процессор, память, диск и база данных. Только наблюдение.</p>
-    <a href="{% url 'admin:server_monitor' %}" class="button" style="display:inline-block;padding:10px 16px">Открыть мониторинг →</a>
-</div>
-{% endif %}
-{{ block.super }}
+  <div class="dc-dashboard-shell">
+    <section class="dc-hero">
+      <div>
+        <span class="dc-kicker">DACAR · CONTROL CENTER</span>
+        <h1>Панель управления</h1>
+        <p>Операционная зона магазина: каталог, касса, команда и контроль системы.</p>
+      </div>
+      <div class="dc-hero-actions">
+        <a class="dc-button dc-button-primary" href="{% url 'pos' %}"><span aria-hidden="true">＋</span> Открыть кассу</a>
+        {% if user.is_superuser %}<a class="dc-button dc-button-quiet" href="{% url 'admin:server_monitor' %}"><span aria-hidden="true">◉</span> Состояние сервера</a>{% endif %}
+      </div>
+    </section>
+
+    <section class="dc-insight-grid" aria-label="Быстрый обзор">
+      <article class="dc-insight-card dc-insight-blue"><span class="dc-insight-icon">◈</span><div><small>Режим доступа</small><strong>{% if user.is_superuser %}Полный администратор{% else %}Администратор{% endif %}</strong><span>Права применяются автоматически</span></div></article>
+      <article class="dc-insight-card dc-insight-green"><span class="dc-insight-icon">✓</span><div><small>Рабочая среда</small><strong>DACAR POS v1.1</strong><span>Каталог и продажи доступны</span></div></article>
+      <article class="dc-insight-card dc-insight-orange"><span class="dc-insight-icon">↗</span><div><small>Последний вход</small><strong>{{ user.last_login|date:"d.m.Y H:i"|default:"Сейчас" }}</strong><span>{{ user.get_username }}</span></div></article>
+    </section>
+
+    {% if user.is_superuser %}
+      <a class="dc-monitor-strip" href="{% url 'admin:server_monitor' %}">
+        <span class="dc-monitor-pulse" aria-hidden="true"></span>
+        <span><strong>Мониторинг сервера</strong><small>CPU, память, диск, Swap и база данных · история 24 часа</small></span>
+        <span class="dc-arrow" aria-hidden="true">→</span>
+      </a>
+    {% endif %}
+
+    <section class="dc-section-heading"><div><span class="dc-kicker">WORKSPACE</span><h2>Разделы управления</h2></div><span class="dc-section-note">{{ app_list|length }} раздела</span></section>
+
+    <div id="content-main" class="dc-app-grid">
+      {% for app in app_list %}
+        <section class="dc-app-card app-{{ app.app_label }}">
+          <header class="dc-app-card-header"><span class="dc-app-icon" aria-hidden="true">{% if app.app_label == 'catalog' %}▦{% elif app.app_label == 'sales' %}▤{% elif app.app_label == 'users' %}♙{% elif app.app_label == 'analytics' %}⌁{% else %}◌{% endif %}</span><div><h3>{% if app.app_label == 'catalog' %}Каталог{% elif app.app_label == 'sales' %}Продажи{% elif app.app_label == 'users' %}Персонал{% elif app.app_label == 'analytics' %}Аналитика{% else %}{{ app.name }}{% endif %}</h3><p>{% if app.app_label == 'catalog' %}Товары и движение склада{% elif app.app_label == 'sales' %}Продажи и чеки{% elif app.app_label == 'users' %}Команда и доступы{% elif app.app_label == 'analytics' %}Безопасность и аудит{% else %}Управление данными{% endif %}</p></div></header>
+          <div class="dc-model-list">
+            {% for model in app.models %}
+              <div class="dc-model-row">
+                <a class="dc-model-name" href="{{ model.admin_url }}">{{ model.name }}</a>
+                <div class="dc-model-actions">
+                  {% if model.add_url %}<a class="dc-action-add" href="{{ model.add_url }}" title="Добавить {{ model.name }}" aria-label="Добавить {{ model.name }}">＋</a>{% endif %}
+                  <a class="dc-action-open" href="{{ model.admin_url }}" title="Открыть {{ model.name }}" aria-label="Открыть {{ model.name }}">Открыть <span aria-hidden="true">↗</span></a>
+                </div>
+              </div>
+            {% empty %}<p class="dc-empty">Нет доступных моделей</p>{% endfor %}
+          </div>
+        </section>
+      {% empty %}
+        <p class="dc-empty dc-empty-wide">У вас пока нет доступных разделов управления.</p>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block sidebar %}
+  <aside id="content-related" class="dc-recent-card">
+    <div class="dc-section-heading"><div><span class="dc-kicker">ACTIVITY</span><h2>Последние действия</h2></div></div>
+    {% load log %}{% get_admin_log 8 as admin_log for_user user %}
+    {% if not admin_log %}
+      <div class="dc-recent-empty"><span>◌</span><p>История действий появится здесь</p><small>Добавления и изменения будут отображаться автоматически.</small></div>
+    {% else %}
+      <ul class="dc-action-list">
+        {% for entry in admin_log %}
+          <li class="{% if entry.is_addition %}is-add{% elif entry.is_change %}is-change{% elif entry.is_deletion %}is-delete{% endif %}"><span class="dc-action-dot" aria-hidden="true"></span><div>{% if entry.is_deletion or not entry.get_admin_url %}<strong>{{ entry.object_repr }}</strong>{% else %}<a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>{% endif %}<small>{% if entry.content_type %}{{ entry.content_type.name|capfirst }}{% else %}Системное событие{% endif %} · {{ entry.action_time|date:"d.m.Y H:i" }}</small></div></li>
+        {% endfor %}
+      </ul>
+      <a class="dc-view-all" href="{% url 'admin:analytics_auditlog_changelist' %}">Открыть журнал аудита <span aria-hidden="true">→</span></a>
+    {% endif %}
+  </aside>
 {% endblock %}

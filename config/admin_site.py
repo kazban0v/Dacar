@@ -12,8 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 class DacarAdminSite(AdminSite):
-    # Inherit registrations, model CRUD, permissions and recent actions unchanged.
+    # Preserve model registrations and Django's individual model permissions.
     index_template = 'admin/dacar_index.html'
+
+    def has_permission(self, request):
+        return super().has_permission(request) and request.user.is_admin_user
 
     def get_urls(self):
         return [

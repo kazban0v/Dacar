@@ -9,6 +9,7 @@ from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from datetime import timedelta
 from users.models import User
+from users.permissions import can_manage_staff
 from sales.models import SaleOrder
 
 
@@ -25,7 +26,7 @@ def login_view(request):
 
     if request.method == 'POST':
         u_name = request.POST.get('username', '').strip()
-        u_pass = request.POST.get('password', '').strip()
+        u_pass = request.POST.get('password', '')
 
         user = authenticate(request, username=u_name, password=u_pass)
         if user is not None:
@@ -64,7 +65,8 @@ def register_view(request):
         last_name = request.POST.get('last_name', '').strip()
         password = request.POST.get('password', '').strip()
         phone = request.POST.get('phone', '').strip()
-        role = request.POST.get('role', User.Role.CASHIER)
+        # Public registration must never accept privileges from the client.
+        role = User.Role.CASHIER
 
         if not username or not password:
             messages.error(request, 'Пожалуйста, заполните логин и пароль.')
@@ -84,7 +86,7 @@ def register_view(request):
             return _post_login_redirect(request)
 
     return render(request, 'users/register.html', {
-        'roles': User.Role.choices
+        'roles': [(User.Role.CASHIER, User.Role.CASHIER.label)]
     })
 
 
@@ -106,7 +108,11 @@ def users_list_view(request):
             phone = request.POST.get('phone', '').strip()
             role = request.POST.get('role', User.Role.CASHIER)
 
-            if User.objects.filter(username=username).exists():
+            if not username or not password:
+                messages.error(request, 'Заполните логин и пароль.')
+            elif role not in User.Role.values:
+                messages.error(request, 'Выберите корректную роль.')
+            elif User.objects.filter(username=username).exists():
                 messages.error(request, 'Пользователь с таким логином уже существует.')
             else:
                 User.objects.create_user(
@@ -123,8 +129,8 @@ def users_list_view(request):
         elif action == 'toggle_status':
             target_id = request.POST.get('user_id')
             target_user = get_object_or_404(User, id=target_id)
-            if target_user.username == 'beybit':
-                messages.error(request, 'Нельзя изменить статус главного администратора.')
+            if not can_manage_staff(request.user, target_user):
+                messages.error(request, 'Этот аккаунт защищён от изменения статуса.')
                 return redirect(redirect_url)
             if target_user != request.user:
                 target_user.is_active = not target_user.is_active
@@ -136,7 +142,7 @@ def users_list_view(request):
             target_id = request.POST.get('user_id')
             role = request.POST.get('role')
             target_user = get_object_or_404(User, id=target_id)
-            if target_user.username == 'beybit' or target_user == request.user:
+            if not can_manage_staff(request.user, target_user):
                 messages.error(request, 'Нельзя изменить роль этого аккаунта.')
                 return redirect(redirect_url)
             if role not in dict(User.Role.choices):
@@ -150,8 +156,8 @@ def users_list_view(request):
         elif action == 'delete':
             target_id = request.POST.get('user_id')
             target_user = get_object_or_404(User, id=target_id)
-            if target_user.username == 'beybit':
-                messages.error(request, 'Нельзя удалить главного администратора!')
+            if not can_manage_staff(request.user, target_user):
+                messages.error(request, 'Этот аккаунт защищён от удаления.')
                 return redirect(redirect_url)
             if target_user == request.user:
                 messages.error(request, 'Вы не можете удалить свой собственный аккаунт!')
@@ -238,6 +244,7 @@ def users_list_view(request):
         month = month_by_user.get(staff_user.id, {})
         staff_cards.append({
             'user': staff_user,
+            'can_manage': can_manage_staff(request.user, staff_user),
             'sparkline_points': sparkline_points(values),
             'has_sales': any(values),
             'trend_direction': trend_direction,

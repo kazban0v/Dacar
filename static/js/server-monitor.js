@@ -15,6 +15,7 @@
         return `${v.toLocaleString('ru-RU', {maximumFractionDigits: 1})} ${units[i]}`;
     }
     let paused = false, pending = false, timer, controller, hours = 1, points = [], sample = null, lastHistory = 0;
+    let seenAlerts = new Set(), alertsInitialized = false;
     const timeLabel = t => new Date(t * 1000).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
     function bar(id, value) { el(id).style.width = `${number(value) ? Math.max(0, Math.min(100, value)) : 0}%`; }
     function draw(id, fields, colors, isNetwork) {
@@ -66,7 +67,11 @@
         draw('resources-chart', ['cpu_percent', 'memory_percent'], ['--mon-blue', '--mon-purple'], false);
         draw('network-chart', ['network_rx', 'network_tx'], ['--mon-blue', '--mon-teal'], true);
     }
-    function render(s) {
+    function notifyAlert(alert) {
+        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+        try { new Notification(`DACAR: ${alert.title}`, { body: alert.message, tag: `dacar-${alert.fingerprint}` }); } catch (_) {}
+    }
+    function render(s, serverAlerts) {
         const age = Math.max(0, Date.now() / 1000 - s.timestamp);
         text('machine-label', `${s.machine} · ${s.system} · ${s.cpu_count} логических CPU`);
         text('cpu-value', pct(s.cpu_percent)); bar('cpu-bar', s.cpu_percent);
@@ -87,6 +92,16 @@
         text('live-status', age > 30 ? 'Данные устарели' : 'Обновляется · 10 с');
         el('live-status').classList.toggle('is-stale', age > 30);
         const alerts = [];
+        const incoming = Array.isArray(serverAlerts) ? serverAlerts : [];
+        incoming.filter(alert => alert.active).forEach(alert => {
+            alerts.push([alert.severity, `${alert.title}: ${alert.message}`]);
+            if (alertsInitialized && !seenAlerts.has(alert.fingerprint)) notifyAlert(alert);
+            seenAlerts.add(alert.fingerprint);
+        });
+        incoming.filter(alert => !alert.active).slice(0, 3).forEach(alert => {
+            alerts.push(['resolved', `Восстановлено: ${alert.title}`]);
+            seenAlerts.delete(alert.fingerprint);
+        });
         if (age > 30) alerts.push(['warning', 'Сборщик не предоставил свежие данные. Показан последний доступный замер.']);
         if (!s.database_ok) alerts.push(['error', 'База данных не ответила на проверочный запрос.']);
         if (s.memory_available < 150 * 1024 * 1024) alerts.push(['warning', 'Доступно меньше 150 МиБ RAM. Проверьте, сохраняется ли нехватка памяти.']);
@@ -95,6 +110,7 @@
         if (s.swap_total && s.swap_percent >= 50) alerts.push(['warning', 'Используется больше половины swap. Проверьте доступную RAM и отклик приложения.']);
         if (!alerts.length) alerts.push(['', 'По текущим порогам предупреждений нет.']);
         el('monitor-alerts').replaceChildren(...alerts.map(([kind, message]) => { const li = document.createElement('li'); li.className = kind; li.textContent = message; return li; }));
+        alertsInitialized = true;
         text('monitor-notice', s.system === 'Darwin' ? 'Сейчас показан локальный Mac, не VPS dacar-market.kz. На сервере этот раздел будет измерять сервер.' : 'Измеряется машина, на которой запущен Django. Только чтение; данные продаж не изменяются.');
         charts();
     }
@@ -117,7 +133,7 @@
             if (data.history) { points = data.history; lastHistory = Date.now(); }
             points = points.filter(p => p.timestamp >= Date.now() / 1000 - 86400 && p.timestamp !== sample.timestamp);
             points.push(sample); points.sort((a, b) => a.timestamp - b.timestamp); points = points.slice(-1600);
-            render(sample);
+            render(sample, data.alerts || []);
         } catch (error) {
             if (!document.hidden && !paused || error.name !== 'AbortError') {
                 text('live-status', 'Нет свежих данных'); el('live-status').classList.add('is-stale');
@@ -132,6 +148,15 @@
         if (paused) { controller?.abort(); text('live-status', 'На паузе'); el('live-status').classList.add('is-stale'); }
         else load();
     });
+    const notificationButton = el('enable-notifications');
+    if (notificationButton && typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
+        notificationButton.hidden = false;
+        notificationButton.addEventListener('click', async () => {
+            const result = await Notification.requestPermission();
+            notificationButton.textContent = result === 'granted' ? 'Уведомления включены' : 'Уведомления запрещены';
+            notificationButton.disabled = result !== 'granted';
+        });
+    }
     document.addEventListener('visibilitychange', () => {
         clearTimeout(timer);
         if (document.hidden) controller?.abort(); else if (!paused) load();

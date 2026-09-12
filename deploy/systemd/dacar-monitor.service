@@ -1,0 +1,13 @@
+[Unit]
+Description=DACAR server metrics snapshot
+After=network.target dacar.service
+
+[Service]
+Type=oneshot
+User=dacar
+Group=www-data
+WorkingDirectory=/var/www/dacar
+ExecStart=/var/www/dacar/.venv/bin/python manage.py collect_server_metrics
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true

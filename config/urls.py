@@ -5,6 +5,7 @@ from django.shortcuts import render as django_render
 from django.http import HttpResponse, FileResponse
 from django.conf import settings
 from analytics import views as analytics_views
+from config.telegram_monitor import telegram_monitor_webhook
 
 def serve_manifest(request):
     manifest_path = os.path.join(settings.BASE_DIR, 'static', 'manifest.json')
@@ -27,6 +28,7 @@ urlpatterns = [
     path('api/analytics/ai-insight/', analytics_views.ai_insight_api, name='api_ai_insight'),
     path('api/notifications/', analytics_views.notifications_api, name='notifications_api'),
     path('api/notifications/action/', analytics_views.notifications_action_api, name='notifications_action_api'),
+    path('api/monitor/telegram/<str:secret>/', telegram_monitor_webhook, name='telegram_monitor_webhook'),
     path('manifest.json', serve_manifest, name='pwa_manifest'),
     path('sw.js', serve_sw, name='pwa_sw'),
     path('preview-404/', lambda r: django_render(r, 'desktop/404.html'), name='preview_404'),

@@ -124,6 +124,7 @@
 
         <form method="POST">
             {% csrf_token %}
+            <input type="hidden" name="client_sync_id" value="{{ stock_sync_id }}">
             <div style="margin-bottom: 0.75rem;">
                 <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Выбор товара <span style="color: var(--accent-red);">*</span></label>
                 <select name="product_id" class="form-control" required style="font-size: 0.85rem;">

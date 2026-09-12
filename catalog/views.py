@@ -45,14 +45,16 @@ def product_list_view(request):
     paginator = Paginator(products, 15)
     page_obj = paginator.get_page(page_number)
 
-    inventory_value = all_active_products.aggregate(
-        total=Sum(
-            ExpressionWrapper(
-                F('stock_qty') * F('purchase_price'),
-                output_field=DecimalField(max_digits=24, decimal_places=2),
+    inventory_value = Decimal('0')
+    if request.user.is_admin_user:
+        inventory_value = all_active_products.aggregate(
+            total=Sum(
+                ExpressionWrapper(
+                    F('stock_qty') * F('purchase_price'),
+                    output_field=DecimalField(max_digits=24, decimal_places=2),
+                )
             )
-        )
-    )['total'] or Decimal('0')
+        )['total'] or Decimal('0')
 
     return render(request, 'catalog/product_list.html', {
         'page_obj': page_obj,
@@ -215,7 +217,9 @@ def product_edit_view(request, pk):
         product.retail_price = Decimal(request.POST.get('retail_price', '0') or '0')
         product.unit = request.POST.get('unit', 'шт')
         product.min_stock_alert = Decimal(request.POST.get('min_stock_alert', '5') or '5')
-        product.save()
+        # Editing metadata must not overwrite stock changed by a concurrent sale.
+        product.save(update_fields=['name', 'sku', 'barcode', 'category', 'brand',
+            'purchase_price', 'retail_price', 'unit', 'min_stock_alert', 'updated_at'])
 
         AuditLog.log(
             request,
@@ -243,66 +247,22 @@ def stock_movement_view(request):
         return redirect('pos')
 
     if request.method == 'POST':
-        product_id = request.POST.get('product_id')
-        movement_type = request.POST.get('movement_type')
-        qty_str = request.POST.get('quantity', '0')
-        cost_price_str = request.POST.get('cost_price', '0')
-        comment = request.POST.get('comment', '').strip()
-
-        product = get_object_or_404(Product, id=product_id)
-        qty = Decimal(qty_str)
-        cost_price = Decimal(cost_price_str) if cost_price_str else product.purchase_price
-
-        movement_labels = dict(StockMovement.MovementType.choices)
-        if movement_type not in movement_labels:
-            messages.error(request, 'Выберите корректный тип складской операции.')
-            return redirect('stock_movement')
-
-        previous_stock = product.stock_qty
-
-        if movement_type in [StockMovement.MovementType.IN, StockMovement.MovementType.RETURN]:
-            product.stock_qty += qty
-        elif movement_type in [StockMovement.MovementType.OUT, StockMovement.MovementType.SALE]:
-            product.stock_qty = max(Decimal('0.000'), product.stock_qty - qty)
-        elif movement_type == StockMovement.MovementType.ADJUSTMENT:
-            product.stock_qty = qty
-        
-        product.save()
-
-        StockMovement.objects.create(
-            product=product,
-            movement_type=movement_type,
-            quantity=qty,
-            cost_price=cost_price,
-            comment=comment,
-            created_by=request.user
-        )
-
-        if movement_type in [StockMovement.MovementType.IN, StockMovement.MovementType.RETURN]:
-            audit_action = AuditLog.ActionType.STOCK_IN
-        elif movement_type == StockMovement.MovementType.ADJUSTMENT:
-            audit_action = AuditLog.ActionType.STOCK_ADJUST
-        else:
-            audit_action = AuditLog.ActionType.STOCK_OUT
-
-        movement_description = f'{movement_labels[movement_type]}: «{product.name}» — {qty} {product.unit}'
-        if comment:
-            movement_description += f'. Комментарий: {comment}'
-        movement_description += f' (было {previous_stock}, стало {product.stock_qty})'
-
-        AuditLog.log(
-            request,
-            audit_action,
-            movement_description,
-        )
-
-        if movement_type in [StockMovement.MovementType.IN, StockMovement.MovementType.RETURN]:
-            quantity_result = f'+{qty}'
-        elif movement_type in [StockMovement.MovementType.OUT, StockMovement.MovementType.SALE]:
-            quantity_result = f'-{qty}'
-        else:
-            quantity_result = f'{product.stock_qty}'
-        messages.success(request, f'{movement_labels[movement_type]}: «{product.name}» ({quantity_result} {product.unit}).')
+        import uuid
+        from catalog.operations import StockActionSerializer, stock_action
+        from rest_framework.exceptions import APIException
+        data = request.POST.copy()
+        data['action'] = data.get('movement_type')
+        data['client_sync_id'] = data.get('client_sync_id') or uuid.uuid4().hex
+        serializer = StockActionSerializer(data=data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            result = stock_action(request, serializer.validated_data)
+            if result.get('replayed'):
+                messages.info(request, 'Операция уже была выполнена. Повторного изменения остатка нет.')
+            else:
+                messages.success(request, result['message'])
+        except APIException as exc:
+            messages.error(request, str(exc.detail))
         referer = request.META.get('HTTP_REFERER')
         if referer and '/catalog/' in referer:
             return redirect(referer)
@@ -313,7 +273,8 @@ def stock_movement_view(request):
     return render(request, 'catalog/stock_movement.html', {
         'movements': movements,
         'products': products,
-        'movement_types': StockMovement.MovementType.choices
+        'movement_types': StockMovement.MovementType.choices,
+        'stock_sync_id': __import__('uuid').uuid4().hex,
     })
 
 
@@ -330,7 +291,7 @@ class ProductSearchAPIView(APIView):
             # Direct exact match for scanner
             product = products.filter(Q(barcode=barcode) | Q(sku=barcode)).first()
             if product:
-                serializer = ProductSerializer(product)
+                serializer = ProductSerializer(product, context={'request': request})
                 return Response({'found': True, 'product': serializer.data})
             return Response({'found': False, 'message': f'Товар со штрихкодом {barcode} не найден.'})
 
@@ -343,7 +304,7 @@ class ProductSearchAPIView(APIView):
         else:
             products = products[:25]
 
-        serializer = ProductSerializer(products, many=True)
+        serializer = ProductSerializer(products, many=True, context={'request': request})
         return Response({'found': True, 'products': serializer.data})
 
 
@@ -379,103 +340,24 @@ def create_category_api(request):
 
 @login_required
 def stock_action_api(request):
-    """
-    Atomic Stock Operations API for DACAR Mobile Hub (+ Принять / − Отгрузить в магазин).
-    Features:
-    - @transaction.atomic with row-level select_for_update() (deadlock-free).
-    - Idempotency by client_sync_id (UUID v4).
-    - 409 Conflict validation when stock is insufficient.
-    - Automatic Live KPI cache invalidation.
-    """
+    if not request.user.is_admin_user:
+        return JsonResponse({'success': False, 'error': 'Доступ разрешен только администраторам.'}, status=403)
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Метод не поддерживается'}, status=405)
-
     import json
-    from django.db import transaction
+    from catalog.operations import StockActionSerializer, stock_action
+    from rest_framework.exceptions import APIException
     from django.core.cache import cache
-
     try:
-        data = json.loads(request.body.decode('utf-8')) if request.body else request.POST
-    except Exception:
-        data = request.POST
-
-    product_id = data.get('product_id')
-    action = data.get('action', 'IN').upper() # IN, TRANSFER_TO_SHOP, OUT
-    quantity_raw = data.get('quantity', 1)
-    comment = (data.get('comment') or '').strip()
-    client_sync_id = data.get('client_sync_id', '').strip()
-
-    try:
-        qty = Decimal(str(quantity_raw))
-        if qty <= 0:
-            return JsonResponse({'success': False, 'error': 'Количество должно быть больше 0'}, status=400)
-    except Exception:
-        return JsonResponse({'success': False, 'error': 'Некорректное значение количества'}, status=400)
-
-    # 1. Idempotency Check
-    if client_sync_id and StockMovement.objects.filter(client_sync_id=client_sync_id).exists():
-        existing_mov = StockMovement.objects.filter(client_sync_id=client_sync_id).first()
-        return JsonResponse({
-            'success': True,
-            'message': 'Операция уже была успешно выполнена (Idempotent)',
-            'stock_qty': float(existing_mov.product.stock_qty),
-            'product_name': existing_mov.product.name
-        })
-
-    with transaction.atomic():
-        product = Product.objects.filter(id=product_id).select_for_update().first()
-        if not product:
-            return JsonResponse({'success': False, 'error': 'Товар не найден'}, status=404)
-
-        prev_stock = product.stock_qty
-
-        # 2. Validation for Outgoing/Transfer Actions (Preventing Negative Stock)
-        if action in ['TRANSFER_TO_SHOP', 'OUT', StockMovement.MovementType.TRANSFER_TO_SHOP, StockMovement.MovementType.OUT]:
-            if product.stock_qty < qty:
-                return JsonResponse({
-                    'success': False,
-                    'error_code': 'INSUFFICIENT_STOCK',
-                    'message': f'Недостаточно товара на складе. Доступно: {product.stock_qty} {product.unit}',
-                    'available_stock': float(product.stock_qty),
-                    'product_name': product.name
-                }, status=409)
-            
-            product.stock_qty -= qty
-            movement_type = StockMovement.MovementType.TRANSFER_TO_SHOP if action == 'TRANSFER_TO_SHOP' else StockMovement.MovementType.OUT
-            action_label = "Отгрузка в магазин" if action == 'TRANSFER_TO_SHOP' else "Списание"
-        else:
-            product.stock_qty += qty
-            movement_type = StockMovement.MovementType.IN
-            action_label = "Приемка на склад"
-
-        product.save()
-
-        StockMovement.objects.create(
-            product=product,
-            movement_type=movement_type,
-            quantity=qty,
-            cost_price=product.purchase_price,
-            comment=comment or f"{action_label} через мобильное приложение",
-            client_sync_id=client_sync_id or None,
-            created_by=request.user
-        )
-
-        AuditLog.log(
-            request,
-            AuditLog.ActionType.STOCK_IN if movement_type == 'IN' else AuditLog.ActionType.STOCK_OUT,
-            f"Склад: {action_label} для '{product.name}': {qty} {product.unit} (было {prev_stock}, стало {product.stock_qty}). Заметка: {comment}"
-        )
-
-        # Invalidate Live KPI cache
-        cache.delete('dacar_live_kpi')
-
-        return JsonResponse({
-            'success': True,
-            'message': f'{action_label} успешно выполнена (+{qty} {product.unit})' if movement_type == 'IN' else f'{action_label} успешно выполнена (-{qty} {product.unit})',
-            'product_id': product.id,
-            'product_name': product.name,
-            'stock_qty': float(product.stock_qty),
-            'prev_stock': float(prev_stock),
-            'unit': product.unit,
-            'is_low_stock': product.is_low_stock
-        })
+        data = json.loads(request.body) if request.content_type == 'application/json' else request.POST
+        serializer = StockActionSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        result = stock_action(request, serializer.validated_data)
+    except (ValueError, UnicodeDecodeError):
+        return JsonResponse({'success': False, 'error': 'Некорректный JSON'}, status=400)
+    except APIException as exc:
+        detail = exc.detail
+        extra = detail if isinstance(detail, dict) else {}
+        return JsonResponse({'success': False, 'error': str(detail), **extra}, status=exc.status_code)
+    cache.delete('dacar_live_kpi')
+    return JsonResponse(result)
