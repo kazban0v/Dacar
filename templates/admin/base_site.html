@@ -3,9 +3,9 @@
 
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | DACAR Admin{% endblock %}
 
-{% block extrastyle %}
+{% block responsive %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static 'css/admin-dacar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin-dacar.css' %}?v=20260913-2">
 {% endblock %}
 
 {% block branding %}
