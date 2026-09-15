@@ -40,8 +40,8 @@ class ReceiptPrintTests(TestCase):
             self.assertTemplateUsed(response, 'desktop/sales/print_receipt.html')
             self.assertContains(response, '&lt;img')
             self.assertNotContains(response, '<img src=x')
-            self.assertContains(response, 'height:10mm')
             self.assertContains(response, 'height:15mm')
+            self.assertContains(response, 'height:22mm')
             self.assertContains(response, '1250,25')
 
     def test_cashier_cannot_print_other_receipt_in_either_transport(self):

@@ -12,8 +12,8 @@ body { margin:0; background:#e9edf2; color:#000; }
 button { min-height:44px; padding:10px 18px; border:0; border-radius:10px; background:#0369a1; color:white; font:700 15px system-ui,sans-serif; cursor:pointer; }
 .receipt { width:var(--receipt-width,80mm); margin:0 auto 24px; background:white; font:12px/1.4 'Courier New',monospace; overflow-wrap:anywhere; }
 /* Blank blocks preserve space inside the document, including before tear-off. */
-.paper-lead { height:10mm; }
-.paper-tail { height:15mm; }
+.paper-lead { height:15mm; }
+.paper-tail { height:22mm; }
 .receipt-content { padding:0 5mm; }
 .shop { text-align:center; }
 .shop h1 { margin:0 0 2mm; font-size:17px; line-height:1.2; }
@@ -95,7 +95,7 @@ function prepareReceipt() {
     document.documentElement.style.setProperty('--receipt-width', width + 'mm');
     const height = Math.ceil(document.getElementById('receipt').getBoundingClientRect().height * 25.4 / 96) + 1;
     document.getElementById('receiptPageSize').textContent = '@page { size: ' + width + 'mm ' + height + 'mm; margin: 0; }';
-    document.getElementById('paperSizeHint').textContent = 'Размер чека: ' + width + ' × ' + height + ' мм. Сверху 10 мм, снизу 15 мм свободной бумаги.';
+    document.getElementById('paperSizeHint').textContent = 'Размер чека: ' + width + ' × ' + height + ' мм. Сверху 15 мм, снизу 22 мм свободной бумаги.';
 }
 document.getElementById('receiptWidth').addEventListener('change', prepareReceipt);
 // Finish layout before entering Safari's native print dialog. Reading layout and
