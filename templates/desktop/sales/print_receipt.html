@@ -42,7 +42,7 @@ button { min-height:44px; padding:10px 18px; border:0; border-radius:10px; backg
 </head>
 <body>
 <aside class="print-tools">
-    <button type="button" id="printReceipt">Распечатать чек</button>
+    <button type="button" id="printReceipt" disabled>Распечатать чек</button>
     <p><label for="receiptWidth">Ширина документа:</label> <select id="receiptWidth"><option value="80">80 мм — чековая лента</option><option value="76">76 мм — драйвер EPT371U</option></select></p>
     <p>Масштаб 100% · колонтитулы выключены. Для установленного драйвера EPT371U с ограничением 76 мм выберите второй вариант.</p>
     <p>В Safari задайте такой же формат бумаги, как у документа. A4 / 210 × 297 мм для этой ленты не подходит. Для рулона без этикеток выберите в драйвере непрерывную бумагу (Continue).</p>
@@ -98,11 +98,14 @@ function prepareReceipt() {
     document.getElementById('paperSizeHint').textContent = 'Размер чека: ' + width + ' × ' + height + ' мм. Сверху 10 мм, снизу 15 мм свободной бумаги.';
 }
 document.getElementById('receiptWidth').addEventListener('change', prepareReceipt);
-document.getElementById('printReceipt').addEventListener('click', () => { prepareReceipt(); window.print(); });
-window.addEventListener('beforeprint', prepareReceipt);
+// Finish layout before entering Safari's native print dialog. Reading layout and
+// rewriting @page inside beforeprint can hang its WebContent process.
+document.getElementById('printReceipt').addEventListener('click', () => window.print());
 window.addEventListener('load', async () => {
     if (document.fonts) await document.fonts.ready;
     prepareReceipt();
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    document.getElementById('printReceipt').disabled = false;
     // Open the system dialog only after the user selects a driver-compatible size.
     if (new URLSearchParams(location.search).get('autoprint') === '1') window.print();
 });
