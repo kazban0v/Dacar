@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Чек {{ order.order_number }} — DACAR</title>
-<style id="receiptPageSize">@page { size: 72mm 300mm; margin: 0; }</style>
+<style id="receiptPageSize">@page { size: 72mm 200mm; margin: 0; }</style>
 <style>
 * { box-sizing:border-box; }
 body { margin:0; background:#e9edf2; color:#000; }
@@ -96,7 +96,7 @@ function prepareReceipt() {
     const width = parseInt(widthVal, 10) || 72;
     document.documentElement.style.setProperty('--receipt-width', width + 'mm');
     const receiptEl = document.getElementById('receipt');
-    const height = Math.ceil(receiptEl.getBoundingClientRect().height * 25.4 / 96) + 2;
+    const height = Math.min(Math.ceil(receiptEl.getBoundingClientRect().height * 25.4 / 96) + 2, 210);
     document.getElementById('receiptPageSize').textContent = '@page { size: ' + width + 'mm ' + height + 'mm; margin: 0; }';
     document.getElementById('paperSizeHint').textContent = 'Размер чека: ' + width + ' × ' + height + ' мм. Сверху 15 мм, снизу 22 мм свободной бумаги под отрывной нож.';
 }
