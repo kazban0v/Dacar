@@ -4,52 +4,53 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Чек {{ order.order_number }} — DACAR</title>
-<style id="receiptPageSize">@page { size: 80mm 300mm; margin: 0; }</style>
+<style id="receiptPageSize">@page { size: 72mm 300mm; margin: 0; }</style>
 <style>
 * { box-sizing:border-box; }
 body { margin:0; background:#e9edf2; color:#000; }
 .print-tools { max-width:600px; margin:20px auto; padding:16px; font:14px/1.5 system-ui,sans-serif; }
 button { min-height:44px; padding:10px 18px; border:0; border-radius:10px; background:#0369a1; color:white; font:700 15px system-ui,sans-serif; cursor:pointer; }
-.receipt { width:var(--receipt-width,80mm); margin:0 auto 24px; background:white; font:12px/1.4 'Courier New',monospace; overflow-wrap:anywhere; }
-/* Blank blocks preserve space inside the document, including before tear-off. */
-.paper-lead { height:15mm; }
-.paper-tail { height:22mm; }
-.receipt-content { padding:0 5mm; }
+.receipt { width:var(--receipt-width,72mm); max-width:var(--receipt-width,72mm); margin:0 auto 24px; background:white; font:12.5px/1.35 'Courier New',monospace; overflow-wrap:anywhere; }
+/* Blank blocks preserve space inside the document, preventing clipping at the tear-off blade. */
+.paper-lead { height:15mm; line-height:15mm; display:block; overflow:hidden; font-size:1px; }
+.paper-tail { height:22mm; line-height:22mm; display:block; overflow:hidden; font-size:1px; }
+.receipt-content { padding:0 4mm; }
 .shop { text-align:center; }
-.shop h1 { margin:0 0 2mm; font-size:17px; line-height:1.2; }
-.shop p { margin:1mm 0; }
-.operation { margin:3mm 0 2mm; text-align:center; font-size:14px; font-weight:bold; }
-.rule { margin:3mm 0; border:0; border-top:1px dashed black; }
-.pair { display:flex; align-items:baseline; justify-content:space-between; gap:3mm; margin:1mm 0; }
+.shop h1 { margin:0 0 2mm; font-size:16px; line-height:1.2; font-weight:bold; }
+.shop p { margin:1mm 0; font-size:11.5px; }
+.operation { margin:3mm 0 2mm; text-align:center; font-size:13.5px; font-weight:bold; letter-spacing:0.5px; }
+.rule { margin:2.5mm 0; border:0; border-top:1px dashed black; }
+.pair { display:flex; align-items:baseline; justify-content:space-between; gap:2mm; margin:1.2mm 0; width:100%; }
 .pair > :first-child { min-width:0; }
 .pair > :last-child { text-align:right; }
 .money { white-space:nowrap; font-variant-numeric:tabular-nums; }
-.item { padding:2mm 0; break-inside:avoid; }
-.item-name { margin:0 0 1mm; font-weight:bold; }
-.item-price { text-align:right; }
+.item { padding:1.5mm 0; break-inside:avoid; }
+.item-name { margin:0 0 1mm; font-weight:bold; font-size:12px; }
+.item-price { text-align:right; font-size:12px; }
 .totals { break-inside:avoid; }
-.grand-total { font-size:21px; font-weight:bold; line-height:1.2; padding:2mm 0; flex-wrap:wrap; }
+.grand-total { font-size:18px; font-weight:bold; line-height:1.2; padding:2mm 0; flex-wrap:wrap; border-top:1px solid black; border-bottom:1px solid black; margin:2mm 0; }
 .grand-total .money { margin-left:auto; }
-.footer { margin-top:5mm; text-align:center; break-inside:avoid; }
-.footer p { margin:1mm 0; }
-.footer strong { font-size:14px; }
+.footer { margin-top:4mm; text-align:center; break-inside:avoid; }
+.footer p { margin:1mm 0; font-size:11.5px; }
+.footer strong { font-size:13.5px; }
 @media print {
-    html,body { width:var(--receipt-width,80mm); margin:0!important; padding:0!important; background:white!important; }
+    html,body { width:var(--receipt-width,72mm)!important; margin:0!important; padding:0!important; background:white!important; -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
     .print-tools { display:none!important; }
-    .receipt { margin:0; }
+    .receipt { width:var(--receipt-width,72mm)!important; max-width:var(--receipt-width,72mm)!important; margin:0 auto!important; background:white!important; }
+    .paper-lead { height:15mm!important; line-height:15mm!important; display:block!important; }
+    .paper-tail { height:22mm!important; line-height:22mm!important; display:block!important; }
 }
 </style>
 </head>
 <body>
 <aside class="print-tools">
     <button type="button" id="printReceipt" disabled>Распечатать чек</button>
-    <p><label for="receiptWidth">Ширина документа:</label> <select id="receiptWidth"><option value="80">80 мм — чековая лента</option><option value="76">76 мм — драйвер EPT371U</option></select></p>
-    <p>Масштаб 100% · колонтитулы выключены. Для установленного драйвера EPT371U с ограничением 76 мм выберите второй вариант.</p>
-    <p>В Safari задайте такой же формат бумаги, как у документа. A4 / 210 × 297 мм для этой ленты не подходит. Для рулона без этикеток выберите в драйвере непрерывную бумагу (Continue).</p>
+    <p><label for="receiptWidth">Ширина документа:</label> <select id="receiptWidth"><option value="72" selected>72 мм — чековый принтер DACAR Cheki (лента 80 мм)</option><option value="80">80 мм — чековая лента (максимум)</option><option value="76">76 мм — драйвер TSPL</option></select></p>
+    <p>Масштаб 100% · колонтитулы выключены. Для чекового принтера DACAR Cheki выбрана ширина 72 мм (стандарт 80 мм термоленты).</p>
     <p id="paperSizeHint"></p>
 </aside>
 <article class="receipt" id="receipt">
-<div class="paper-lead" aria-hidden="true"></div>
+<div class="paper-lead" aria-hidden="true">&nbsp;</div>
 <div class="receipt-content">
     <header class="shop">
         <h1>{{ SHOP_NAME }}</h1>
@@ -87,15 +88,17 @@ button { min-height:44px; padding:10px 18px; border:0; border-radius:10px; backg
     {% if order.status == 'REFUNDED' %}<hr class="rule"><p>Причина возврата: {{ order.refund_reason|default:'—' }}</p>{% endif %}
     <footer class="footer"><hr class="rule"><p><strong>{% if order.status == 'REFUNDED' %}ВОЗВРАТ ОФОРМЛЕН{% elif order.status == 'CANCELLED' %}ОПЕРАЦИЯ ОТМЕНЕНА{% else %}СПАСИБО ЗА ПОКУПКУ!{% endif %}</strong></p><p>Сохраните чек</p></footer>
 </div>
-<div class="paper-tail" aria-hidden="true"></div>
+<div class="paper-tail" aria-hidden="true">&nbsp;</div>
 </article>
 <script>
 function prepareReceipt() {
-    const width = document.getElementById('receiptWidth').value === '76' ? 76 : 80;
+    const widthVal = document.getElementById('receiptWidth').value;
+    const width = parseInt(widthVal, 10) || 72;
     document.documentElement.style.setProperty('--receipt-width', width + 'mm');
-    const height = Math.ceil(document.getElementById('receipt').getBoundingClientRect().height * 25.4 / 96) + 1;
+    const receiptEl = document.getElementById('receipt');
+    const height = Math.ceil(receiptEl.getBoundingClientRect().height * 25.4 / 96) + 2;
     document.getElementById('receiptPageSize').textContent = '@page { size: ' + width + 'mm ' + height + 'mm; margin: 0; }';
-    document.getElementById('paperSizeHint').textContent = 'Размер чека: ' + width + ' × ' + height + ' мм. Сверху 15 мм, снизу 22 мм свободной бумаги.';
+    document.getElementById('paperSizeHint').textContent = 'Размер чека: ' + width + ' × ' + height + ' мм. Сверху 15 мм, снизу 22 мм свободной бумаги под отрывной нож.';
 }
 document.getElementById('receiptWidth').addEventListener('change', prepareReceipt);
 // Finish layout before entering Safari's native print dialog. Reading layout and
