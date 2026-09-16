@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Чек {{ order.order_number }} — DACAR</title>
-<style id="receiptPageSize">@page { size: 72mm 200mm; margin: 0; }</style>
 <style>
+@page { size: auto; margin: 0 !important; }
 * { box-sizing:border-box; }
 body { margin:0; background:#e9edf2; color:#000; }
 .print-tools { max-width:600px; margin:20px auto; padding:16px; font:14px/1.5 system-ui,sans-serif; }
@@ -27,16 +27,34 @@ button { min-height:44px; padding:10px 18px; border:0; border-radius:10px; backg
 .item { padding:1.5mm 0; break-inside:avoid; }
 .item-name { margin:0 0 1mm; font-weight:bold; font-size:12px; }
 .item-price { text-align:right; font-size:12px; }
-.totals { break-inside:avoid; }
+.totals { break-inside:auto; }
 .grand-total { font-size:18px; font-weight:bold; line-height:1.2; padding:2mm 0; flex-wrap:wrap; border-top:1px solid black; border-bottom:1px solid black; margin:2mm 0; }
 .grand-total .money { margin-left:auto; }
-.footer { margin-top:4mm; text-align:center; break-inside:avoid; }
+.footer { margin-top:4mm; text-align:center; break-inside:auto; }
 .footer p { margin:1mm 0; font-size:11.5px; }
 .footer strong { font-size:13.5px; }
 @media print {
-    html,body { width:var(--receipt-width,72mm)!important; margin:0!important; padding:0!important; background:white!important; -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+    @page { size: auto; margin: 0 !important; }
+    html,body {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
     .print-tools { display:none!important; }
-    .receipt { width:var(--receipt-width,72mm)!important; max-width:var(--receipt-width,72mm)!important; margin:0 auto!important; background:white!important; }
+    .receipt {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        overflow: visible !important;
+    }
+    .receipt-content { padding: 0 4mm !important; }
     .paper-lead { height:15mm!important; line-height:15mm!important; display:block!important; }
     .paper-tail { height:16mm!important; line-height:16mm!important; display:block!important; }
 }
@@ -97,7 +115,6 @@ function prepareReceipt() {
     document.documentElement.style.setProperty('--receipt-width', width + 'mm');
     const receiptEl = document.getElementById('receipt');
     const height = Math.min(Math.ceil(receiptEl.getBoundingClientRect().height * 25.4 / 96) + 2, 210);
-    document.getElementById('receiptPageSize').textContent = '@page { size: ' + width + 'mm ' + height + 'mm; margin: 0; }';
     document.getElementById('paperSizeHint').textContent = 'Размер чека: ' + width + ' × ' + height + ' мм. Сверху 15 мм, снизу 16 мм свободной бумаги под отрывной нож.';
 }
 document.getElementById('receiptWidth').addEventListener('change', prepareReceipt);
