@@ -13,7 +13,7 @@ button { min-height:44px; padding:10px 18px; border:0; border-radius:10px; backg
 .receipt { width:var(--receipt-width,72mm); max-width:var(--receipt-width,72mm); margin:0 auto 24px; background:white; font:12.5px/1.35 'Courier New',monospace; overflow-wrap:anywhere; }
 /* Blank blocks preserve space inside the document, preventing clipping at the tear-off blade. */
 .paper-lead { height:15mm; line-height:15mm; display:block; overflow:hidden; font-size:1px; }
-.paper-tail { height:22mm; line-height:22mm; display:block; overflow:hidden; font-size:1px; }
+.paper-tail { height:16mm; line-height:16mm; display:block; overflow:hidden; font-size:1px; }
 .receipt-content { padding:0 4mm; }
 .shop { text-align:center; }
 .shop h1 { margin:0 0 2mm; font-size:16px; line-height:1.2; font-weight:bold; }
@@ -38,7 +38,7 @@ button { min-height:44px; padding:10px 18px; border:0; border-radius:10px; backg
     .print-tools { display:none!important; }
     .receipt { width:var(--receipt-width,72mm)!important; max-width:var(--receipt-width,72mm)!important; margin:0 auto!important; background:white!important; }
     .paper-lead { height:15mm!important; line-height:15mm!important; display:block!important; }
-    .paper-tail { height:22mm!important; line-height:22mm!important; display:block!important; }
+    .paper-tail { height:16mm!important; line-height:16mm!important; display:block!important; }
 }
 </style>
 </head>
@@ -98,7 +98,7 @@ function prepareReceipt() {
     const receiptEl = document.getElementById('receipt');
     const height = Math.min(Math.ceil(receiptEl.getBoundingClientRect().height * 25.4 / 96) + 2, 210);
     document.getElementById('receiptPageSize').textContent = '@page { size: ' + width + 'mm ' + height + 'mm; margin: 0; }';
-    document.getElementById('paperSizeHint').textContent = 'Размер чека: ' + width + ' × ' + height + ' мм. Сверху 15 мм, снизу 22 мм свободной бумаги под отрывной нож.';
+    document.getElementById('paperSizeHint').textContent = 'Размер чека: ' + width + ' × ' + height + ' мм. Сверху 15 мм, снизу 16 мм свободной бумаги под отрывной нож.';
 }
 document.getElementById('receiptWidth').addEventListener('change', prepareReceipt);
 // Finish layout before entering Safari's native print dialog. Reading layout and
