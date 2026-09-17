@@ -2426,7 +2426,7 @@
         }
         // Open synchronously on the click: Safari blocks windows opened after an API wait.
         // One server-rendered receipt is shared by POS, orders, desktop and mobile.
-        const page = window.open('/sales/orders/' + lastPrintedOrderId + '/print/', '_blank');
+        const page = window.open('/sales/orders/' + lastPrintedOrderId + '/print/?autoprint=1', '_blank');
         if (!page) showPosToast('Разрешите всплывающее окно для печати чека.', 'error');
     }
 
@@ -2435,7 +2435,12 @@
     }
 
     function openReceiptInNewTab() {
-        printThermalReceipt();
+        if (!lastPrintedOrderId) {
+            showPosToast('Нет чека для открытия.', 'error');
+            return;
+        }
+        const page = window.open('/sales/orders/' + lastPrintedOrderId + '/print/', '_blank');
+        if (!page) showPosToast('Разрешите всплывающее окно.', 'error');
     }
 
     // Utility Helpers
