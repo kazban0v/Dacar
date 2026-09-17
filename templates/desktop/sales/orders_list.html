@@ -101,7 +101,7 @@
                 <td><span class="receipt-payment">{% if order.payment_method == 'CASH' %}<i class="fa-solid fa-money-bill-wave"></i>{% elif order.payment_method == 'CARD' %}<i class="fa-regular fa-credit-card"></i>{% elif order.payment_method == 'TRANSFER' %}<i class="fa-solid fa-qrcode"></i>{% else %}<i class="fa-solid fa-money-bill-transfer"></i>{% endif %}{{ order.get_payment_method_display }}</span></td>
                 <td class="receipt-total">{{ order.total_amount|floatformat:0 }} ₸</td>
                 <td>{% if order.status == 'REFUNDED' %}<button type="button" class="receipt-status refund" onclick="showRefundReasonModal('{{ order.order_number }}','{{ order.refund_reason|default:"Причина не указана"|escapejs }}','{% if order.refunded_by %}{{ order.refunded_by.get_full_name|default:order.refunded_by.username|escapejs }}{% else %}Администратор{% endif %}','{{ order.refunded_at|date:"d.m.Y H:i" }}','{{ order.total_amount|floatformat:0 }}')"><i class="fa-solid fa-rotate-left"></i> Возврат (админ)</button>{% else %}<span class="receipt-status done"><i class="fa-solid fa-check"></i> Проведён</span>{% endif %}</td>
-                <td><div class="receipt-actions"><a href="{% url 'order_print' order.id %}?autoprint=1" target="_blank" class="receipt-action" title="Открыть и распечатать чек" aria-label="Открыть и распечатать чек"><i class="fa-solid fa-print"></i></a></div></td>
+                <td><div class="receipt-actions"><a href="javascript:void(0)" onclick="printReceiptSilently('{% url 'order_print' order.id %}?autoprint=1')" class="receipt-action" title="Открыть и распечатать чек" aria-label="Открыть и распечатать чек"><i class="fa-solid fa-print"></i></a></div></td>
             </tr>
         {% empty %}<tr><td colspan="5"><div class="receipt-empty"><i class="fa-solid fa-receipt"></i><p>За этот период чеков нет</p><small>Новая продажа появится здесь после оплаты.</small></div></td></tr>{% endfor %}</tbody>
     </table></div>
@@ -153,7 +153,7 @@
                 <td><span class="receipt-payment">{% if order.payment_method == 'CASH' %}<i class="fa-solid fa-money-bill-wave"></i>{% elif order.payment_method == 'CARD' %}<i class="fa-regular fa-credit-card"></i>{% elif order.payment_method == 'TRANSFER' %}<i class="fa-solid fa-qrcode"></i>{% else %}<i class="fa-solid fa-money-bill-transfer"></i>{% endif %}{{ order.get_payment_method_display }}</span></td>
                 <td class="receipt-total">{{ order.total_amount|floatformat:0 }} ₸</td>
                 <td>{% if order.status == 'REFUNDED' %}<button type="button" class="receipt-status refund" onclick="showRefundReasonModal('{{ order.order_number }}','{{ order.refund_reason|default:"Причина не указана"|escapejs }}','{% if order.refunded_by %}{{ order.refunded_by.get_full_name|default:order.refunded_by.username|escapejs }}{% else %}—{% endif %}','{{ order.refunded_at|date:"d.m.Y H:i" }}','{{ order.total_amount|floatformat:0 }}')"><i class="fa-solid fa-rotate-left"></i> Возврат</button>{% else %}<span class="receipt-status done"><i class="fa-solid fa-check"></i> Проведён</span>{% endif %}</td>
-                <td><div class="receipt-actions"><a href="{% url 'order_print' order.id %}?autoprint=1" target="_blank" class="receipt-action" title="Печать"><i class="fa-solid fa-print"></i></a>{% if order.status == 'COMPLETED' and user.is_admin_user %}<button type="button" onclick="openRefundModal({{ order.id }},'{{ order.order_number }}','{{ order.total_amount|floatformat:0 }}')" class="receipt-action refund" title="Оформить возврат"><i class="fa-solid fa-rotate-left"></i></button>{% endif %}{% if user.is_admin_user %}<form method="post" action="{% url 'order_delete' order.id %}" onsubmit="return confirm('Аннулировать чек {{ order.order_number }}?')">{% csrf_token %}<button class="receipt-action refund" title="Удалить"><i class="fa-solid fa-trash-can"></i></button></form>{% endif %}</div></td>
+                <td><div class="receipt-actions"><a href="javascript:void(0)" onclick="printReceiptSilently('{% url 'order_print' order.id %}?autoprint=1')" class="receipt-action" title="Печать"><i class="fa-solid fa-print"></i></a>{% if order.status == 'COMPLETED' and user.is_admin_user %}<button type="button" onclick="openRefundModal({{ order.id }},'{{ order.order_number }}','{{ order.total_amount|floatformat:0 }}')" class="receipt-action refund" title="Оформить возврат"><i class="fa-solid fa-rotate-left"></i></button>{% endif %}{% if user.is_admin_user %}<form method="post" action="{% url 'order_delete' order.id %}" onsubmit="return confirm('Аннулировать чек {{ order.order_number }}?')">{% csrf_token %}<button class="receipt-action refund" title="Удалить"><i class="fa-solid fa-trash-can"></i></button></form>{% endif %}</div></td>
             </tr>
         {% empty %}<tr><td colspan="6"><div class="receipt-empty"><i class="fa-solid fa-receipt"></i><p>Чеки не найдены</p><small>Измените параметры поиска или период.</small></div></td></tr>{% endfor %}</tbody>
     </table></div>
@@ -174,5 +174,21 @@ function closeRefundModal() { const modal=document.getElementById('refundModal')
 function showRefundReasonModal(orderNum, reason, userName, dateStr, totalSum) { document.getElementById('viewModalOrderNum').textContent=orderNum; document.getElementById('viewModalSum').textContent=totalSum; document.getElementById('viewModalUser').textContent=userName||'—'; document.getElementById('viewModalDate').textContent=dateStr||'—'; document.getElementById('viewModalReasonText').textContent=reason||'Причина не указана'; document.getElementById('refundReasonViewModal').style.display='flex'; document.body.style.overflow='hidden'; }
 function closeRefundReasonViewModal() { document.getElementById('refundReasonViewModal').style.display='none'; document.body.style.overflow=''; }
 document.addEventListener('keydown',(event)=>{ if(event.key==='Escape'){ closeRefundModal(); closeRefundReasonViewModal(); } });
+
+function printReceiptSilently(url) {
+    let iframe = document.getElementById('receiptPrintFrame');
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'receiptPrintFrame';
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+    }
+    iframe.src = url;
+}
 </script>
 {% endblock %}

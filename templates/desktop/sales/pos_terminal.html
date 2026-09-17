@@ -2424,10 +2424,20 @@
             showPosToast('Нет чека для печати.', 'error');
             return;
         }
-        // Open synchronously on the click: Safari blocks windows opened after an API wait.
-        // One server-rendered receipt is shared by POS, orders, desktop and mobile.
-        const page = window.open('/sales/orders/' + lastPrintedOrderId + '/print/?autoprint=1', '_blank');
-        if (!page) showPosToast('Разрешите всплывающее окно для печати чека.', 'error');
+        
+        let iframe = document.getElementById('receiptPrintFrame');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.id = 'receiptPrintFrame';
+            iframe.style.position = 'fixed';
+            iframe.style.right = '0';
+            iframe.style.bottom = '0';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
+            document.body.appendChild(iframe);
+        }
+        iframe.src = '/sales/orders/' + lastPrintedOrderId + '/print/?autoprint=1';
     }
 
     function printThermalReceiptFallback() {
