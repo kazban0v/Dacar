@@ -32,7 +32,7 @@ class ReceiptPrintTests(TestCase):
                                      purchase_price_snapshot=100, unit_price=Decimal('1250.25'),
                                      total_amount=Decimal('1250.25'))
 
-    def test_shared_receipt_escapes_names_and_has_paper_feed_blocks(self):
+    def test_shared_receipt_escapes_names_and_preserves_edge_space(self):
         self.client.force_login(self.cashier)
         for prefix in ('', '/m'):
             response = self.client.get(f'{prefix}/sales/orders/{self.order.pk}/print/?autoprint=0')
@@ -40,8 +40,10 @@ class ReceiptPrintTests(TestCase):
             self.assertTemplateUsed(response, 'desktop/sales/print_receipt.html')
             self.assertContains(response, '&lt;img')
             self.assertNotContains(response, '<img src=x')
-            self.assertContains(response, 'height:15mm')
-            self.assertContains(response, 'height:22mm')
+            self.assertContains(response, 'padding:6mm 3mm 10mm')
+            self.assertContains(response, 'var(--receipt-width,71.9mm)')
+            self.assertNotContains(response, 'Math.min(')
+            self.assertNotContains(response, 'width: 100% !important')
             self.assertContains(response, '1250,25')
 
     def test_cashier_cannot_print_other_receipt_in_either_transport(self):
