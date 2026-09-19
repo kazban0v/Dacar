@@ -129,7 +129,7 @@ THERMAL_PRINT_TRANSPORT = os.environ.get('THERMAL_PRINT_TRANSPORT', 'browser')
 SHOP_NAME = 'DACAR ДЕТЕЙЛИНГ МАРКЕТ'
 SHOP_TAGLINE = ''
 SHOP_ADDRESS = 'г. Актобе, ул. Алтын Орда 19д'
-SHOP_PHONE = '+7 (706) 806-66-36'
+SHOP_PHONE = '+7 (705) 537-11-69'
 
 # Login counters are shared by workers, not stored in process-local cache.
 LOGIN_THROTTLE_DB_PATH = BASE_DIR / 'runtime' / 'security' / 'login.sqlite3'

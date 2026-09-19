@@ -21,10 +21,10 @@ def dacar_context(request):
     Context processor injecting shop configuration and registration status to all templates.
     """
     return {
-        'SHOP_NAME': 'DACAR Детейлинг Маркет',
-        'SHOP_TAGLINE': '',
-        'SHOP_PHONE': '+7 (706) 806-66-36',
-        'SHOP_ADDRESS': 'г. Актобе, ул. Алтын Орда 19д',
+        'SHOP_NAME': getattr(settings, 'SHOP_NAME', 'DACAR Детейлинг Маркет'),
+        'SHOP_TAGLINE': getattr(settings, 'SHOP_TAGLINE', ''),
+        'SHOP_PHONE': getattr(settings, 'SHOP_PHONE', '+7 (705) 537-11-69'),
+        'SHOP_ADDRESS': getattr(settings, 'SHOP_ADDRESS', 'г. Актобе, ул. Алтын Орда 19д'),
         'ALLOW_REGISTRATION': getattr(settings, 'ALLOW_REGISTRATION', True),
         'APP_VERSION': _application_version(),
     }
