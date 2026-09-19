@@ -300,20 +300,9 @@
     }
 
     function printReceiptSilently(url) {
-        let iframe = document.getElementById('receiptPrintFrame');
-        if (!iframe) {
-            iframe = document.createElement('iframe');
-            iframe.id = 'receiptPrintFrame';
-            iframe.style.position = 'fixed';
-            iframe.style.top = '-10000px';
-            iframe.style.left = '-10000px';
-            iframe.style.width = '100vw';
-            iframe.style.height = '100vh';
-            iframe.style.border = '0';
-            iframe.style.zIndex = '-1';
-            document.body.appendChild(iframe);
-        }
-        iframe.src = url;
+        // Safari can rasterize an off-screen iframe as an empty page.
+        const page = window.open(url, '_blank');
+        if (!page) window.location.href = url;
     }
 
     function openRefundModal(orderId, orderNum, totalSum) {

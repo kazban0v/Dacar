@@ -2424,21 +2424,8 @@
             showPosToast('Нет чека для печати.', 'error');
             return;
         }
-        
-        let iframe = document.getElementById('receiptPrintFrame');
-        if (!iframe) {
-            iframe = document.createElement('iframe');
-            iframe.id = 'receiptPrintFrame';
-            iframe.style.position = 'fixed';
-            iframe.style.top = '-10000px';
-            iframe.style.left = '-10000px';
-            iframe.style.width = '100vw';
-            iframe.style.height = '100vh';
-            iframe.style.border = '0';
-            iframe.style.zIndex = '-1';
-            document.body.appendChild(iframe);
-        }
-        iframe.src = '/sales/orders/' + lastPrintedOrderId + '/print/?autoprint=1';
+        const page = window.open('/sales/orders/' + lastPrintedOrderId + '/print/?autoprint=1', '_blank');
+        if (!page) showPosToast('Разрешите всплывающее окно для печати.', 'error');
     }
 
     function printThermalReceiptFallback() {

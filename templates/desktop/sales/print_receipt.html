@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Чек {{ order.order_number }} — DACAR</title>
 <style>
-/* Let the native driver choose the sheet; never resize it during beforeprint. */
-@page { margin: 0 !important; }
+/* Safari applies these as real paper margins on the selected receipt size. */
+@page { size:auto; margin:6mm 3mm 10mm; }
 * { box-sizing:border-box; }
 body { margin:0; background:#e9edf2; color:#000; }
 .print-tools { max-width:600px; margin:20px auto; padding:16px; font:14px/1.5 system-ui,sans-serif; }
@@ -43,27 +43,26 @@ button { min-height:44px; padding:10px 18px; border:0; border-radius:10px; backg
     }
     .print-tools { display:none!important; }
     .receipt {
-        /* Use 100% width to adapt to driver margins, max-width to not stretch on A4. Fixes Safari blank pages. */
-        width: 100% !important;
-        max-width: var(--receipt-width, 71.9mm) !important;
+        /* Keep the same text width as on screen: 3 mm physical margin on each side. */
+        width: calc(var(--receipt-width,71.9mm) - 6mm) !important;
         margin: 0 !important;
         padding: 0 !important;
         background: white !important;
         overflow: visible !important;
     }
-    .receipt-content { padding: 6mm 3mm 10mm !important; }
+    .receipt-content { padding: 0 !important; }
 }
 </style>
 </head>
 <body>
 <aside class="print-tools">
     <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-        <button type="button" id="printReceipt" disabled style="flex: 1;">Распечатать чек</button>
+        <button type="button" id="printReceipt" style="flex: 1;">Распечатать чек</button>
         <button type="button" onclick="window.close(); if(history.length > 1) history.back();" style="background:#64748b; padding: 10px 18px;">Закрыть</button>
     </div>
-    <p><label for="receiptWidth">Профиль печати:</label> <select id="receiptWidth"><option value="71.9" selected>Europrint EPT371U ESC — режим RECEIPT</option><option value="76">76 мм — другой совместимый драйвер</option><option value="80">80 мм — другой совместимый драйвер</option></select></p>
-    <p>Для Europrint выберите принтер «DACAR Чеки (ESC)» и штатный формат «80(72mm) × 210mm». Масштаб 100%, колонтитулы и подгонка под лист выключены. A4 и старые форматы 76 мм для этого драйвера не подходят.</p>
-    <p>Длинный чек может занять несколько страниц. Для одной полосы задайте пользовательскую высоту не меньше указанной ниже. В ESC-драйвере пользовательская ширина — 71,9 мм, поля — 0.</p>
+    <p><label for="receiptWidth">Профиль печати:</label> <select id="receiptWidth"><option value="71.9" selected>Europrint EPT371U (TSPL / 80 мм)</option><option value="76">76 мм — совместимый драйвер</option><option value="80">80 мм — совместимый драйвер</option></select></p>
+    <p>Для Europrint выберите принтер «DACAR_Cheki» и формат бумаги «71.9 × 180 мм» (или «w3h4 / 3 in x 4 in»). Масштаб 100%, колонтитулы выключены.</p>
+    <p>Длинный чек может занять несколько страниц. В TSPL-драйвере ширина чека — 71,9 мм.</p>
     <p id="paperSizeHint"></p>
 </aside>
 <article class="receipt" id="receipt">
@@ -122,7 +121,6 @@ window.addEventListener('load', async () => {
     if (document.fonts) await document.fonts.ready;
     prepareReceipt();
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    document.getElementById('printReceipt').disabled = false;
     // Open the system dialog only after the user selects a driver-compatible size.
     if (new URLSearchParams(location.search).get('autoprint') === '1') window.print();
 });
