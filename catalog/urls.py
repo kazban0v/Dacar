@@ -6,6 +6,7 @@ urlpatterns = [
     path('add/', views.product_create_view, name='product_create'),
     path('<int:pk>/edit/', views.product_edit_view, name='product_edit'),
     path('stock/movements/', views.stock_movement_view, name='stock_movement'),
+    path('stock/movements/<int:pk>/reverse/', views.reverse_writeoff_view, name='reverse_writeoff'),
     path('api/search/', views.ProductSearchAPIView.as_view(), name='api_product_search'),
     path('api/categories/create/', views.create_category_api, name='api_create_category'),
     path('api/stock-action/', views.stock_action_api, name='api_stock_action'),

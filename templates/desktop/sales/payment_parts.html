@@ -1,0 +1,6 @@
+{% if order.payment_method == 'MIXED' %}
+<div style="font-size:.78rem;line-height:1.5;margin-top:6px">
+{% for payment in order.payments.all %}<div>{{ payment.get_method_display }}: {{ payment.amount|floatformat:2 }} ₸</div>
+{% empty %}<div>Разбивка старого чека не сохранена</div>{% endfor %}
+</div>
+{% endif %}

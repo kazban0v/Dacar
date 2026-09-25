@@ -1,7 +1,12 @@
 from decimal import Decimal
 import uuid
 from rest_framework import serializers
-from sales.models import SaleOrder, SaleOrderItem
+from sales.models import SaleOrder, SaleOrderItem, SalePayment
+
+
+class PaymentPartSerializer(serializers.Serializer):
+    method = serializers.ChoiceField(choices=['CASH', 'CARD', 'TRANSFER'])
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal('0.01'))
 
 
 class SaleOrderItemCreateSerializer(serializers.Serializer):
@@ -20,6 +25,16 @@ class SaleCheckoutSerializer(serializers.Serializer):
     discount_amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=0,
         required=False, default=Decimal('0.00'))
     notes = serializers.CharField(required=False, allow_blank=True, default='', max_length=2000)
+    payments = PaymentPartSerializer(many=True, required=False, max_length=3)
+
+    def validate(self, attrs):
+        parts = attrs.get('payments', [])
+        if attrs['payment_method'] == 'MIXED':
+            if len(parts) < 2 or len({part['method'] for part in parts}) != len(parts):
+                raise serializers.ValidationError('Укажите минимум два разных способа оплаты.')
+        elif parts:
+            raise serializers.ValidationError('Разбивка доступна только для смешанной оплаты.')
+        return attrs
 
     def validate_items(self, value):
         if not value:
@@ -35,7 +50,7 @@ class SaleCheckoutSerializer(serializers.Serializer):
         return order
 
 class SaleOrderItemSerializer(serializers.ModelSerializer):
-    product_name = serializers.ReadOnlyField(source='product.name')
+    product_name = serializers.ReadOnlyField(source='display_name')
     sku = serializers.ReadOnlyField(source='product.sku')
 
     def get_fields(self):
@@ -53,7 +68,16 @@ class SaleOrderItemSerializer(serializers.ModelSerializer):
         ]
 
 
+class SalePaymentSerializer(serializers.ModelSerializer):
+    label = serializers.ReadOnlyField(source='get_method_display')
+
+    class Meta:
+        model = SalePayment
+        fields = ['method', 'label', 'amount']
+
+
 class SaleOrderSerializer(serializers.ModelSerializer):
+    payments = SalePaymentSerializer(many=True, read_only=True)
     cashier_name = serializers.ReadOnlyField(source='cashier.get_full_name')
     payment_method_display = serializers.ReadOnlyField(source='get_payment_method_display')
     items = SaleOrderItemSerializer(many=True, read_only=True)
@@ -72,5 +96,5 @@ class SaleOrderSerializer(serializers.ModelSerializer):
             'id', 'order_number', 'cashier', 'cashier_name', 'status',
             'payment_method', 'payment_method_display', 'subtotal_amount', 'discount_amount', 'total_amount',
             'paid_amount', 'change_amount', 'gross_profit', 'notes',
-            'created_at', 'items'
+            'created_at', 'items', 'payments'
         ]

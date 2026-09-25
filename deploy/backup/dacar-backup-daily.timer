@@ -1,0 +1,11 @@
+[Unit]
+Description=DACAR daily backups (retain last 14)
+
+[Timer]
+OnCalendar=*-*-* 22:15:00 UTC
+RandomizedDelaySec=60
+Persistent=true
+Unit=dacar-backup@daily.service
+
+[Install]
+WantedBy=timers.target

@@ -34,6 +34,8 @@
     <header class="an-head">
         <div><h1>Аналитика магазина</h1><p>{{ period_label|capfirst }} · цифры рассчитаны по чекам, возвратам и текущим остаткам</p></div>
         <div class="an-actions">
+            <a class="an-export" href="{% url 'shine_report' %}">Shine Systems · PDF</a>
+            <a class="an-export" href="{% url 'company_invoices' %}">Счёт компании</a>
             <nav class="an-range" aria-label="Период отчёта">
                 <a href="{% url 'dashboard' %}" class="{% if dashboard_period == 'day' %}active{% endif %}">Сегодня</a>
                 <a href="{% url 'dashboard' %}?period=week" class="{% if dashboard_period == 'week' %}active{% endif %}">7 дней</a>
@@ -94,7 +96,7 @@
         <div class="an-section-head"><h2>Склад на текущий момент</h2><a href="{% url 'product_list' %}">Управлять складом →</a></div>
         <div class="inv-grid">
             <a class="inv-stat an-card-link" href="{% url 'product_list' %}" aria-label="Открыть активные товары"><div class="name">Активных товаров</div><div class="number">{{ report.inventory.active_count }}</div></a>
-            <a class="inv-stat alert an-card-link" href="{% url 'product_list' %}?low_stock=1" aria-label="Открыть товары без остатка"><div class="name">Нет в наличии</div><div class="number">{{ report.inventory.out_of_stock_count }}</div></a>
+            <a class="inv-stat alert an-card-link" href="{% url 'product_list' %}?out_of_stock=1" aria-label="Открыть товары без остатка"><div class="name">Нет в наличии</div><div class="number">{{ report.inventory.out_of_stock_count }}</div></a>
             <a class="inv-stat alert an-card-link" href="{% url 'product_list' %}?low_stock=1" aria-label="Открыть товары с низким остатком"><div class="name">Мало на складе</div><div class="number">{{ report.inventory.low_stock_count }}</div></a>
             <div class="inv-stat"><div class="name">Закупочная стоимость</div><div class="number">{{ report.inventory.stock_cost|floatformat:0 }} ₸</div></div>
             <div class="inv-stat"><div class="name">Розничная стоимость</div><div class="number">{{ report.inventory.stock_retail|floatformat:0 }} ₸</div></div>

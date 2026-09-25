@@ -83,7 +83,7 @@ button { min-height:44px; padding:10px 18px; border:0; border-radius:10px; backg
     <hr class="rule">
     {% for item in order.items.all %}
     <section class="item">
-        <p class="item-name">{{ forloop.counter }}. {{ item.product.name|default:'Удалённый товар' }}</p>
+        <p class="item-name">{{ forloop.counter }}. {{ item.display_name }}</p>
         <div class="item-price">{{ item.quantity|floatformat:'-3' }} × <span class="money">{{ item.unit_price|floatformat:2 }} ₸</span></div>
         {% if item.discount_amount %}<div class="pair"><span>Скидка на позицию</span><span class="money">{{ item.discount_amount|floatformat:2 }} ₸</span></div>{% endif %}
         <div class="item-price"><strong class="money">= {{ item.total_amount|floatformat:2 }} ₸</strong></div>
@@ -95,6 +95,9 @@ button { min-height:44px; padding:10px 18px; border:0; border-radius:10px; backg
         {% if order.discount_amount %}<div class="pair"><span>Скидка на чек</span><span class="money">{{ order.discount_amount|floatformat:2 }} ₸</span></div>{% endif %}
         <div class="pair grand-total"><span>{% if order.status == 'REFUNDED' %}ВОЗВРАТ{% else %}ИТОГО{% endif %}</span><span class="money">{{ order.total_amount|floatformat:2 }} ₸</span></div>
         <div class="pair"><span>{% if order.status == 'REFUNDED' %}Оплата продажи{% else %}Оплата{% endif %}</span><span>{{ order.get_payment_method_display }}</span></div>
+        {% if order.payment_method == 'MIXED' %}{% for payment in order.payments.all %}
+        <div class="pair"><span>{{ payment.get_method_display }}</span><span>{{ payment.amount|floatformat:2 }} ₸</span></div>
+        {% empty %}<div>Разбивка старого чека не сохранена</div>{% endfor %}{% endif %}
         {% if order.status == 'COMPLETED' and order.payment_method == 'CASH' %}
         <div class="pair"><span>Получено</span><span class="money">{{ order.paid_amount|floatformat:2 }} ₸</span></div>
         <div class="pair"><span>Сдача</span><span class="money">{{ order.change_amount|floatformat:2 }} ₸</span></div>

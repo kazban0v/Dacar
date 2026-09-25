@@ -59,6 +59,33 @@
         font-size: 0.8rem;
     }
 
+    .writeoff-reason-box {
+        padding: 0.75rem;
+        border: 1px solid color-mix(in srgb, var(--accent-red) 30%, var(--card-border));
+        border-radius: var(--radius-md);
+        background: color-mix(in srgb, var(--accent-red) 6%, var(--card-bg));
+    }
+
+    .movement-reversed {
+        opacity: 0.66;
+    }
+
+    .reverse-writeoff-form {
+        display: inline;
+    }
+
+    .reverse-writeoff-btn {
+        padding: 0.3rem 0.55rem;
+        border: 1px solid var(--card-border);
+        border-radius: 8px;
+        background: var(--card-bg);
+        color: var(--accent-orange);
+        cursor: pointer;
+        font-size: 0.72rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
     @media (max-width: 960px) {
         .stock-grid-layout {
             grid-template-columns: 1fr;
@@ -130,16 +157,26 @@
                 <select name="product_id" class="form-control" required style="font-size: 0.85rem;">
                     <option value="">-- Выберите товар --</option>
                     {% for p in products %}
-                    <option value="{{ p.id }}">{{ p.name }} (Остаток: {{ p.stock_qty }} {{ p.unit }})</option>
+                    <option value="{{ p.id }}" {% if selected_product_id == p.id|stringformat:'s' %}selected{% endif %}>{{ p.name }} (Остаток: {{ p.stock_qty }} {{ p.unit }})</option>
                     {% endfor %}
                 </select>
             </div>
 
             <div style="margin-bottom: 0.75rem;">
                 <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Тип операции <span style="color: var(--accent-red);">*</span></label>
-                <select name="movement_type" class="form-control" required style="font-size: 0.85rem;">
+                <select name="movement_type" id="movementTypeSelect" class="form-control" required style="font-size: 0.85rem;">
                     {% for m_val, m_lbl in movement_types %}
-                    <option value="{{ m_val }}">{{ m_lbl }}</option>
+                    {% if m_val != 'WRITE_OFF_REVERSAL' %}<option value="{{ m_val }}" {% if initial_movement_type == m_val %}selected{% endif %}>{{ m_lbl }}</option>{% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="writeoffReasonGroup" class="writeoff-reason-box" style="display:none; margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--accent-red); margin-bottom: 0.25rem;">Причина списания <span style="color: var(--accent-red);">*</span></label>
+                <select name="writeoff_reason" id="writeoffReasonSelect" class="form-control" style="font-size: 0.85rem;">
+                    <option value="">-- Выберите причину --</option>
+                    {% for reason_val, reason_label in writeoff_reasons %}
+                    <option value="{{ reason_val }}">{{ reason_label }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -179,15 +216,17 @@
                         <th>Дата</th>
                         <th>Товар</th>
                         <th>Операция</th>
+                        <th>Причина</th>
                         <th>Кол-во</th>
                         <th>Себестоимость</th>
                         <th>Сотрудник</th>
                         <th>Комментарий</th>
+                        <th>Статус</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for m in movements %}
-                    <tr>
+                    <tr class="{% if m.is_reversed %}movement-reversed{% endif %}">
                         <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">{{ m.created_at|date:"d.m.Y H:i" }}</td>
                         <td style="font-weight: 600; color: var(--text-main); font-size: 0.9rem;">{{ m.product.name }}</td>
                         <td>
@@ -199,18 +238,35 @@
                             <span class="badge badge-cyan"><i class="fa-solid fa-cart-shopping"></i> Продажа</span>
                             {% elif m.movement_type == 'RETURN' %}
                             <span class="badge badge-orange"><i class="fa-solid fa-rotate-left"></i> Возврат</span>
+                            {% elif m.movement_type == 'WRITE_OFF_REVERSAL' %}
+                            <span class="badge badge-orange"><i class="fa-solid fa-rotate-left"></i> Отмена списания</span>
                             {% else %}
                             <span class="badge badge-cyan">{{ m.get_movement_type_display }}</span>
                             {% endif %}
+                        </td>
+                        <td style="font-size: 0.8rem; color: var(--text-muted);">
+                            {% if m.writeoff_reason %}{{ m.get_writeoff_reason_display }}{% else %}—{% endif %}
                         </td>
                         <td style="font-weight: 800; color: var(--text-main);">{{ m.quantity }} {{ m.product.unit }}</td>
                         <td>{{ m.cost_price|default:"—" }} ₸</td>
                         <td>{{ m.created_by.username|default:"Система" }}</td>
                         <td style="color: var(--text-muted); font-size: 0.8rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ m.comment|default:'' }}">{{ m.comment|default:"—" }}</td>
+                        <td>
+                            {% if m.movement_type == 'OUT' and not m.is_reversed %}
+                            <form method="post" class="reverse-writeoff-form" action="{% if is_mobile %}{% url 'm_reverse_writeoff' m.pk %}{% else %}{% url 'reverse_writeoff' m.pk %}{% endif %}" onsubmit="return confirm('Отменить списание и вернуть {{ m.quantity }} {{ m.product.unit }} товара «{{ m.product.name|escapejs }}» на склад?');">
+                                {% csrf_token %}
+                                <button class="reverse-writeoff-btn" type="submit"><i class="fa-solid fa-rotate-left"></i> Отменить</button>
+                            </form>
+                            {% elif m.is_reversed %}
+                            <span class="badge badge-orange">Отменено</span>
+                            {% else %}
+                            <span style="color:var(--text-muted);font-size:.75rem;">Проведено</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                        <td colspan="9" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
                             Записи движения товаров отсутствуют.
                         </td>
                     </tr>
@@ -222,7 +278,7 @@
         <!-- MOBILE CARDS VIEW (< 768px) -->
         <div class="movements-cards-mobile">
             {% for m in movements %}
-            <div class="movement-mobile-card">
+            <div class="movement-mobile-card {% if m.is_reversed %}movement-reversed{% endif %}">
                 <div class="movement-card-header">
                     <div style="font-weight: 700; font-size: 0.92rem; color: var(--text-main);">{{ m.product.name }}</div>
                     <div>
@@ -234,11 +290,17 @@
                         <span class="badge badge-cyan" style="font-size: 0.72rem;"><i class="fa-solid fa-cart-shopping"></i> Продажа</span>
                         {% elif m.movement_type == 'RETURN' %}
                         <span class="badge badge-orange" style="font-size: 0.72rem;"><i class="fa-solid fa-rotate-left"></i> Возврат</span>
+                        {% elif m.movement_type == 'WRITE_OFF_REVERSAL' %}
+                        <span class="badge badge-orange" style="font-size: 0.72rem;"><i class="fa-solid fa-rotate-left"></i> Отмена списания</span>
                         {% else %}
                         <span class="badge badge-cyan" style="font-size: 0.72rem;">{{ m.get_movement_type_display }}</span>
                         {% endif %}
                     </div>
                 </div>
+
+                {% if m.writeoff_reason %}
+                <div style="font-size:.78rem;color:var(--text-muted);"><strong style="color:var(--text-main);">Причина:</strong> {{ m.get_writeoff_reason_display }}</div>
+                {% endif %}
 
                 <div class="movement-card-details">
                     <div>
@@ -264,6 +326,14 @@
                     <i class="fa-regular fa-comment-dots" style="margin-right: 4px;"></i> {{ m.comment }}
                 </div>
                 {% endif %}
+                {% if m.movement_type == 'OUT' and not m.is_reversed %}
+                <form method="post" action="{% if is_mobile %}{% url 'm_reverse_writeoff' m.pk %}{% else %}{% url 'reverse_writeoff' m.pk %}{% endif %}" onsubmit="return confirm('Отменить списание и вернуть товар на склад?');">
+                    {% csrf_token %}
+                    <button class="btn btn-secondary" type="submit" style="width:100%;color:var(--accent-orange);"><i class="fa-solid fa-rotate-left"></i> Отменить списание</button>
+                </form>
+                {% elif m.is_reversed %}
+                <span class="badge badge-orange">Списание отменено</span>
+                {% endif %}
             </div>
             {% empty %}
             <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
@@ -276,6 +346,20 @@
 
 {% block extra_scripts %}
 <script>
+    function syncWriteoffReason() {
+        const movementType = document.getElementById('movementTypeSelect');
+        const reasonGroup = document.getElementById('writeoffReasonGroup');
+        const reasonSelect = document.getElementById('writeoffReasonSelect');
+        if (!movementType || !reasonGroup || !reasonSelect) return;
+        const isWriteoff = movementType.value === 'OUT';
+        reasonGroup.style.display = isWriteoff ? 'block' : 'none';
+        reasonSelect.required = isWriteoff;
+        if (!isWriteoff) reasonSelect.value = '';
+    }
+
+    document.getElementById('movementTypeSelect')?.addEventListener('change', syncWriteoffReason);
+    syncWriteoffReason();
+
     function toggleMovementForm() {
         const formCard = document.getElementById('movementFormCard');
         const btnText = document.getElementById('toggleMovementBtnText');

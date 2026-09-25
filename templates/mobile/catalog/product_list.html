@@ -325,6 +325,7 @@
     .warehouse-swipe-actions button, .warehouse-swipe-actions a { display: grid; width: 64px; place-items: center; border: 0; color: #fff; text-decoration: none; font-size: 1rem; }
     .warehouse-swipe-actions .swipe-in { background: #047857; }
     .warehouse-swipe-actions .swipe-transfer { background: #c2410c; }
+    .warehouse-swipe-actions .swipe-out { background: #b91c1c; }
     .warehouse-swipe-actions .swipe-edit { background: #334155; }
     .warehouse-product-card { position: relative; z-index: 1; display: flex; min-height: 100px; flex-direction: row; align-items: center; gap: .75rem; margin: 0; padding: .8rem .85rem; border-radius: 17px; touch-action: pan-y; transition: transform .22s var(--ease-standard); will-change: transform; }
     .warehouse-product-card::before { display: none; }
@@ -353,6 +354,7 @@
     .warehouse-action-option > i:last-child { color:var(--text-muted); font-size:.72rem; }
     .warehouse-action-option.action-receive > span { background:rgba(16,185,129,.13); color:var(--accent-green); }
     .warehouse-action-option.action-transfer > span { background:rgba(234,88,12,.13); color:var(--accent-orange); }
+    .warehouse-action-option.action-writeoff > span { background:rgba(239,68,68,.13); color:var(--accent-red); }
     .warehouse-action-option.action-edit > span { background:rgba(2,132,199,.13); color:var(--accent-cyan); }
     @media (min-width: 560px) and (max-width: 1200px) {
         .warehouse-category-link { width: 80px; flex-basis: 80px; }
@@ -371,13 +373,14 @@
         </div>
         <button type="button" class="warehouse-theme-toggle haptic-press" onclick="toggleDacarTheme()" aria-label="Переключить тему" title="Тёмная / светлая тема"><i class="fa-solid fa-moon" data-dacar-theme-icon style="color:#f59e0b;"></i></button>
         <button type="button" class="pos-help-btn" id="catalogHelpBtn" title="Справка по складу" onclick="openCatalogHelpModal()"><i class="fa-solid fa-question"></i></button>
-        {% if user.is_admin_user %}<a href="{% url 'm_product_create' %}" class="btn btn-primary warehouse-add-btn haptic-press" aria-label="Добавить товар" title="Добавить товар"><i class="fa-solid fa-plus"></i></a>{% endif %}
+        {% if user.is_admin_user %}<a href="{% url 'm_stock_movement' %}?action=OUT" class="btn btn-secondary warehouse-add-btn haptic-press" aria-label="Списания и история" title="Списания и история"><i class="fa-solid fa-arrow-up-from-bracket"></i></a><a href="{% url 'm_product_create' %}" class="btn btn-primary warehouse-add-btn haptic-press" aria-label="Добавить товар" title="Добавить товар"><i class="fa-solid fa-plus"></i></a>{% endif %}
     </div>
 </div>
 
 <!-- FILTERS -->
 <div class="dacar-card warehouse-filter-card warehouse-search-card">
     <form method="GET" class="filter-bar-form" id="catalogFilterForm">
+        {% if out_of_stock_filter %}<input type="hidden" name="out_of_stock" value="1">{% endif %}
         <div class="warehouse-search-line">
             <div class="filter-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Название, SKU, штрихкод..." autocomplete="off" enterkeyhint="search" data-pwa-manual-focus readonly></div>
             <button type="button" class="warehouse-search-action" onclick="openWarehouseScanner()" aria-label="Сканировать штрихкод" title="Сканировать"><i class="fa-solid fa-qrcode"></i></button>
@@ -412,7 +415,8 @@
 </nav>
 
 <nav class="warehouse-filter-pills" aria-label="Быстрые фильтры">
-    <a class="warehouse-filter-pill {% if not low_stock_filter %}is-active{% endif %}" href="{% url 'm_product_list' %}">Все</a>
+    <a class="warehouse-filter-pill {% if not low_stock_filter and not out_of_stock_filter %}is-active{% endif %}" href="{% url 'm_product_list' %}">Все</a>
+    <a class="warehouse-filter-pill {% if out_of_stock_filter %}is-active{% endif %}" href="{% url 'm_product_list' %}?out_of_stock=1">Нет в наличии · {{ out_of_stock_count }}</a>
     <a class="warehouse-filter-pill {% if low_stock_filter == '1' %}is-active{% endif %}" href="{% url 'm_product_list' %}?low_stock=1">Мало на складе{% if low_stock_count %} · {{ low_stock_count }}{% endif %}</a>
     <a class="warehouse-filter-pill" href="{% url 'm_product_list' %}?q={{ search|urlencode }}">Активные</a>
 </nav>
@@ -430,6 +434,7 @@
         {% if user.is_admin_user %}<div class="warehouse-swipe-actions" aria-hidden="true">
             <button type="button" class="swipe-in" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'IN')" aria-label="Принять товар"><i class="fa-solid fa-plus"></i></button>
             <button type="button" class="swipe-transfer" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'TRANSFER_TO_SHOP')" aria-label="Отправить в магазин"><i class="fa-solid fa-truck"></i></button>
+            <button type="button" class="swipe-out" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'OUT')" aria-label="Списать товар"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>
             <a class="swipe-edit" href="{% url 'm_product_edit' product.id %}" aria-label="Редактировать товар"><i class="fa-solid fa-pen"></i></a>
         </div>{% endif %}
         <article class="product-list-card warehouse-product-card" id="card-product-{{ product.id }}" data-product-id="{{ product.id }}" data-product-name="{{ product.name|escapejs }}" data-product-stock="{{ product.stock_qty|unlocalize }}" data-product-edit-url="{% url 'm_product_edit' product.id %}" {% if user.is_admin_user %}role="button" tabindex="0" aria-label="Действия с товаром {{ product.name }}"{% endif %}>
@@ -499,6 +504,9 @@
                     <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem; border-color: var(--accent-orange); color: var(--accent-orange);" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'TRANSFER_TO_SHOP')">
                         <i class="fa-solid fa-truck"></i> В магазин
                     </button>
+                    <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem; border-color: var(--accent-red); color: var(--accent-red);" onclick="openStockModal({{ product.id }}, '{{ product.name|escapejs }}', {{ product.stock_qty|unlocalize }}, 'OUT')">
+                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Списать
+                    </button>
                     <a href="{% url 'm_product_edit' product.id %}" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.78rem;">
                         <i class="fa-solid fa-pen"></i>
                     </a>
@@ -518,11 +526,11 @@
 {% if page_obj.has_other_pages %}
 <div style="display: flex; justify-content: center; gap: 0.4rem; margin-top: 1.25rem;">
     {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}&q={{ search|default:'' }}" class="btn btn-secondary">&laquo;</a>
+    <a href="?page={{ page_obj.previous_page_number }}&{{ pagination_query }}" class="btn btn-secondary">&laquo;</a>
     {% endif %}
     <span class="btn btn-primary" style="pointer-events: none;">{{ page_obj.number }}</span>
     {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}&q={{ search|default:'' }}" class="btn btn-secondary">&raquo;</a>
+    <a href="?page={{ page_obj.next_page_number }}&{{ pagination_query }}" class="btn btn-secondary">&raquo;</a>
     {% endif %}
 </div>
 {% endif %}
@@ -535,6 +543,7 @@
     <div class="warehouse-action-options">
         <button type="button" class="warehouse-action-option action-receive" onclick="startProductStockAction('IN')"><span><i class="fa-solid fa-boxes-packing"></i></span><div><strong>Принять на склад</strong><small>Добавить поступивший товар</small></div><i class="fa-solid fa-chevron-right"></i></button>
         <button type="button" class="warehouse-action-option action-transfer" onclick="startProductStockAction('TRANSFER_TO_SHOP')"><span><i class="fa-solid fa-truck"></i></span><div><strong>Отгрузить в магазин</strong><small>Передать товар водителю</small></div><i class="fa-solid fa-chevron-right"></i></button>
+        <button type="button" class="warehouse-action-option action-writeoff" onclick="startProductStockAction('OUT')"><span><i class="fa-solid fa-arrow-up-from-bracket"></i></span><div><strong>Списать товар</strong><small>Реклама, повреждение или другая причина</small></div><i class="fa-solid fa-chevron-right"></i></button>
         <a href="#" class="warehouse-action-option action-edit" id="productActionEditLink"><span><i class="fa-solid fa-pen"></i></span><div><strong>Редактировать карточку</strong><small>Цена, остаток, категория</small></div><i class="fa-solid fa-chevron-right"></i></a>
     </div>
 </div>
@@ -588,6 +597,14 @@
             <button type="button" class="quick-qty-btn" onclick="addModalQty(5)">+5</button>
             <button type="button" class="quick-qty-btn" onclick="addModalQty(10)">+10</button>
             <button type="button" class="quick-qty-btn" onclick="addModalQty(50)">+50</button>
+        </div>
+
+        <div id="modalWriteoffReasonGroup" style="display:none;margin-bottom:.9rem;padding:.75rem;border:1px solid rgba(239,68,68,.3);border-radius:var(--radius-md);background:rgba(239,68,68,.07);">
+            <label style="display:block;font-size:.78rem;color:var(--accent-red);font-weight:750;margin-bottom:.35rem;">Причина списания *</label>
+            <select id="modalWriteoffReason" class="form-control">
+                <option value="">Выберите причину</option>
+                {% for reason_value, reason_label in writeoff_reasons %}<option value="{{ reason_value }}">{{ reason_label }}</option>{% endfor %}
+            </select>
         </div>
 
         <div style="margin-bottom: 1.25rem;">
@@ -735,6 +752,7 @@
         document.getElementById('modalStockCurrentQty').textContent = `${formatStockQuantity(currentModalStock)} шт`;
         document.getElementById('modalStockQtyInput').value = '';
         document.getElementById('modalStockComment').value = '';
+        document.getElementById('modalWriteoffReason').value = '';
         document.getElementById('stockConflictAlert').style.display = 'none';
 
         const titleText = document.getElementById('stockModalTitleText');
@@ -742,7 +760,19 @@
         const submitBtn = document.getElementById('modalStockSubmitBtn');
         const qtyLabel = document.getElementById('stockQtyInputLabel');
 
-        if (actionType === 'TRANSFER_TO_SHOP') {
+        const reasonGroup = document.getElementById('modalWriteoffReasonGroup');
+        reasonGroup.style.display = actionType === 'OUT' ? 'block' : 'none';
+
+        if (actionType === 'OUT') {
+            titleText.textContent = 'Списание товара';
+            titleText.style.color = 'var(--accent-red)';
+            iconEl.className = 'fa-solid fa-arrow-up-from-bracket';
+            iconEl.style.color = 'var(--accent-red)';
+            submitBtn.className = 'btn btn-primary';
+            submitBtn.style.background = 'linear-gradient(135deg, #991b1b, #dc2626)';
+            submitBtn.innerHTML = '<i class="fa-solid fa-arrow-up-from-bracket"></i> Списать товар';
+            qtyLabel.textContent = `Количество для списания (макс: ${formatStockQuantity(currentModalStock)} шт) *`;
+        } else if (actionType === 'TRANSFER_TO_SHOP') {
             titleText.textContent = 'Отгрузка в магазин';
             titleText.style.color = 'var(--accent-orange)';
             iconEl.className = 'fa-solid fa-truck';
@@ -809,10 +839,16 @@
         const action = document.getElementById('modalStockActionType').value;
         const qty = parseFloat(document.getElementById('modalStockQtyInput').value);
         const comment = document.getElementById('modalStockComment').value;
+        const writeoffReason = document.getElementById('modalWriteoffReason').value;
         const submitBtn = document.getElementById('modalStockSubmitBtn');
 
         if (!qty || qty <= 0) {
             if (window.showToast) window.showToast('Введите корректное количество', 'warning');
+            return;
+        }
+        if (action === 'OUT' && !writeoffReason) {
+            if (window.showToast) window.showToast('Выберите причину списания', 'warning');
+            document.getElementById('modalWriteoffReason').focus();
             return;
         }
 
@@ -834,6 +870,7 @@
                     product_id: parseInt(productId, 10),
                     action: action,
                     quantity: qty,
+                    writeoff_reason: writeoffReason,
                     comment: comment,
                     client_sync_id: syncId
                 })

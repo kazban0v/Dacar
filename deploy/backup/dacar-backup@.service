@@ -1,0 +1,19 @@
+[Unit]
+Description=DACAR verified database backup (%i)
+OnFailure=dacar-backup-alert.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/var/www/dacar/.venv/bin/python /opt/dacar-backup/backup.py %i
+Nice=15
+IOSchedulingClass=idle
+CPUQuota=20%
+MemoryMax=128M
+TimeoutStartSec=300
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/backups/dacar

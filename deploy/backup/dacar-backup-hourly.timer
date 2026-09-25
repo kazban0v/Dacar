@@ -1,0 +1,11 @@
+[Unit]
+Description=DACAR hourly backups (retain last 48)
+
+[Timer]
+OnCalendar=*-*-* *:07:00
+RandomizedDelaySec=60
+Persistent=true
+Unit=dacar-backup@hourly.service
+
+[Install]
+WantedBy=timers.target

@@ -11,7 +11,7 @@ from rest_framework.exceptions import APIException, ValidationError
 
 from analytics.models import AuditLog
 from catalog.models import Product, StockMovement
-from sales.models import FinancialLock, OperationReceipt, SaleOrder, SaleOrderItem
+from sales.models import FinancialLock, OperationReceipt, SaleOrder, SaleOrderItem, SalePayment
 
 CENT = Decimal('0.01')
 MAX_MONEY = Decimal('9999999999.99')
@@ -74,7 +74,7 @@ def checkout(request, data):
         item_discounts = Decimal('0.00')
         # Sorted acquisition order is also safe on row-locking databases.
         for item in sorted(data['items'], key=lambda row: row['product_id']):
-            product = Product.objects.filter(pk=item['product_id'], is_active=True).first()
+            product = Product.objects.select_related('brand').filter(pk=item['product_id'], is_active=True).first()
             if product is None:
                 raise ValidationError('Товар не найден или деактивирован.')
             qty, discount = item['quantity'], item['discount']
@@ -91,6 +91,8 @@ def checkout(request, data):
             subtotal += line_subtotal
             item_discounts += discount
             rows.append(dict(product=product, quantity=qty, unit_price=unit_price,
+                product_name_snapshot=product.name, sku_snapshot=product.sku,
+                brand_name_snapshot=product.brand.name if product.brand else '', unit_snapshot=product.unit,
                 purchase_price_snapshot=cost, discount_amount=discount,
                 total_amount=line_subtotal - discount))
 
@@ -105,10 +107,18 @@ def checkout(request, data):
         if data['payment_method'] != SaleOrder.PaymentMethod.CASH and paid != total:
             raise ValidationError('Для безналичной или смешанной оплаты укажите точную сумму чека.')
 
+        parts = data.get('payments', [])
+        if data['payment_method'] == 'MIXED':
+            if len(parts) < 2 or sum(part['amount'] for part in parts) != total:
+                raise ValidationError('Сумма частей оплаты должна точно совпадать с итогом чека.')
+        else:
+            parts = [{'method': data['payment_method'], 'amount': total}]
+
         order = SaleOrder.objects.create(order_number=SaleOrder.generate_order_number(),
             cashier=request.user, payment_method=data['payment_method'], subtotal_amount=subtotal,
             discount_amount=discount, total_amount=total, paid_amount=paid,
             change_amount=money(paid - total), notes=data['notes'])
+        SalePayment.objects.bulk_create([SalePayment(order=order, **part) for part in parts])
         for row in rows:
             SaleOrderItem.objects.create(order=order, **row)
             StockMovement.objects.create(product=row['product'], movement_type='SALE',

@@ -36,6 +36,7 @@ db.sqlite3-journal
 # Temporary scripts and rendered test files
 rendered_pos.html
 temp_script.js
+tmp/
 
 # OS specific
 .DS_Store

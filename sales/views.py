@@ -117,7 +117,7 @@ def sales_orders_list_view(request):
     if cashier_period not in {'today', 'yesterday', 'week'}:
         cashier_period = 'today'
 
-    orders = SaleOrder.objects.select_related('cashier', 'refunded_by').prefetch_related('items__product').all()
+    orders = SaleOrder.objects.select_related('cashier', 'refunded_by').prefetch_related('items__product', 'payments').all()
 
     cashier_period_label = 'сегодня'
     cashier_stats_label = 'Чеков за смену'
@@ -158,7 +158,7 @@ def sales_orders_list_view(request):
     if status_filter:
         orders = orders.filter(status=status_filter)
     if payment_filter:
-        orders = orders.filter(payment_method=payment_filter)
+        orders = orders.filter(Q(payment_method=payment_filter) | Q(payments__method=payment_filter)).distinct()
     if cashier_filter and request.user.is_admin_user:
         orders = orders.filter(cashier_id=cashier_filter)
     if discounted_filter == '1' and request.user.is_admin_user:

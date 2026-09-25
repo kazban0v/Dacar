@@ -93,6 +93,10 @@ class SaleOrderItem(models.Model):
     order = models.ForeignKey(SaleOrder, on_delete=models.CASCADE, related_name='items', verbose_name="Чек")
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name='sale_items', verbose_name="Товар")
     quantity = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Количество")
+    product_name_snapshot = models.CharField(max_length=255, blank=True)
+    brand_name_snapshot = models.CharField(max_length=100, blank=True)
+    sku_snapshot = models.CharField(max_length=50, blank=True)
+    unit_snapshot = models.CharField(max_length=20, blank=True)
     
     # Financial snapshot at time of checkout
     purchase_price_snapshot = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Закупочная цена (₸)")
@@ -108,6 +112,44 @@ class SaleOrderItem(models.Model):
     def item_profit(self):
         return self.total_amount - (self.quantity * self.purchase_price_snapshot)
 
+    @property
+    def display_name(self):
+        return self.product_name_snapshot or (self.product.name if self.product else 'Удалённый товар')
+
     def __str__(self):
         product_name = self.product.name if self.product else "Удалённый товар"
         return f"{product_name} x {self.quantity} = {self.total_amount} ₸"
+
+
+class SalePayment(models.Model):
+    """Applied payment amounts, excluding cash change. Refund retains original split."""
+    order = models.ForeignKey(SaleOrder, on_delete=models.CASCADE, related_name='payments')
+    method = models.CharField(max_length=20, choices=[
+        ('CASH', 'Наличные'), ('CARD', 'Карта'), ('TRANSFER', 'Kaspi QR')])
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['order', 'method'], name='sale_payment_unique_method'),
+            models.CheckConstraint(condition=models.Q(amount__gte=0), name='sale_payment_nonnegative'),
+            models.CheckConstraint(condition=models.Q(method__in=['CASH', 'CARD', 'TRANSFER']), name='sale_payment_method_valid'),
+        ]
+
+
+class CompanyInvoice(models.Model):
+    """A payment request only; does not post a sale or move inventory."""
+    key = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    fingerprint = models.CharField(max_length=64)
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    buyer_name = models.CharField(max_length=255)
+    buyer_bin = models.CharField(max_length=12)
+    buyer_address = models.CharField(max_length=500)
+    contract = models.CharField(max_length=255, blank=True)
+    seller = models.JSONField(default=dict)
+    lines = models.JSONField(default=list)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def number(self):
+        return f'DC-{self.pk:06d}'

@@ -1,0 +1,13 @@
+[Unit]
+Description=DACAR backup failure notification
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/var/www/dacar/.venv/bin/python /opt/dacar-backup/backup.py notify-failure
+TimeoutStartSec=60
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true

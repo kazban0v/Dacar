@@ -59,8 +59,22 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(StockMovement)
 class StockMovementAdmin(admin.ModelAdmin):
-    list_display = ('product', 'movement_type', 'quantity', 'cost_price', 'created_by', 'comment', 'created_at')
-    list_filter = ('movement_type', 'created_at', 'created_by')
+    list_display = ('product', 'movement_type', 'quantity', 'writeoff_reason', 'cost_price',
+                    'created_by', 'reversed_at', 'comment', 'created_at')
+    list_filter = ('movement_type', 'writeoff_reason', 'created_at', 'created_by')
     search_fields = ('product__name', 'product__sku', 'product__barcode', 'comment', 'created_by__username')
     date_hierarchy = 'created_at'
     ordering = ('-created_at',)
+    readonly_fields = (
+        'product', 'movement_type', 'quantity', 'cost_price', 'writeoff_reason', 'comment',
+        'client_sync_id', 'created_by', 'created_at', 'reversed_at', 'reversed_by', 'reversal_of',
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.has_perm('catalog.view_stockmovement')
+
+    def has_delete_permission(self, request, obj=None):
+        return False

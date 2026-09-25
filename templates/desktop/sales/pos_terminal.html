@@ -1514,17 +1514,27 @@
                 <label
                     style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; display: block;">Способ
                     оплаты:</label>
-                <div class="payment-grid">
+                <div class="payment-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
                     <button class="pay-method-btn active" onclick="setPaymentMethod('CASH', this)"><i
                             class="fa-solid fa-money-bill-wave"></i> Наличные</button>
                     <button class="pay-method-btn" onclick="setPaymentMethod('CARD', this)"><i
                             class="fa-solid fa-credit-card"></i> Карта</button>
                     <button class="pay-method-btn" onclick="setPaymentMethod('TRANSFER', this)"><i
                             class="fa-solid fa-qrcode"></i> Kaspi QR</button>
+                    <button class="pay-method-btn" onclick="setPaymentMethod('MIXED', this)">Смешанная</button>
                 </div>
             </div>
 
             <!-- Paid & Change Section -->
+            <div id="mixedPayments" hidden>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem">
+                    <label>Наличные<input id="mixedCASH" type="number" min="0" step="0.01" class="form-control" value="0" oninput="updateMixedBalance()"></label>
+                    <label>Карта<input id="mixedCARD" type="number" min="0" step="0.01" class="form-control" value="0" oninput="updateMixedBalance()"></label>
+                    <label>Kaspi QR<input id="mixedTRANSFER" type="number" min="0" step="0.01" class="form-control" value="0" oninput="updateMixedBalance()"></label>
+                </div>
+                <small id="mixedBalance" role="status" aria-live="polite"></small>
+                <small style="display:block">Укажите суммы в счёт оплаты, без сдачи. Минимум два способа.</small>
+            </div>
             <div style="display: flex; gap: 0.5rem; align-items: center;" id="cashDetailsRow">
                 <div style="flex: 1;">
                     <label style="font-size: 0.75rem; color: var(--text-muted);">Внесено (₸):</label>
@@ -1557,6 +1567,7 @@
             </div>
 
             <!-- Checkout Button -->
+            <button type="button" class="btn btn-secondary" onclick="openCompanyInvoice()">Счёт на оплату компании</button>
             <button class="btn btn-primary"
                 style="padding: 0.9rem; font-size: 1.1rem; width: 100%; margin-top: 0.5rem; font-weight: 800; letter-spacing: 0.02em; min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 0.5rem;"
                 onclick="submitCheckout()">
@@ -2273,10 +2284,19 @@
 
 
     // Payment Selection
+    function openCompanyInvoice() {
+        sessionStorage.setItem('dacarInvoiceCart', JSON.stringify({items:cart.map(item => ({
+            product_id:item.product_id, quantity:item.quantity, discount:item.discount || 0
+        })), discount_amount:globalDiscountInput.value || 0}));
+        window.location.href = '{% url "company_invoices" %}';
+    }
+
     function setPaymentMethod(method, btn) {
         selectedPaymentMethod = method;
         document.querySelectorAll('.pay-method-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        document.getElementById('mixedPayments').hidden = method !== 'MIXED';
+        updateMixedBalance();
 
         const cashRow = document.getElementById('cashDetailsRow');
         const quickCash = document.getElementById('quickCashContainer');
@@ -2296,14 +2316,15 @@
     function getFinalTotal() {
         let subtotal = 0;
         cart.forEach(item => {
-            subtotal += (item.quantity * item.unit_price);
-            subtotal -= item.discount || 0;
+            subtotal += Math.round(item.quantity * item.unit_price * 100);
+            subtotal -= Math.round((item.discount || 0) * 100);
         });
         const globalDiscount = parseFloat(globalDiscountInput.value) || 0;
-        return Math.max(0, subtotal - globalDiscount);
+        return Math.max(0, subtotal - Math.round(globalDiscount * 100)) / 100;
     }
 
     function calculateChange() {
+        updateMixedBalance();
         const finalTotal = getFinalTotal();
         const paid = parseFloat(paidAmountInput.value) || 0;
         const change = Math.max(0, paid - finalTotal);
@@ -2321,6 +2342,18 @@
     }
 
     // 4. Submit Checkout to Django REST API
+    function mixedParts() {
+        return ['CASH', 'CARD', 'TRANSFER'].map(method => ({method,
+            amount: document.getElementById('mixed' + method).value || '0'}));
+    }
+
+    function updateMixedBalance() {
+        const el = document.getElementById('mixedBalance');
+        if (!el) return;
+        const remaining = Math.round(getFinalTotal() * 100) - mixedParts().reduce((sum, part) => sum + Math.round(Number(part.amount) * 100), 0);
+        el.textContent = remaining === 0 ? 'Суммы совпадают с итогом' : `Осталось распределить: ${formatMoney(remaining / 100)} ₸`;
+    }
+
     async function submitCheckout() {
         if (cart.length === 0) {
             alert('Корзина пуста! Добавьте товары для оформления продажи.');
@@ -2337,6 +2370,16 @@
         if (selectedPaymentMethod !== 'CASH') {
             paid = finalTotal;
         }
+        let payments;
+        if (selectedPaymentMethod === 'MIXED') {
+            const parts = mixedParts();
+            payments = parts.filter(part => Number(part.amount) > 0);
+            if (parts.some(part => !Number.isFinite(Number(part.amount)) || Number(part.amount) < 0) || payments.length < 2 ||
+                payments.reduce((sum, part) => sum + Math.round(Number(part.amount) * 100), 0) !== Math.round(finalTotal * 100)) {
+                alert('Распределите точную сумму чека минимум между двумя способами оплаты.');
+                return;
+            }
+        }
 
         if (!window.checkoutSyncId) window.checkoutSyncId = (window.crypto && typeof window.crypto.randomUUID === 'function' ? window.crypto.randomUUID() : 'checkout-' + Date.now() + '-' + Math.random().toString(36).slice(2));
         const payload = {
@@ -2347,6 +2390,7 @@
                 discount: i.discount
             })),
             payment_method: selectedPaymentMethod,
+            ...(payments ? {payments} : {}),
             paid_amount: paid,
             discount_amount: parseFloat(globalDiscountInput.value) || 0,
             notes: 'Продажа через POS Терминал'
@@ -2368,6 +2412,7 @@
                 // Reset Cart
                 cart = [];
                 window.checkoutSyncId = null;
+                ['CASH', 'CARD', 'TRANSFER'].forEach(method => document.getElementById('mixed' + method).value = '0');
                 globalDiscountInput.value = 0;
                 paidAmountInput.value = '';
                 renderCart();
@@ -2386,7 +2431,9 @@
         lastPrintedOrderId = order.id;
         document.getElementById('rOrderNum').innerText = order.order_number;
         document.getElementById('rOrderDate').innerText = new Date(order.created_at).toLocaleString('ru-RU');
-        document.getElementById('rPaymentMethod').innerText = order.payment_method_display || order.payment_method;
+        document.getElementById('rPaymentMethod').innerText = order.payment_method === 'MIXED' ?
+            (order.payments || []).map(part => `${part.label}: ${part.amount} ₸`).join('\n') :
+            (order.payment_method_display || order.payment_method);
 
         const tbody = document.getElementById('rItemsTableBody');
         tbody.innerHTML = '';

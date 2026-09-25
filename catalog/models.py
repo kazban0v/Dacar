@@ -103,15 +103,48 @@ class StockMovement(models.Model):
         ADJUSTMENT = 'ADJUSTMENT', 'Корректировка инвентаризации'
         SALE = 'SALE', 'Продажа'
         RETURN = 'RETURN', 'Возврат от покупателя'
+        WRITE_OFF_REVERSAL = 'WRITE_OFF_REVERSAL', 'Отмена списания'
+
+    class WriteOffReason(models.TextChoices):
+        ADVERTISING = 'ADVERTISING', 'Реклама / съёмка видео'
+        DAMAGED = 'DAMAGED', 'Повреждение / брак'
+        EXPIRED = 'EXPIRED', 'Истёк срок годности'
+        INTERNAL_USE = 'INTERNAL_USE', 'Использование для работы'
+        LOST = 'LOST', 'Потеря / недостача'
+        SAMPLE = 'SAMPLE', 'Образец / тестирование'
+        OTHER = 'OTHER', 'Другое'
 
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='stock_movements', verbose_name="Товар")
     movement_type = models.CharField(max_length=20, choices=MovementType.choices, verbose_name="Тип операции")
     quantity = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Количество")
     cost_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="Себестоимость (₸)")
     comment = models.CharField(max_length=255, blank=True, verbose_name="Комментарий")
+    writeoff_reason = models.CharField(
+        max_length=32,
+        choices=WriteOffReason.choices,
+        blank=True,
+        verbose_name="Причина списания",
+    )
     client_sync_id = models.CharField(max_length=64, blank=True, null=True, db_index=True, verbose_name="UUID синхронизации")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, verbose_name="Сотрудник")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время")
+    reversed_at = models.DateTimeField(null=True, blank=True, verbose_name="Списание отменено")
+    reversed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reversed_stock_writeoffs',
+        verbose_name="Кто отменил списание",
+    )
+    reversal_of = models.OneToOneField(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reversal_entry',
+        verbose_name="Отменённое списание",
+    )
 
     class Meta:
         verbose_name = "Движение товара"
@@ -120,3 +153,7 @@ class StockMovement(models.Model):
 
     def __str__(self):
         return f"{self.get_movement_type_display()} - {self.product.name} ({self.quantity} {self.product.unit})"
+
+    @property
+    def is_reversed(self):
+        return self.reversed_at is not None

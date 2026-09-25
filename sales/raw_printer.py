@@ -109,7 +109,7 @@ def build_escpos_bytes_for_order(order, shop_info=None):
         pair('Оформил', person(order.refunded_by))
     line('-' * width)
     for index, item in enumerate(order.items.all(), 1):
-        line(f'{index}. {item.product.name if item.product else "Удалённый товар"}', bold=True)
+        line(f'{index}. {item.display_name}', bold=True)
         qty = format(item.quantity, 'f').rstrip('0').rstrip('.') if '.' in str(item.quantity) else str(item.quantity)
         line((qty + ' x ' + money(item.unit_price)).rjust(width))
         if item.discount_amount:
@@ -122,6 +122,9 @@ def build_escpos_bytes_for_order(order, shop_info=None):
         pair('Скидка на чек', money(order.discount_amount))
     pair('ВОЗВРАТ' if refunded else 'ИТОГО', money(order.total_amount), bold=True, large=True)
     pair('Оплата продажи' if refunded else 'Оплата', order.get_payment_method_display())
+    if order.payment_method == 'MIXED':
+        for payment in order.payments.all():
+            pair(payment.get_method_display(), f'{payment.amount:.2f}')
     if order.status == 'COMPLETED' and order.payment_method == 'CASH':
         pair('Получено', money(order.paid_amount))
         pair('Сдача', money(order.change_amount))

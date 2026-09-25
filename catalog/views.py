@@ -19,6 +19,7 @@ def product_list_view(request):
     category_id = request.GET.get('category')
     brand_id = request.GET.get('brand')
     low_stock = request.GET.get('low_stock')
+    out_of_stock = request.GET.get('out_of_stock')
 
     all_active_products = Product.objects.select_related('category', 'brand').filter(is_active=True)
     products = all_active_products
@@ -35,6 +36,8 @@ def product_list_view(request):
         products = products.filter(brand_id=brand_id)
     if low_stock == '1':
         products = products.filter(stock_qty__lte=F('min_stock_alert'))
+    if out_of_stock == '1':
+        products = products.filter(stock_qty=0)
 
     from django.core.paginator import Paginator
 
@@ -44,6 +47,8 @@ def product_list_view(request):
     page_number = request.GET.get('page', 1)
     paginator = Paginator(products, 15)
     page_obj = paginator.get_page(page_number)
+    pagination_params = request.GET.copy()
+    pagination_params.pop('page', None)
 
     inventory_value = Decimal('0')
     if request.user.is_admin_user:
@@ -58,6 +63,7 @@ def product_list_view(request):
 
     return render(request, 'catalog/product_list.html', {
         'page_obj': page_obj,
+        'pagination_query': pagination_params.urlencode(),
         'products': page_obj.object_list,
         'categories': categories,
         'brands': brands,
@@ -65,11 +71,13 @@ def product_list_view(request):
         'selected_category': category_id,
         'selected_brand': brand_id,
         'low_stock_filter': low_stock,
+        'out_of_stock_filter': out_of_stock,
         'total_products': products.count(),
         'all_products_count': all_active_products.count(),
         'low_stock_count': all_active_products.filter(stock_qty__lte=F('min_stock_alert')).count(),
-        'out_of_stock_count': all_active_products.filter(stock_qty__lte=0).count(),
+        'out_of_stock_count': all_active_products.filter(stock_qty=0).count(),
         'inventory_value': inventory_value,
+        'writeoff_reasons': StockMovement.WriteOffReason.choices,
     })
 
 
@@ -268,14 +276,42 @@ def stock_movement_view(request):
             return redirect(referer)
         return redirect('stock_movement')
 
-    movements = StockMovement.objects.select_related('product', 'created_by').all()[:100]
+    movements = StockMovement.objects.select_related(
+        'product', 'created_by', 'reversed_by', 'reversal_of',
+    ).all()[:100]
     products = Product.objects.filter(is_active=True).order_by('name')
     return render(request, 'catalog/stock_movement.html', {
         'movements': movements,
         'products': products,
         'movement_types': StockMovement.MovementType.choices,
+        'writeoff_reasons': StockMovement.WriteOffReason.choices,
+        'selected_product_id': request.GET.get('product', ''),
+        'initial_movement_type': request.GET.get('action', ''),
         'stock_sync_id': __import__('uuid').uuid4().hex,
     })
+
+
+@login_required
+def reverse_writeoff_view(request, pk):
+    movement_url = 'm_stock_movement' if is_mobile_request(request) else 'stock_movement'
+    if not request.user.is_admin_user:
+        messages.error(request, 'Отмена списания доступна исключительно Администратору.')
+        return redirect('pos')
+    if request.method != 'POST':
+        messages.error(request, 'Используйте кнопку отмены в журнале списаний.')
+        return redirect(movement_url)
+
+    from catalog.operations import reverse_writeoff
+    from rest_framework.exceptions import APIException
+    try:
+        result = reverse_writeoff(request, pk)
+        if result['replayed']:
+            messages.info(request, 'Это списание уже отменено. Остаток повторно не изменён.')
+        else:
+            messages.success(request, 'Списание отменено, товар возвращён на склад.')
+    except APIException as exc:
+        messages.error(request, str(exc.detail))
+    return redirect(movement_url)
 
 
 class ProductSearchAPIView(APIView):

@@ -53,6 +53,7 @@
     .stock-action { display:inline-grid; width:28px; height:28px; place-items:center; color:var(--text-muted); background:var(--card-bg); border:1px solid var(--card-border); border-radius:7px; text-decoration:none; }
     .stock-action:hover { color:var(--accent-cyan); border-color:var(--accent-cyan); }
     .stock-action.stock-refill:hover { color:var(--accent-green); border-color:var(--accent-green); }
+    .stock-action.stock-writeoff:hover { color:var(--accent-red); border-color:var(--accent-red); }
     .stock-empty { padding:4.5rem 1rem; text-align:center; color:var(--text-muted); }
     .stock-empty i { color:var(--accent-cyan); font-size:2rem; opacity:.5; }
     .stock-empty p { margin:.7rem 0 .2rem; color:var(--text-main); font-weight:800; }
@@ -80,7 +81,7 @@
             <h1 class="stock-v2-title">Склад и остатки</h1>
             <p class="stock-v2-summary">{{ all_products_count }} товаров · {{ low_stock_count }} с низким остатком{% if user.is_admin_user %} · сумма склада {{ inventory_value|floatformat:0 }} ₸{% endif %}</p>
         </div>
-        {% if user.is_admin_user %}<a href="{% url 'product_create' %}" class="btn btn-primary stock-v2-add"><i class="fa-solid fa-plus"></i> Добавить товар</a>{% endif %}
+        {% if user.is_admin_user %}<div style="display:flex;gap:.5rem;flex-wrap:wrap;"><a href="{% url 'stock_movement' %}?action=OUT" class="btn btn-secondary stock-v2-add"><i class="fa-solid fa-arrow-up-from-bracket"></i> Списание и история</a><a href="{% url 'product_create' %}" class="btn btn-primary stock-v2-add"><i class="fa-solid fa-plus"></i> Добавить товар</a></div>{% endif %}
     </header>
 
     <nav class="stock-category-row" aria-label="Категории товаров">
@@ -95,12 +96,14 @@
             <input class="form-control" type="search" name="q" value="{{ search }}" placeholder="Поиск по товару, SKU или штрихкоду">
             {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
             {% if low_stock_filter %}<input type="hidden" name="low_stock" value="{{ low_stock_filter }}">{% endif %}
+            {% if out_of_stock_filter %}<input type="hidden" name="out_of_stock" value="{{ out_of_stock_filter }}">{% endif %}
             <select class="form-control" name="brand" aria-label="Бренд"><option value="">Все бренды</option>{% for brand in brands %}<option value="{{ brand.id }}" {% if selected_brand == brand.id|stringformat:'i' %}selected{% endif %}>{{ brand.name }}</option>{% endfor %}</select>
             <button class="btn btn-secondary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Найти</button>
-            {% if search or selected_category or selected_brand or low_stock_filter %}<a class="btn btn-secondary" href="{% url 'product_list' %}" title="Сбросить фильтры"><i class="fa-solid fa-xmark"></i></a>{% endif %}
+            {% if search or selected_category or selected_brand or low_stock_filter or out_of_stock_filter %}<a class="btn btn-secondary" href="{% url 'product_list' %}" title="Сбросить фильтры"><i class="fa-solid fa-xmark"></i></a>{% endif %}
         </form>
         <div class="stock-pills">
-            <a href="{% url 'product_list' %}" class="stock-pill {% if not low_stock_filter and not selected_category and not selected_brand and not search %}is-active{% endif %}">Все</a>
+            <a href="{% url 'product_list' %}" class="stock-pill {% if not low_stock_filter and not out_of_stock_filter and not selected_category and not selected_brand and not search %}is-active{% endif %}">Все</a>
+            <a href="?out_of_stock=1" class="stock-pill {% if out_of_stock_filter == '1' %}is-active{% endif %}">Нет в наличии · {{ out_of_stock_count }}</a>
             <a href="?low_stock=1" class="stock-pill {% if low_stock_filter == '1' %}is-active{% endif %}">Мало на складе</a>
             <a href="{% url 'product_list' %}" class="stock-pill">Активные</a>
         </div>
@@ -118,14 +121,14 @@
                     {% if user.is_admin_user %}<td class="stock-cost">{{ p.purchase_price|floatformat:0 }} ₸</td>{% endif %}
                     <td class="stock-price">{{ p.retail_price|floatformat:0 }} ₸</td>
                     {% if user.is_admin_user %}<td class="stock-margin">+{{ p.margin|floatformat:0 }} ₸</td>{% endif %}
-                    {% if user.is_admin_user %}<td><div class="stock-actions"><button class="stock-action stock-refill" type="button" onclick="openStockRefillModal('{{ p.id }}','{{ p.name|escapejs }}','{{ p.stock_qty|floatformat:0 }}')" title="Пополнить"><i class="fa-solid fa-plus"></i></button><a class="stock-action" href="{% url 'product_edit' p.id %}" title="Редактировать"><i class="fa-solid fa-pen"></i></a></div></td>{% endif %}
+                    {% if user.is_admin_user %}<td><div class="stock-actions"><button class="stock-action stock-refill" type="button" onclick="openStockRefillModal('{{ p.id }}','{{ p.name|escapejs }}','{{ p.stock_qty|floatformat:0 }}')" title="Пополнить"><i class="fa-solid fa-plus"></i></button><a class="stock-action stock-writeoff" href="{% url 'stock_movement' %}?product={{ p.id }}&action=OUT" title="Списать"><i class="fa-solid fa-arrow-up-from-bracket"></i></a><a class="stock-action" href="{% url 'product_edit' p.id %}" title="Редактировать"><i class="fa-solid fa-pen"></i></a></div></td>{% endif %}
                 </tr>
                 {% empty %}
                 <tr><td colspan="{% if user.is_admin_user %}7{% else %}4{% endif %}"><div class="stock-empty"><i class="fa-solid fa-box-open"></i><p>Товары не найдены</p><small>Попробуйте изменить поиск или фильтр.</small></div></td></tr>
                 {% endfor %}
             </tbody>
         </table></div>
-        {% if page_obj.has_other_pages %}<div class="stock-pagination"><span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }} · всего {{ page_obj.paginator.count }}</span><div class="stock-pages">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&q={{ search }}&category={{ selected_category|default:'' }}&brand={{ selected_brand|default:'' }}&low_stock={{ low_stock_filter|default:'' }}">‹</a>{% endif %}{% for n in page_obj.paginator.page_range %}{% if n == page_obj.number %}<span>{{ n }}</span>{% elif n > page_obj.number|add:'-3' and n < page_obj.number|add:'3' %}<a href="?page={{ n }}&q={{ search }}&category={{ selected_category|default:'' }}&brand={{ selected_brand|default:'' }}&low_stock={{ low_stock_filter|default:'' }}">{{ n }}</a>{% endif %}{% endfor %}{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&q={{ search }}&category={{ selected_category|default:'' }}&brand={{ selected_brand|default:'' }}&low_stock={{ low_stock_filter|default:'' }}">›</a>{% endif %}</div></div>{% endif %}
+        {% if page_obj.has_other_pages %}<div class="stock-pagination"><span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }} · всего {{ page_obj.paginator.count }}</span><div class="stock-pages">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&{{ pagination_query }}">‹</a>{% endif %}{% for n in page_obj.paginator.page_range %}{% if n == page_obj.number %}<span>{{ n }}</span>{% elif n > page_obj.number|add:'-3' and n < page_obj.number|add:'3' %}<a href="?page={{ n }}&{{ pagination_query }}">{{ n }}</a>{% endif %}{% endfor %}{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&{{ pagination_query }}">›</a>{% endif %}</div></div>{% endif %}
     </section>
     {% if user.is_admin_user %}<p class="stock-hint">Наведите на строку — появятся быстрые действия: пополнить или отредактировать товар.</p>{% endif %}
 </main>

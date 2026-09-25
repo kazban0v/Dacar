@@ -1,0 +1,83 @@
+{% extends 'desktop/base.html' %}
+{% block title %}Счёт для компании{% endblock %}
+{% block content %}
+{% include 'desktop/sales/document_styles.html' %}
+<main class="docs">
+    <a href="{% url 'pos' %}">← Касса</a>
+    <h1>Счёт на оплату для компании</h1>
+    <p class="note">Создание счёта не списывает товар и не проводит оплату. После получения денег продажа оформляется отдельно в кассе.</p>
+    <section class="panel"><strong>{{ seller.name }}</strong><p class="muted">БИН / ИИН {{ seller.bin }} · {{ seller.tax }}<br>{{ seller.address }}<br>{{ seller.bank }} · {{ seller.account }}</p></section>
+    <form id="invoiceForm" class="panel">
+        {% csrf_token %}
+        <h2>Покупатель</h2>
+        <div class="fields">
+            <label>Название компании<input name="buyer_name" required maxlength="255" autocomplete="organization"></label>
+            <label>БИН / ИИН (12 цифр)<input name="buyer_bin" required pattern="[0-9]{12}" maxlength="12" inputmode="numeric"></label>
+            <label class="full">Юридический адрес<input name="buyer_address" required maxlength="500"></label>
+            <label class="full">Договор (необязательно)<input name="contract" maxlength="255" placeholder="Номер и дата"></label>
+        </div>
+        <h2>Товары</h2>
+        <div id="invoiceLines"></div>
+        <button type="button" class="btn btn-secondary" id="addInvoiceLine">+ Добавить товар</button>
+        <div class="fields" style="margin-top:16px"><label>Общая скидка, ₸<input type="number" name="discount_amount" min="0" step="0.01" value="0"></label></div>
+        <p class="total" id="invoiceTotal"></p><p class="muted">Цены берутся из текущего каталога. Без НДС.</p>
+        <div id="invoiceError" class="error" role="alert"></div>
+        <div class="actions"><button type="submit" class="btn btn-primary" id="createInvoice">Создать счёт</button><a id="invoiceResult" class="btn btn-secondary" hidden target="_blank" rel="noopener">Открыть PDF</a></div>
+    </form>
+    <section class="panel"><h2>Последние счета</h2><div class="scroll"><table><thead><tr><th>Номер / дата</th><th>Компания</th><th>Сумма</th><th>Документ</th></tr></thead><tbody>
+    {% for invoice in invoices %}<tr><td>{{ invoice.number }}<br>{{ invoice.created_at|date:'d.m.Y' }}</td><td>{{ invoice.buyer_name }}</td><td class="number">{{ invoice.total_amount|floatformat:2 }} ₸</td><td><a href="{% url 'invoice_pdf' invoice.pk %}" target="_blank" rel="noopener">PDF</a></td></tr>{% empty %}<tr><td colspan="4">Счетов пока нет</td></tr>{% endfor %}
+    </tbody></table></div></section>
+</main>
+{{ products_data|json_script:'invoiceProducts' }}
+<script>
+(() => {
+    const products = JSON.parse(document.getElementById('invoiceProducts').textContent);
+    const form = document.getElementById('invoiceForm'), lines = document.getElementById('invoiceLines');
+    let requestKey = null, completed = false;
+    const newKey = () => crypto.randomUUID();
+    function addLine(item = {}) {
+        if (lines.children.length >= 200) return;
+        const row = document.createElement('div'); row.className = 'invoice-line';
+        row.innerHTML = '<label>Товар<select required></select></label><label>Количество<input type="number" min="0.001" step="0.001" value="1" required></label><label>Скидка, ₸<input type="number" min="0" step="0.01" value="0" required></label><button type="button" class="btn btn-secondary">Удалить</button>';
+        const select = row.querySelector('select'); select.add(new Option('Выберите товар', ''));
+        products.forEach(p => select.add(new Option(`${p.name} · ${p.sku} · ${p.retail_price} ₸`, p.id)));
+        select.value = item.product_id || '';
+        const inputs = row.querySelectorAll('input'); inputs[0].value = item.quantity || 1; inputs[1].value = item.discount || 0;
+        row.querySelector('button').addEventListener('click', () => {row.remove(); changed();});
+        lines.append(row); updateTotal();
+    }
+    function items() {return Array.from(lines.children).map(row => ({product_id:Number(row.querySelector('select').value), quantity:row.querySelectorAll('input')[0].value, discount:row.querySelectorAll('input')[1].value}));}
+    function updateTotal() {
+        const total = items().reduce((sum, row) => {
+            const product = products.find(p => p.id === row.product_id);
+            return sum + Math.round(Number(product?.retail_price || 0) * Number(row.quantity) * 100) - Math.round(Number(row.discount) * 100);
+        }, 0) - Math.round(Number(form.elements.discount_amount.value) * 100);
+        document.getElementById('invoiceTotal').textContent = `К оплате: ${(total / 100).toLocaleString('ru-RU', {minimumFractionDigits:2})} ₸`;
+    }
+    function changed() {requestKey=null; completed=false; document.getElementById('invoiceResult').hidden=true; updateTotal();}
+    form.addEventListener('input', changed);
+    document.getElementById('addInvoiceLine').addEventListener('click', () => {addLine(); changed();});
+    let draft;
+    try {draft=JSON.parse(sessionStorage.getItem('dacarInvoiceCart')); sessionStorage.removeItem('dacarInvoiceCart');} catch (_) {}
+    if (draft?.items?.length) {draft.items.forEach(addLine); form.elements.discount_amount.value=draft.discount_amount || 0;} else addLine();
+    updateTotal();
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (completed) return;
+        const button=document.getElementById('createInvoice'), error=document.getElementById('invoiceError');
+        if (button.disabled) return;
+        if (!lines.children.length) {error.textContent='Добавьте хотя бы один товар.'; return;}
+        button.disabled=true; error.textContent=''; requestKey ||= newKey();
+        const data=Object.fromEntries(new FormData(form)); delete data.csrfmiddlewaretoken;
+        try {
+            const response=await fetch('{% url "invoice_create" %}', {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':form.elements.csrfmiddlewaretoken.value},body:JSON.stringify({...data, key:requestKey, items:items()})});
+            const result=await response.json();
+            if (!response.ok) {if(response.status===400) requestKey=null; throw new Error(Object.values(result).flat().join(' '));}
+            completed=true;
+            const link=document.getElementById('invoiceResult'); link.href=result.url; link.textContent=`Открыть PDF ${result.number}`; link.hidden=false;
+        } catch(exc) {error.textContent=exc.message || 'Не удалось создать счёт. Повторите запрос.';}
+        finally {button.disabled=false;}
+    });
+})();
+</script>
+{% endblock %}

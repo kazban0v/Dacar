@@ -1,5 +1,16 @@
 from django.contrib import admin
-from sales.models import SaleOrder, SaleOrderItem
+from sales.models import SaleOrder, SaleOrderItem, SalePayment
+
+
+class SalePaymentInline(admin.TabularInline):
+    model = SalePayment
+    extra = 0
+    fields = ('method', 'amount')
+    readonly_fields = fields
+    can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 class SaleOrderItemInline(admin.TabularInline):
     model = SaleOrderItem
@@ -18,7 +29,7 @@ class SaleOrderAdmin(admin.ModelAdmin):
     search_fields = ('order_number', 'cashier__username', 'cashier__first_name', 'cashier__last_name', 'notes', 'refund_reason')
     date_hierarchy = 'created_at'
     ordering = ('-created_at',)
-    inlines = [SaleOrderItemInline]
+    inlines = [SaleOrderItemInline, SalePaymentInline]
 
 
 @admin.register(SaleOrderItem)

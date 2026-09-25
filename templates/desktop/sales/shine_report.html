@@ -1,0 +1,28 @@
+{% extends 'desktop/base.html' %}
+{% block title %}Shine Systems · Отчёт для Маршала{% endblock %}
+{% block content %}
+{% include 'desktop/sales/document_styles.html' %}
+<main class="docs">
+    <a href="{% url 'dashboard' %}">← Дашборд</a>
+    <h1>Отчёт для Маршала</h1>
+    <p class="muted">Только Shine Systems · понедельник → понедельник · с учётом возвратов</p>
+    <form method="get" class="panel">
+        {{ form.as_p }}
+        <div class="actions"><button class="btn btn-primary" type="submit">Показать неделю</button>
+        <button class="btn btn-secondary" name="format" value="pdf" type="submit">Скачать PDF</button></div>
+    </form>
+    {% if report %}
+    <section class="panel">
+        <h2>{{ report.start|date:'d.m.Y' }} — {{ report.end|date:'d.m.Y' }}</h2>
+        <p class="muted">До 00:00 конечного понедельника. Суммы по ценам продажи с учётом скидок. Возвраты — по дате возврата, включая продажи прошлых недель.</p>
+        {% for warning in report.warnings %}<p class="error">{{ warning }}</p>{% endfor %}
+        <div class="scroll"><table><thead><tr><th>Товар / артикул</th><th>Продано</th><th>Возврат</th><th>Итого кол-во</th><th>Продажи, ₸</th><th>Возвраты, ₸</th><th>Итого, ₸</th></tr></thead><tbody>
+        {% for row in report.rows %}<tr><td>{{ row.name }}<br><small class="muted">{{ row.sku }} · {{ row.unit }}</small></td><td>{{ row.sold_qty|floatformat:3 }}</td><td>{{ row.returned_qty|floatformat:3 }}</td><td>{{ row.net_qty|floatformat:3 }}</td><td class="number">{{ row.sold_amount|floatformat:2 }}</td><td class="number">{{ row.returned_amount|floatformat:2 }}</td><td class="number">{{ row.net_amount|floatformat:2 }}</td></tr>
+        {% empty %}<tr><td colspan="7">Продажи и возвраты Shine Systems за неделю не найдены.</td></tr>{% endfor %}
+        </tbody></table></div>
+        <p class="total">Итого после возвратов: {{ report.net_total|floatformat:2 }} ₸</p>
+        <p class="note">Это розничная реализация, не сумма долга поставщику по закупочным ценам или комиссии. PDF содержит расшифровку по чекам. Отчёт скачивается вам — автоматически никому не отправляется.</p>
+    </section>
+    {% endif %}
+</main>
+{% endblock %}

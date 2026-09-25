@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>kz.dacar.backup-sync</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/zsh</string><string>/Users/beibitkazbanov/Library/Application Support/DACAR Backup/sync_backups.sh</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>StartInterval</key><integer>21600</integer>
+  <key>StandardOutPath</key><string>/Users/beibitkazbanov/Library/Logs/DACAR-backup-sync.log</string>
+  <key>StandardErrorPath</key><string>/Users/beibitkazbanov/Library/Logs/DACAR-backup-sync-error.log</string>
+  <key>ProcessType</key><string>Background</string>
+  <key>LowPriorityIO</key><true/>
+</dict>
+</plist>

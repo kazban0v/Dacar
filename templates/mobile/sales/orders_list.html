@@ -131,6 +131,7 @@
                             <span class="receipt-cashier-avatar">{% if order.cashier %}{{ order.cashier.first_name|default:order.cashier.username|slice:":1"|upper }}{{ order.cashier.last_name|slice:":1"|upper }}{% else %}?{% endif %}</span>
                             <span class="receipt-meta-name">{% if order.cashier %}{{ order.cashier.get_full_name|default:order.cashier.username }}{% else %}Удален{% endif %}</span>
                             <span class="receipt-payment"><i class="fa-solid {% if order.payment_method == 'CASH' %}fa-money-bill-wave{% elif order.payment_method == 'CARD' %}fa-credit-card{% else %}fa-qrcode{% endif %}"></i> {{ order.get_payment_method_display }}</span>
+                            {% include 'desktop/sales/payment_parts.html' %}
                         </div>
                         <div class="receipt-total-row"><div><div class="receipt-total">{{ order.total_amount|floatformat:0 }} ₸</div>{% if order.discount_amount > 0 and order.status != 'REFUNDED' %}<div class="receipt-discount">Скидка −{{ order.discount_amount|floatformat:0 }} ₸</div>{% endif %}</div></div>
                         {% if order.status == 'COMPLETED' %}<span class="receipt-status"><i class="fa-solid fa-check"></i> Проведён</span>{% elif order.status == 'REFUNDED' %}<span class="receipt-status is-refunded"><i class="fa-solid fa-rotate-left"></i> Возврат · {{ order.refund_reason|default:"Причина не указана" }}</span>{% else %}<span class="receipt-status is-other">{{ order.get_status_display }}</span>{% endif %}

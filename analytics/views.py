@@ -153,7 +153,7 @@ def _inventory_summary():
         stock_cost=Sum(F('stock_qty') * F('purchase_price'), output_field=DecimalField(max_digits=20, decimal_places=2)),
         stock_retail=Sum(F('stock_qty') * F('retail_price'), output_field=DecimalField(max_digits=20, decimal_places=2)),
     )
-    out_of_stock = active.filter(stock_qty__lte=0).count()
+    out_of_stock = active.filter(stock_qty=0).count()
     low_stock = active.filter(stock_qty__gt=0, stock_qty__lte=F('min_stock_alert')).count()
     stock_cost = values['stock_cost'] or ZERO
     stock_retail = values['stock_retail'] or ZERO
@@ -201,9 +201,16 @@ def _analytics_report(start, end):
     summary = _sales_summary(start, end)
     sales = summary['sales']
 
-    payment_rows = list(sales.values('payment_method').annotate(
-        amount=Sum('total_amount'), checks=Count('id')
-    ).order_by('-amount'))
+    from sales.models import SalePayment
+    payment_map = {row['method']: {'payment_method': row['method'], 'amount': row['amount'], 'checks': row['checks']}
+        for row in SalePayment.objects.filter(order__in=sales).values('method').annotate(
+            amount=Sum('amount'), checks=Count('order_id', distinct=True))}
+    # Older/imported orders may have no breakdown. Never invent a mixed split.
+    for row in sales.filter(payments__isnull=True).values('payment_method').annotate(amount=Sum('total_amount'), checks=Count('id')):
+        combined = payment_map.setdefault(row['payment_method'], {'payment_method': row['payment_method'], 'amount': ZERO, 'checks': 0})
+        combined['amount'] += row['amount']
+        combined['checks'] += row['checks']
+    payment_rows = sorted(payment_map.values(), key=lambda row: row['amount'], reverse=True)
     payment_names = dict(SaleOrder.PaymentMethod.choices)
     for row in payment_rows:
         row['name'] = payment_names.get(row['payment_method'], row['payment_method'])
