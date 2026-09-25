@@ -8,6 +8,10 @@
     <p class="muted">Только Shine Systems · понедельник → понедельник · с учётом возвратов</p>
     <form method="get" class="panel">
         {{ form.as_p }}
+        <div class="week-shortcuts">
+            <a class="btn btn-secondary" href="?week={{ current_week|date:'Y-m-d' }}">Текущая неделя</a>
+            <a class="btn btn-secondary" href="?week={{ previous_week|date:'Y-m-d' }}">Прошлая неделя</a>
+        </div>
         <div class="actions"><button class="btn btn-primary" type="submit">Показать неделю</button>
         <button class="btn btn-secondary" name="format" value="pdf" type="submit">Скачать PDF</button></div>
     </form>

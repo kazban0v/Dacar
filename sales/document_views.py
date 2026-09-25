@@ -22,8 +22,9 @@ def shine_report(request):
     if not request.user.is_admin_user:
         return HttpResponseForbidden('Отчёт доступен только администратору.')
     today = timezone.localdate()
-    previous = today - timedelta(days=today.weekday() + 7)
-    form = WeekForm(request.GET if request.GET else {'week': previous.isoformat()})
+    current = today - timedelta(days=today.weekday())
+    previous = current - timedelta(days=7)
+    form = WeekForm(request.GET if request.GET else {'week': current.isoformat()})
     report = None
     if form.is_valid():
         try:
@@ -35,7 +36,9 @@ def shine_report(request):
         response = HttpResponse(shine_pdf(report), content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="shine-{report["start"]}.pdf"'
         return response
-    return render(request, 'desktop/sales/shine_report.html', {'form': form, 'report': report},
+    return render(request, 'desktop/sales/shine_report.html', {
+        'form': form, 'report': report, 'current_week': current, 'previous_week': previous,
+    },
                   status=200 if not form.errors else 400)
 
 

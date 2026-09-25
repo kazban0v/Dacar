@@ -41,6 +41,19 @@
             --accent-red: #DC2626;
             --accent-purple: #7C3AED;
 
+            --input-bg: #FFFFFF;
+            --input-border: #D1D5DB;
+            --input-text: #111827;
+            --input-placeholder: #9CA3AF;
+            --select-option-bg: #FFFFFF;
+            --select-option-text: #111827;
+            --btn-secondary-bg: #FFFFFF;
+            --btn-secondary-border: #D1D5DB;
+            --btn-secondary-text: #111827;
+            --btn-secondary-hover-bg: #F9FAFB;
+            --table-header-bg: #F9FAFB;
+            --table-hover-bg: #FAFAFA;
+
             --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
@@ -264,6 +277,18 @@
             --text-main: #F1F5F9;
             --text-muted: #9AA9BF;
             --text-secondary: #718096;
+            --input-bg: #172235;
+            --input-border: #334155;
+            --input-text: #F1F5F9;
+            --input-placeholder: #9AA9BF;
+            --select-option-bg: #172235;
+            --select-option-text: #F1F5F9;
+            --btn-secondary-bg: #172235;
+            --btn-secondary-border: #334155;
+            --btn-secondary-text: #F1F5F9;
+            --btn-secondary-hover-bg: #1D2C43;
+            --table-header-bg: #0E1728;
+            --table-hover-bg: #162238;
             --shadow-xs: 0 1px 2px rgba(0,0,0,.25);
             --shadow-sm: 0 2px 8px rgba(0,0,0,.26);
             --shadow-md: 0 8px 20px rgba(0,0,0,.28);
@@ -959,15 +984,16 @@
         }
 
         .btn-secondary {
-            background: #FFFFFF;
-            color: var(--text-main);
-            border: 1px solid var(--card-border);
+            background: var(--btn-secondary-bg);
+            color: var(--btn-secondary-text);
+            border: 1px solid var(--btn-secondary-border);
             box-shadow: var(--shadow-xs);
         }
 
         .btn-secondary:hover {
-            background: #F9FAFB;
-            border-color: #D1D5DB;
+            background: var(--btn-secondary-hover-bg);
+            color: var(--btn-secondary-text);
+            border-color: var(--accent-cyan);
         }
 
         .btn-danger {
@@ -1006,7 +1032,7 @@
         }
 
         .dacar-table th {
-            background: #F9FAFB;
+            background: var(--table-header-bg);
             color: var(--text-muted);
             padding: 10px 1rem;
             font-weight: 600;
@@ -1024,15 +1050,15 @@
         }
 
         .dacar-table tbody tr:hover {
-            background: #FAFAFA;
+            background: var(--table-hover-bg);
         }
 
         /* ===== FORMS ===== */
         .form-control {
             width: 100%;
-            background: #FFFFFF;
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--input-text);
             padding: 10px 12px;
             border-radius: var(--radius-md);
             font-size: 0.9rem;
@@ -1049,12 +1075,22 @@
             box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
         }
 
+        .form-control::placeholder {
+            color: var(--input-placeholder);
+            opacity: 1;
+        }
+
         select.form-control {
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3e%3cpath d='m6 8 4 4 4-4' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 10px center;
             background-size: 18px;
             padding-right: 34px;
+        }
+
+        select.form-control option {
+            background: var(--select-option-bg);
+            color: var(--select-option-text);
         }
 
         /* ===== BADGES ===== */

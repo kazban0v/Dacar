@@ -59,6 +59,15 @@
         font-size: 0.8rem;
     }
 
+    .movement-card-comment {
+        padding: 6px 10px;
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-sm);
+        background: color-mix(in srgb, var(--text-main) 4%, var(--card-bg));
+        color: var(--text-muted);
+        font-size: 0.78rem;
+    }
+
     .writeoff-reason-box {
         padding: 0.75rem;
         border: 1px solid color-mix(in srgb, var(--accent-red) 30%, var(--card-border));
@@ -322,7 +331,7 @@
                 </div>
 
                 {% if m.comment %}
-                <div style="background: #F9FAFB; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--card-border); font-size: 0.78rem; color: var(--text-muted);">
+                <div class="movement-card-comment">
                     <i class="fa-regular fa-comment-dots" style="margin-right: 4px;"></i> {{ m.comment }}
                 </div>
                 {% endif %}

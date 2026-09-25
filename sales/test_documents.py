@@ -158,3 +158,11 @@ class DocumentsAndPaymentsTests(TestCase):
         self.assertEqual(self.client.get('/sales/reports/shine/?week=2026-09-15').status_code, 400)
         self.assertEqual(self.client.get('/sales/reports/shine/?week=2026-09-14&format=pdf').status_code, 200)
         self.assertFalse(CompanyInvoice.objects.exists())
+
+    def test_report_defaults_to_current_week_and_offers_shortcuts(self):
+        response = self.client.get('/sales/reports/shine/')
+        current = timezone.localdate() - timedelta(days=timezone.localdate().weekday())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['report']['start'], current)
+        self.assertContains(response, 'Текущая неделя')
+        self.assertContains(response, 'Прошлая неделя')
