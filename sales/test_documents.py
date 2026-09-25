@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from catalog.models import Brand, Product, StockMovement
 from sales.documents import weekly_shine_report, allocate_amount
+from sales.document_pdf import amount_in_words_ru, payment_total_text
 from sales.models import SaleOrder, SaleOrderItem, CompanyInvoice
 from users.models import User
 
@@ -139,6 +140,19 @@ class DocumentsAndPaymentsTests(TestCase):
         self.assertTrue(pdf.content.startswith(b'%PDF-'))
         conflict=self.client.post('/sales/api/invoices/', {**data, 'buyer_name':'Another'}, content_type='application/json')
         self.assertEqual(conflict.status_code, 409)
+
+    def test_invoice_form_hides_contract_and_total_is_written_in_words(self):
+        page = self.client.get('/sales/invoices/')
+        self.assertEqual(page.status_code, 200)
+        self.assertNotContains(page, 'Договор (необязательно)')
+        self.assertEqual(amount_in_words_ru(Decimal('0')), 'Ноль тенге 00 тиын')
+        self.assertEqual(amount_in_words_ru(Decimal('1000')), 'Одна тысяча тенге 00 тиын')
+        self.assertEqual(amount_in_words_ru(Decimal('21000')), 'Двадцать одна тысяча тенге 00 тиын')
+        self.assertEqual(amount_in_words_ru(Decimal('31200.50')), 'Тридцать одна тысяча двести тенге 50 тиын')
+        self.assertEqual(
+            payment_total_text(Decimal('31200')),
+            'Всего к оплате: 31 200 (Тридцать одна тысяча двести) тенге 00 тиын.',
+        )
 
     def test_invoice_and_report_permissions(self):
         self.client.force_login(self.cashier)

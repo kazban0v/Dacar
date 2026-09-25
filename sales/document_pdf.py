@@ -32,6 +32,76 @@ def amount(value):
     return f'{Decimal(value):,.2f}'.replace(',', ' ').replace('.', ',')
 
 
+def _plural(value, forms):
+    value %= 100
+    if 11 <= value <= 14:
+        return forms[2]
+    value %= 10
+    if value == 1:
+        return forms[0]
+    if 2 <= value <= 4:
+        return forms[1]
+    return forms[2]
+
+
+def _triplet_words(value, feminine=False):
+    hundreds = ['', 'сто', 'двести', 'триста', 'четыреста', 'пятьсот',
+                'шестьсот', 'семьсот', 'восемьсот', 'девятьсот']
+    tens = ['', '', 'двадцать', 'тридцать', 'сорок', 'пятьдесят',
+            'шестьдесят', 'семьдесят', 'восемьдесят', 'девяносто']
+    teens = ['десять', 'одиннадцать', 'двенадцать', 'тринадцать', 'четырнадцать',
+             'пятнадцать', 'шестнадцать', 'семнадцать', 'восемнадцать', 'девятнадцать']
+    units = ['', 'одна' if feminine else 'один', 'две' if feminine else 'два',
+             'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять']
+    words = []
+    if value // 100:
+        words.append(hundreds[value // 100])
+    remainder = value % 100
+    if 10 <= remainder <= 19:
+        words.append(teens[remainder - 10])
+    else:
+        if remainder // 10:
+            words.append(tens[remainder // 10])
+        if remainder % 10:
+            words.append(units[remainder % 10])
+    return words
+
+
+def amount_in_words_ru(value):
+    """Return a non-negative monetary amount in Russian words."""
+    value = Decimal(value).quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
+    if value < 0:
+        raise ValueError('Сумма не может быть отрицательной.')
+    tenge = int(value)
+    tiyn = int((value - tenge) * 100)
+    words = []
+    groups = (
+        (1_000_000_000, ('миллиард', 'миллиарда', 'миллиардов'), False),
+        (1_000_000, ('миллион', 'миллиона', 'миллионов'), False),
+        (1_000, ('тысяча', 'тысячи', 'тысяч'), True),
+    )
+    remainder = tenge
+    for divider, forms, feminine in groups:
+        group, remainder = divmod(remainder, divider)
+        if group:
+            words.extend(_triplet_words(group, feminine))
+            words.append(_plural(group, forms))
+    if remainder:
+        words.extend(_triplet_words(remainder))
+    if not words:
+        words.append('ноль')
+    return f"{' '.join(words).capitalize()} тенге {tiyn:02d} тиын"
+
+
+def payment_total_text(value):
+    value = Decimal(value).quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
+    tenge = int(value)
+    numeric = f'{tenge:,}'.replace(',', ' ')
+    words = amount_in_words_ru(value)
+    tenge_words, tiyn = words.rsplit(' тенге ', 1)
+    return f'Всего к оплате: {numeric} ({tenge_words}) тенге {tiyn}.'
+
+
 def qty(value):
     return format(Decimal(value).normalize(), 'f').replace('.', ',')
 
@@ -76,7 +146,7 @@ def invoice_pdf(invoice):
         text(f'Счёт на оплату № {invoice.number} от {date}', TITLE),
         text(f"Поставщик: {seller['name']}, БИН / ИИН {seller['bin']}. {seller['address']}"),
         text(f'Покупатель: {invoice.buyer_name}, БИН / ИИН {invoice.buyer_bin}. {invoice.buyer_address}'),
-        text(f'Договор: {invoice.contract or "Без договора"}'), Spacer(1, 4*mm)]
+        Spacer(1, 4*mm)]
     rows = [['№', 'Товар / код', 'Кол-во / ед.', 'Цена, ₸', 'Скидка, ₸', 'Сумма, ₸']]
     for n, line in enumerate(invoice.lines, 1):
         gross = (Decimal(line['price']) * Decimal(line['quantity'])).quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
@@ -84,7 +154,7 @@ def invoice_pdf(invoice):
                      amount(line['price']), amount(gross - Decimal(line['amount'])), amount(line['amount'])])
     story += [table(rows, [9, 64, 24, 27, 27, 29]), Spacer(1, 5*mm),
               text(f'Итого к оплате: {amount(invoice.total_amount)} ₸', RIGHT), text(seller['tax'], RIGHT),
-              text(f'Всего наименований: {len(invoice.lines)}. Сумма: {amount(invoice.total_amount)} тенге.'),
+              text(payment_total_text(invoice.total_amount)),
               Spacer(1, 6*mm), text('Счёт на оплату не подтверждает факт оплаты и не является кассовым чеком.', SMALL),
               Spacer(1, 8*mm), text('Исполнитель: _______________________    Подпись: _______________________')]
     return build(story, f'Счёт {invoice.number}')
