@@ -5,12 +5,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 from django.http import JsonResponse
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Q, Sum, Min, Max
 from django.utils import timezone
 from datetime import timedelta
 from users.models import User
 from users.permissions import can_manage_staff
 from sales.models import SaleOrder
+from analytics.models import AuditLog
 
 
 def _post_login_redirect(request):
@@ -115,7 +116,7 @@ def users_list_view(request):
             elif User.objects.filter(username=username).exists():
                 messages.error(request, 'Пользователь с таким логином уже существует.')
             else:
-                User.objects.create_user(
+                created_user = User.objects.create_user(
                     username=username,
                     password=password,
                     first_name=first_name,
@@ -123,6 +124,8 @@ def users_list_view(request):
                     phone=phone,
                     role=role
                 )
+                AuditLog.log(request, AuditLog.ActionType.USER_ACTION,
+                    f"Создан сотрудник «{created_user.username}» с ролью «{created_user.get_role_display()}».")
                 messages.success(request, f'Пользователь {username} успешно создан!')
                 return redirect(redirect_url)
                 
@@ -134,8 +137,11 @@ def users_list_view(request):
                 return redirect(redirect_url)
             if target_user != request.user:
                 target_user.is_active = not target_user.is_active
-                target_user.save()
-                messages.info(request, f'Статус пользователя {target_user.username} изменен.')
+                target_user.save(update_fields=['is_active'])
+                state = 'разблокирован' if target_user.is_active else 'заблокирован'
+                AuditLog.log(request, AuditLog.ActionType.USER_ACTION,
+                    f"Сотрудник «{target_user.username}» {state}.")
+                messages.info(request, f'Сотрудник {target_user.username}: {state}.')
             return redirect(redirect_url)
 
         elif action == 'set_role':
@@ -148,8 +154,11 @@ def users_list_view(request):
             if role not in dict(User.Role.choices):
                 messages.error(request, 'Выберите корректную роль.')
                 return redirect(redirect_url)
+            previous_role = target_user.get_role_display()
             target_user.role = role
             target_user.save(update_fields=['role'])
+            AuditLog.log(request, AuditLog.ActionType.USER_ACTION,
+                f"Роль сотрудника «{target_user.username}»: {previous_role} → {target_user.get_role_display()}.")
             messages.success(request, f'Роль сотрудника {target_user.username} обновлена.')
             return redirect(redirect_url)
 
@@ -160,32 +169,13 @@ def users_list_view(request):
                 messages.error(request, 'Этот аккаунт защищён от удаления.')
                 return redirect(redirect_url)
             if target_user == request.user:
-                messages.error(request, 'Вы не можете удалить свой собственный аккаунт!')
+                messages.error(request, 'Вы не можете заблокировать свой собственный аккаунт!')
             else:
-                uname = target_user.username
-                try:
-                    target_user.delete()
-                    from analytics.models import AuditLog
-                    AuditLog.log(
-                        request,
-                        AuditLog.ActionType.USER_ACTION,
-                        f"Администратор {request.user} полностью удалил аккаунт сотрудника '{uname}'"
-                    )
-                    messages.success(request, f'Пользователь "{uname}" успешно удален из системы.')
-                except Exception:
-                    # User has financial/sales history! Deactivate instead of crashing.
-                    target_user.is_active = False
-                    target_user.save()
-                    from analytics.models import AuditLog
-                    AuditLog.log(
-                        request,
-                        AuditLog.ActionType.USER_ACTION,
-                        f"Администратор {request.user} деактивировал профиль '{uname}' (удаление невозможно из-за наличия истории проведенных чеков)"
-                    )
-                    messages.warning(
-                        request,
-                        f'Пользователь "{uname}" проводил чеки в кассе. Для сохранения отчетов продаж аккаунт деактивирован и заблокирован.'
-                    )
+                target_user.is_active = False
+                target_user.save(update_fields=['is_active'])
+                AuditLog.log(request, AuditLog.ActionType.USER_ACTION,
+                    f"Сотрудник «{target_user.username}» заблокирован. История сохранена.")
+                messages.info(request, f'Сотрудник «{target_user.username}» заблокирован; история не удалена.')
             return redirect(redirect_url)
 
     # В существующей базе несколько рабочих аккаунтов были созданы как
@@ -221,6 +211,21 @@ def users_list_view(request):
     )
     month_by_user = {row['cashier_id']: row for row in month_rows}
 
+    today_completed_rows = completed_sales.filter(created_at__date=today).values('cashier_id').annotate(
+        revenue=Sum('total_amount'), checks=Count('id'), first_sale=Min('created_at'), last_sale=Max('created_at'),
+    )
+    today_by_user = {row['cashier_id']: row for row in today_completed_rows}
+    today_refunds_rows = SaleOrder.objects.filter(
+        status=SaleOrder.Status.REFUNDED, refunded_at__date=today,
+    ).values('cashier_id').annotate(refunds=Count('id'), refunded_total=Sum('total_amount'))
+    refunds_by_user = {row['cashier_id']: row for row in today_refunds_rows}
+
+    last_action_by_user = {}
+    for action in AuditLog.objects.filter(user_id__in=users.values('id')).order_by('-created_at').values(
+        'user_id', 'description', 'created_at'
+    ):
+        last_action_by_user.setdefault(action['user_id'], action)
+
     def sparkline_points(values):
         width, height, inset = 82, 28, 3
         max_value = max(values) or 1
@@ -242,6 +247,9 @@ def users_list_view(request):
             else 'flat'
         )
         month = month_by_user.get(staff_user.id, {})
+        today_stats = today_by_user.get(staff_user.id, {})
+        refunds = refunds_by_user.get(staff_user.id, {})
+        last_action = last_action_by_user.get(staff_user.id)
         staff_cards.append({
             'user': staff_user,
             'can_manage': can_manage_staff(request.user, staff_user),
@@ -250,10 +258,41 @@ def users_list_view(request):
             'trend_direction': trend_direction,
             'month_revenue': month.get('total', 0),
             'month_orders': month.get('count', 0),
+            'today_revenue': today_stats.get('revenue', 0),
+            'today_orders': today_stats.get('checks', 0),
+            'today_refunds': refunds.get('refunds', 0),
+            'today_refunds_total': refunds.get('refunded_total', 0),
+            'shift_started_at': today_stats.get('first_sale'),
+            'shift_last_sale_at': today_stats.get('last_sale'),
+            'last_action': last_action,
         })
 
     active_staff_cards = [card for card in staff_cards if card['user'].is_active]
     month_leader = max(active_staff_cards, key=lambda card: card['month_revenue'], default=None)
+
+    # Shift history is calculated from immutable cashier operations.  It does
+    # not invent a "closed" shift: the last recorded sale is shown instead.
+    history_start = today - timedelta(days=13)
+    staff_names = {staff_user.id: (staff_user.get_full_name() or staff_user.username) for staff_user in users}
+    shift_rows = completed_sales.filter(created_at__date__gte=history_start).values(
+        'cashier_id', 'created_at__date'
+    ).annotate(
+        started_at=Min('created_at'), last_sale_at=Max('created_at'), checks=Count('id'), revenue=Sum('total_amount'),
+    ).order_by('-created_at__date', '-last_sale_at')[:60]
+    refunds_by_shift = {
+        (row['cashier_id'], row['refunded_at__date']): row
+        for row in SaleOrder.objects.filter(
+            status=SaleOrder.Status.REFUNDED, refunded_at__date__gte=history_start,
+        ).values('cashier_id', 'refunded_at__date').annotate(refunds=Count('id'), refunded_total=Sum('total_amount'))
+    }
+    shift_history = [
+        {
+            **row,
+            'employee_name': staff_names.get(row['cashier_id'], 'Удалённый сотрудник'),
+            **refunds_by_shift.get((row['cashier_id'], row['created_at__date']), {'refunds': 0, 'refunded_total': 0}),
+        }
+        for row in shift_rows
+    ]
 
     return render(request, 'users/users_list.html', {
         'users_list': users,
@@ -261,5 +300,6 @@ def users_list_view(request):
         'staff_stats': staff_stats,
         'month_leader': month_leader,
         'roles': User.Role.choices,
+        'shift_history': shift_history,
         'ALLOW_REGISTRATION': getattr(settings, 'ALLOW_REGISTRATION', True)
     })

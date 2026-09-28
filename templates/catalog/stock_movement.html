@@ -27,7 +27,18 @@
     /* Desktop Table vs Mobile Cards */
     .movements-table-wrapper {
         display: block;
+        position: relative;
+        overflow-x: auto;
     }
+
+    .stock-grid-layout > .dacar-card { min-width: 0; }
+    .movements-table-wrapper .dacar-table { min-width: 1180px; }
+    .movements-table-wrapper .dacar-table th:first-child,
+    .movements-table-wrapper .dacar-table td:first-child { position: sticky; left: 0; z-index: 2; background: var(--card-bg); min-width: 155px; }
+    .movements-table-wrapper .dacar-table th:first-child { z-index: 4; background: var(--table-header-bg); }
+    .movements-table-wrapper .dacar-table th:nth-child(2),
+    .movements-table-wrapper .dacar-table td:nth-child(2) { position: sticky; left: 155px; z-index: 2; background: var(--card-bg); min-width: 220px; box-shadow: 8px 0 10px -10px rgba(15,23,42,.7); }
+    .movements-table-wrapper .dacar-table th:nth-child(2) { z-index: 4; background: var(--table-header-bg); }
 
     .movements-cards-mobile {
         display: none;
@@ -167,7 +178,7 @@
     <!-- MOVEMENTS LOG TABLE -->
     <div class="dacar-card">
         <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">
-            Журнал складских операций <span class="badge badge-cyan" style="font-size: 0.75rem; margin-left: 0.25rem;">{{ movements.count }}</span>
+            Журнал складских операций <span class="badge badge-cyan" style="font-size: 0.75rem; margin-left: 0.25rem;">{{ page_obj.paginator.count }}</span>
         </h3>
 
         <!-- DESKTOP TABLE VIEW (>= 768px) -->
@@ -270,6 +281,15 @@
             </div>
             {% endfor %}
         </div>
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Страницы журнала" style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--card-border);">
+            <span style="color:var(--text-muted);font-size:.78rem;">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} операций</span>
+            <span style="display:flex;gap:.45rem;">
+                {% if page_obj.has_previous %}<a class="btn btn-secondary" href="?page={{ page_obj.previous_page_number }}{% if selected_product_id %}&product={{ selected_product_id }}{% endif %}{% if initial_movement_type %}&action={{ initial_movement_type }}{% endif %}">← Назад</a>{% endif %}
+                {% if page_obj.has_next %}<a class="btn btn-primary" href="?page={{ page_obj.next_page_number }}{% if selected_product_id %}&product={{ selected_product_id }}{% endif %}{% if initial_movement_type %}&action={{ initial_movement_type }}{% endif %}">Вперёд →</a>{% endif %}
+            </span>
+        </nav>
+        {% endif %}
     </div>
 </div>
 

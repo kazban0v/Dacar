@@ -2,7 +2,7 @@ from django.shortcuts import redirect, get_object_or_404
 from config.rendering import render, is_mobile_request
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, F, Sum, ExpressionWrapper, DecimalField
+from django.db.models import Q, F, Sum, Count, ExpressionWrapper, DecimalField
 from django.http import JsonResponse
 from catalog.models import Product, Category, Brand, StockMovement
 from analytics.models import AuditLog
@@ -20,9 +20,14 @@ def product_list_view(request):
     brand_id = request.GET.get('brand')
     low_stock = request.GET.get('low_stock')
     out_of_stock = request.GET.get('out_of_stock')
+    quality_filter = request.GET.get('quality', '')
 
     all_active_products = Product.objects.select_related('category', 'brand').filter(is_active=True)
     products = all_active_products
+    duplicate_names = list(
+        all_active_products.values('name').annotate(total=Count('id')).filter(total__gt=1)
+        .values_list('name', flat=True)
+    )
 
     if search:
         products = products.filter(
@@ -38,6 +43,14 @@ def product_list_view(request):
         products = products.filter(stock_qty__lte=F('min_stock_alert'))
     if out_of_stock == '1':
         products = products.filter(stock_qty=0)
+    if quality_filter == 'duplicate_name':
+        products = products.filter(name__in=duplicate_names)
+    elif quality_filter == 'missing_barcode':
+        products = products.filter(Q(barcode__isnull=True) | Q(barcode=''))
+    elif quality_filter == 'missing_purchase':
+        products = products.filter(purchase_price__lte=0)
+    elif quality_filter == 'missing_category':
+        products = products.filter(category__isnull=True)
 
     from django.core.paginator import Paginator
 
@@ -72,6 +85,13 @@ def product_list_view(request):
         'selected_brand': brand_id,
         'low_stock_filter': low_stock,
         'out_of_stock_filter': out_of_stock,
+        'quality_filter': quality_filter,
+        'quality_counts': {
+            'duplicate_name': len(duplicate_names),
+            'missing_barcode': all_active_products.filter(Q(barcode__isnull=True) | Q(barcode='')).count(),
+            'missing_purchase': all_active_products.filter(purchase_price__lte=0).count(),
+            'missing_category': all_active_products.filter(category__isnull=True).count(),
+        },
         'total_products': products.count(),
         'all_products_count': all_active_products.count(),
         'low_stock_count': all_active_products.filter(stock_qty__lte=F('min_stock_alert')).count(),
@@ -111,7 +131,9 @@ def product_create_view(request):
                 sku = f"DAC-{base_code}-{counter}"
                 counter += 1
 
-        if Product.objects.filter(barcode=barcode).exists():
+        if Product.objects.filter(name__iexact=name).exists():
+            messages.error(request, 'Товар с таким названием уже есть в каталоге. Откройте существующую карточку и проверьте штрихкод.')
+        elif Product.objects.filter(barcode=barcode).exists():
             messages.error(request, f'Товар со штрихкодом {barcode} уже существует в базе.')
         elif Product.objects.filter(sku=sku).exists():
             messages.error(request, f'Товар с артикулом {sku} уже существует.')
@@ -192,7 +214,14 @@ def product_edit_view(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
     if request.method == 'POST':
+        previous_name = product.name
+        previous_purchase_price = product.purchase_price
+        previous_retail_price = product.retail_price
+        previous_barcode = product.barcode
         product.name = request.POST.get('name', '').strip()
+        if Product.objects.filter(name__iexact=product.name).exclude(pk=product.pk).exists():
+            messages.error(request, 'Товар с таким названием уже есть в каталоге. Объедините дубликат вручную, не создавая вторую карточку.')
+            return redirect('product_edit', pk=product.pk)
         sku_input = request.POST.get('sku', '').strip()
         if sku_input:
             product.sku = sku_input
@@ -229,10 +258,19 @@ def product_edit_view(request, pk):
         product.save(update_fields=['name', 'sku', 'barcode', 'category', 'brand',
             'purchase_price', 'retail_price', 'unit', 'min_stock_alert', 'updated_at'])
 
+        changes = []
+        if previous_name != product.name:
+            changes.append(f'Название: «{previous_name}» → «{product.name}»')
+        if previous_purchase_price != product.purchase_price:
+            changes.append(f'Закупка: {previous_purchase_price} ₸ → {product.purchase_price} ₸')
+        if previous_retail_price != product.retail_price:
+            changes.append(f'Розница: {previous_retail_price} ₸ → {product.retail_price} ₸')
+        if previous_barcode != product.barcode:
+            changes.append(f'Штрихкод: {previous_barcode or "—"} → {product.barcode or "—"}')
         AuditLog.log(
             request,
             AuditLog.ActionType.PRODUCT_UPDATE,
-            f"Обновлена карточка товара '{product.name}' (Розница: {product.retail_price} ₸)"
+            f"Карточка товара «{product.name}» изменена. " + ('; '.join(changes) or 'Изменены параметры без финансовых изменений.')
         )
 
         messages.success(request, f'Товар "{product.name}" обновлен.')
@@ -276,12 +314,15 @@ def stock_movement_view(request):
             return redirect(referer)
         return redirect('stock_movement')
 
-    movements = StockMovement.objects.select_related(
+    from django.core.paginator import Paginator
+    movements_queryset = StockMovement.objects.select_related(
         'product', 'created_by', 'reversed_by', 'reversal_of',
-    ).all()[:100]
+    ).all()
+    page_obj = Paginator(movements_queryset, 50).get_page(request.GET.get('page', 1))
     products = Product.objects.filter(is_active=True).order_by('name')
     return render(request, 'catalog/stock_movement.html', {
-        'movements': movements,
+        'movements': page_obj.object_list,
+        'page_obj': page_obj,
         'products': products,
         'movement_types': StockMovement.MovementType.choices,
         'writeoff_reasons': StockMovement.WriteOffReason.choices,

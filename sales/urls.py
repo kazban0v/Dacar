@@ -8,6 +8,7 @@ urlpatterns = [
     path('invoices/<int:pk>/pdf/', document_views.invoice_download, name='invoice_pdf'),
     path('api/invoices/', document_views.InvoiceCreateAPIView.as_view(), name='invoice_create'),
     path('pos/', views.pos_interface_view, name='pos'),
+    path('api/products/<int:pk>/quick-detail/', views.product_quick_detail, name='product_quick_detail'),
     path('orders/', views.sales_orders_list_view, name='sales_orders_list'),
     path('orders/<int:pk>/print/', views.order_detail_print_view, name='order_print'),
     path('orders/<int:pk>/refund/', views.order_refund_view, name='order_refund'),

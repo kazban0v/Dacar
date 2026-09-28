@@ -877,6 +877,7 @@ def audit_log_view(request):
     action_type = request.GET.get('action_type')
     user_filter = request.GET.get('user_id')
     date_filter = request.GET.get('date', '').strip()
+    product_filter = request.GET.get('product', '').strip()
 
     logs = AuditLog.objects.select_related('user').all()
 
@@ -886,6 +887,9 @@ def audit_log_view(request):
             Q(user__username__icontains=search) |
             Q(user__first_name__icontains=search)
         )
+    if product_filter:
+        # Product names and receipt numbers are part of the immutable event text.
+        logs = logs.filter(description__icontains=product_filter)
     if action_type:
         logs = logs.filter(action_type=action_type)
     if user_filter:
@@ -904,6 +908,14 @@ def audit_log_view(request):
     paginator = Paginator(logs, 20)
     page_obj = paginator.get_page(page_number)
 
+    dangerous_logs = AuditLog.objects.select_related('user').filter(
+        Q(action_type=AuditLog.ActionType.REFUND) |
+        Q(action_type=AuditLog.ActionType.STOCK_ADJUST) |
+        Q(description__icontains='отмен') |
+        Q(description__icontains='изменен') |
+        Q(description__icontains='изменена')
+    ).order_by('-created_at')[:5]
+
     return render(request, 'analytics/audit_log.html', {
         'page_obj': page_obj,
         'logs': page_obj.object_list,
@@ -911,8 +923,10 @@ def audit_log_view(request):
         'action_type': action_type,
         'user_filter': user_filter,
         'date_filter': date_filter,
+        'product_filter': product_filter,
         'action_types': AuditLog.ActionType.choices,
         'audit_users': User.objects.filter(auditlog__isnull=False).distinct().order_by('first_name', 'username'),
+        'dangerous_logs': dangerous_logs,
     })
 
 

@@ -60,7 +60,7 @@ class Migration(migrations.Migration):
                 ('order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payments', to='sales.saleorder')),
             ],
             options={
-                'constraints': [models.UniqueConstraint(fields=('order', 'method'), name='sale_payment_unique_method'), models.CheckConstraint(condition=models.Q(('amount__gte', 0)), name='sale_payment_nonnegative'), models.CheckConstraint(condition=models.Q(('method__in', ['CASH', 'CARD', 'TRANSFER'])), name='sale_payment_method_valid')],
+                'constraints': [models.UniqueConstraint(fields=('order', 'method'), name='sale_payment_unique_method'), models.CheckConstraint(check=models.Q(('amount__gte', 0)), name='sale_payment_nonnegative'), models.CheckConstraint(check=models.Q(('method__in', ['CASH', 'CARD', 'TRANSFER'])), name='sale_payment_method_valid')],
             },
         ),
     ]

@@ -32,7 +32,8 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'sku', 'barcode', 'category', 'brand',
         'retail_price', 'purchase_price', 'unit',
-        'stock_qty', 'min_stock_alert', 'is_active', 'created_at'
+        'stock_qty', 'min_stock_alert', 'is_active',
+        'thumbnail_preview', 'created_at',
     )
     list_filter = ('is_active', 'category', 'brand', 'unit', 'created_at')
     search_fields = ('name', 'sku', 'barcode', 'brand__name', 'category__name')
@@ -43,6 +44,10 @@ class ProductAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Основная информация', {
             'fields': ('name', 'category', 'brand', 'is_active')
+        }),
+        ('Фото товара', {
+            'fields': ('image',),
+            'description': 'Рекомендуется WebP 800×800. Загружается через «import_product_images» или вручную.',
         }),
         ('Штрихкод и Артикул', {
             'fields': ('barcode', 'sku'),
@@ -55,6 +60,16 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('stock_qty', 'min_stock_alert')
         }),
     )
+
+    def thumbnail_preview(self, obj):
+        from django.utils.html import format_html
+        if obj.image:
+            return format_html(
+                '<img src="{}" style="height:40px;width:40px;object-fit:contain;border-radius:4px;" />',
+                obj.image.url,
+            )
+        return "—"
+    thumbnail_preview.short_description = "Фото"
 
 
 @admin.register(StockMovement)

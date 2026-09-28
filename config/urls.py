@@ -4,6 +4,7 @@ from django.urls import path, include
 from django.shortcuts import render as django_render
 from django.http import HttpResponse, FileResponse
 from django.conf import settings
+from django.conf.urls.static import static
 from analytics import views as analytics_views
 from config.telegram_monitor import telegram_monitor_webhook
 
@@ -50,3 +51,7 @@ urlpatterns = [
     path('m/catalog/', include('catalog.urls_mobile')),
     path('m/sales/', include('sales.urls_mobile')),
 ]
+
+# Serve media files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

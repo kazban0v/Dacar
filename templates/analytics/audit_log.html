@@ -20,6 +20,10 @@
     }
     .audit-filter-search { flex: 1; min-width: 220px; }
     .audit-filter-select { width: 200px; }
+    .audit-filter-date { width: 150px; }
+    .audit-alerts { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:.65rem; margin:0 0 1rem; }
+    .audit-alert { padding:.75rem .85rem; border:1px solid rgba(220,38,38,.25); border-radius:12px; background:rgba(220,38,38,.06); }
+    .audit-alert strong { display:block; color:var(--text-main); font-size:.8rem; }.audit-alert span { display:block; margin-top:.18rem; color:var(--text-muted); font-size:.72rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     
     @media (max-width: 768px) {
         .col-ip { display: none; }
@@ -78,7 +82,11 @@
 <div class="dacar-card" style="margin-bottom: 1rem;">
     <form method="GET" class="audit-filter-form">
         <div class="audit-filter-search">
-            <input type="text" name="q" class="form-control" placeholder="Поиск по описанию..." value="{{ search|default:'' }}">
+            <input type="text" name="q" class="form-control" placeholder="Поиск по событию или сотруднику..." value="{{ search|default:'' }}">
+        </div>
+
+        <div class="audit-filter-search">
+            <input type="text" name="product" class="form-control" placeholder="Товар или № чека..." value="{{ product_filter|default:'' }}">
         </div>
 
         <div class="audit-filter-select">
@@ -90,12 +98,31 @@
             </select>
         </div>
 
+        <div class="audit-filter-select">
+            <select name="user_id" class="form-control" onchange="this.form.submit()">
+                <option value="">Все сотрудники</option>
+                {% for audit_user in audit_users %}
+                <option value="{{ audit_user.id }}" {% if user_filter == audit_user.id|stringformat:'s' %}selected{% endif %}>{{ audit_user.get_full_name|default:audit_user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <input type="date" name="date" class="form-control audit-filter-date" value="{{ date_filter|default:'' }}" onchange="this.form.submit()">
+
         <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> <span>Найти</span></button>
-        {% if search or action_type %}
+        {% if search or product_filter or action_type or user_filter or date_filter %}
         <a href="{% url 'audit_log' %}" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i></a>
         {% endif %}
     </form>
 </div>
+
+{% if dangerous_logs %}
+<section class="audit-alerts" aria-label="Требуют внимания">
+    {% for log in dangerous_logs %}
+    <div class="audit-alert"><strong><i class="fa-solid fa-triangle-exclamation" style="color:var(--accent-red)"></i> {{ log.get_action_type_display }}</strong><span title="{{ log.description }}">{{ log.description }}</span></div>
+    {% endfor %}
+</section>
+{% endif %}
 
 <!-- Table -->
 <div class="dacar-card">
@@ -103,10 +130,10 @@
         <table class="dacar-table">
             <thead>
                 <tr>
-                    <th>Дата и время</th>
-                    <th class="col-user">Сотрудник</th>
-                    <th>Действие</th>
-                    <th>Описание операции</th>
+                    <th>Когда</th>
+                    <th class="col-user">Кто</th>
+                    <th>Что сделал</th>
+                    <th>Детали / до → после</th>
                     <th class="col-ip">IP адрес</th>
                 </tr>
             </thead>
@@ -131,6 +158,10 @@
                             <span class="badge badge-orange"><i class="fa-solid fa-rotate-left"></i> Возврат</span>
                         {% elif log.action_type == 'STOCK_IN' or log.action_type == 'STOCK_OUT' %}
                             <span class="badge badge-cyan"><i class="fa-solid fa-boxes-stacked"></i> Склад</span>
+                        {% elif log.action_type == 'STOCK_ADJUST' %}
+                            <span class="badge badge-orange"><i class="fa-solid fa-sliders"></i> Корректировка</span>
+                        {% elif log.action_type == 'PRODUCT_UPDATE' %}
+                            <span class="badge badge-purple"><i class="fa-solid fa-pen"></i> Цена / товар</span>
                         {% else %}
                             <span class="badge badge-secondary"><i class="fa-solid fa-circle-info"></i> {{ log.get_action_type_display }}</span>
                         {% endif %}
@@ -161,7 +192,7 @@
 
         <div style="display: flex; gap: 0.35rem; align-items: center;">
             {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&q={{ search|default:'' }}&action_type={{ action_type|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ search|default:'' }}&product={{ product_filter|default:'' }}&action_type={{ action_type|default:'' }}&user_id={{ user_filter|default:'' }}&date={{ date_filter|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
                 &laquo; Назад
             </a>
             {% endif %}
@@ -170,14 +201,14 @@
                 {% if page_obj.number == num %}
                 <span class="btn btn-primary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem; pointer-events: none;">{{ num }}</span>
                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?page={{ num }}&q={{ search|default:'' }}&action_type={{ action_type|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
+                <a href="?page={{ num }}&q={{ search|default:'' }}&product={{ product_filter|default:'' }}&action_type={{ action_type|default:'' }}&user_id={{ user_filter|default:'' }}&date={{ date_filter|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
                     {{ num }}
                 </a>
                 {% endif %}
             {% endfor %}
 
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&q={{ search|default:'' }}&action_type={{ action_type|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
+            <a href="?page={{ page_obj.next_page_number }}&q={{ search|default:'' }}&product={{ product_filter|default:'' }}&action_type={{ action_type|default:'' }}&user_id={{ user_filter|default:'' }}&date={{ date_filter|default:'' }}" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.8rem;">
                 Вперед &raquo;
             </a>
             {% endif %}

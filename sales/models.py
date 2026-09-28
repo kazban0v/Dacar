@@ -131,8 +131,8 @@ class SalePayment(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['order', 'method'], name='sale_payment_unique_method'),
-            models.CheckConstraint(condition=models.Q(amount__gte=0), name='sale_payment_nonnegative'),
-            models.CheckConstraint(condition=models.Q(method__in=['CASH', 'CARD', 'TRANSFER']), name='sale_payment_method_valid'),
+            models.CheckConstraint(check=models.Q(amount__gte=0), name='sale_payment_nonnegative'),
+            models.CheckConstraint(check=models.Q(method__in=['CASH', 'CARD', 'TRANSFER']), name='sale_payment_method_valid'),
         ]
 
 

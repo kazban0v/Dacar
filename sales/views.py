@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, get_object_or_404
+from django.http import JsonResponse
 from django.urls import reverse
 from config.rendering import render
 from django.contrib.auth.decorators import login_required
@@ -26,12 +27,32 @@ def pos_interface_view(request):
     Main Cashier POS Terminal View.
     """
     categories = Category.objects.all()
-    products = Product.objects.select_related('category', 'brand').filter(is_active=True, stock_qty__gt=0)
+    products = Product.objects.select_related('category', 'brand').filter(is_active=True)
 
     return render(request, 'sales/pos_terminal.html', {
         'categories': categories,
         'products': products,
         'payment_methods': SaleOrder.PaymentMethod.choices,
+    })
+
+
+@login_required
+def product_quick_detail(request, pk):
+    """Small read-only payload for the POS product quick-view."""
+    product = get_object_or_404(Product, pk=pk, is_active=True)
+    movements = (
+        StockMovement.objects.filter(product=product)
+        .order_by('-created_at')[:5]
+    )
+    return JsonResponse({
+        'movements': [
+            {
+                'type': movement.get_movement_type_display(),
+                'quantity': f'{movement.quantity:+g} {product.unit}',
+                'date': timezone.localtime(movement.created_at).strftime('%d.%m.%Y %H:%M'),
+            }
+            for movement in movements
+        ],
     })
 
 
@@ -332,31 +353,10 @@ def order_refund_view(request, pk):
 
 @login_required
 def order_delete_view(request, pk):
-    """
-    Admin-only action to delete or cancel an order transaction.
-    """
-    if not request.user.is_admin_user:
-        messages.error(request, 'Удаление чеков разрешено исключительно Администратору.')
-        return redirect('sales_orders_list')
-
-    order = get_object_or_404(SaleOrder, pk=pk)
-    
-    if request.method == 'POST':
-        order_num = order.order_number
-        order_sum = order.total_amount
-        
-        with transaction.atomic():
-            AuditLog.log(
-                request,
-                AuditLog.ActionType.USER_ACTION,
-                f"Администратор {request.user} отменил/удалил чек № {order_num} на сумму {order_sum} ₸"
-            )
-            order.delete()
-
-            from django.core.cache import cache
-            cache.delete('dacar_live_kpi')
-
-        messages.success(request, f'Чек № {order_num} успешно аннулирован администратором.')
-        return redirect('sales_orders_list')
-
+    """Legacy endpoint retained for old links; completed receipts are never deleted."""
+    get_object_or_404(SaleOrder, pk=pk)
+    messages.error(
+        request,
+        'Удаление чеков отключено. Для отмены проведённого чека оформите возврат и укажите причину: чек и история останутся в системе.'
+    )
     return redirect('sales_orders_list')

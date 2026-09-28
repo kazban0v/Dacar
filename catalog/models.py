@@ -55,6 +55,13 @@ class Product(models.Model):
     min_stock_alert = models.DecimalField(max_digits=12, decimal_places=3, default=Decimal('5.000'), verbose_name="Минимальный остаток (Сигнал)")
     
     is_active = models.BooleanField(default=True, verbose_name="Активен")
+    image = models.ImageField(
+        upload_to='products/',
+        blank=True,
+        null=True,
+        verbose_name="Фото товара",
+        help_text="WebP или JPEG, 800×800 рекомендуется",
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 

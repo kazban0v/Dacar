@@ -7,6 +7,25 @@ from django.conf import settings
 
 User = get_user_model()
 
+
+class ReceiptRetentionTests(TestCase):
+    """A completed receipt must remain in the audit trail; it may only be refunded."""
+
+    def setUp(self):
+        self.admin = User.objects.create_user(username='receipt-admin', password='test-pass', role=User.Role.ADMIN)
+        self.order = SaleOrder.objects.create(
+            order_number='RETAIN-001', cashier=self.admin, status=SaleOrder.Status.COMPLETED,
+            payment_method='CASH', subtotal_amount=Decimal('1000.00'), total_amount=Decimal('1000.00'),
+            paid_amount=Decimal('1000.00'),
+        )
+
+    def test_legacy_delete_endpoint_keeps_completed_receipt(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(f'/sales/orders/{self.order.pk}/delete/')
+        self.assertRedirects(response, '/sales/orders/')
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, SaleOrder.Status.COMPLETED)
+
 class FinancialSecurityTestCase(TestCase):
     def setUp(self):
         self.client = Client()

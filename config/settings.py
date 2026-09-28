@@ -76,7 +76,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # For a safe local visual check, set DACAR_LOCAL_DB_PATH to a copied
+        # database snapshot. Production continues to use db.sqlite3.
+        'NAME': os.environ.get('DACAR_LOCAL_DB_PATH', BASE_DIR / 'db.sqlite3'),
     }
 }
 
