@@ -10,8 +10,51 @@ from catalog.serializers import ProductSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import random
+
+
+def _product_form_context(request, *, product=None, values=None):
+    """Shared context for the create/edit form, including values after a validation error."""
+    return {
+        'product': product,
+        'categories': Category.objects.all(),
+        'brands': Brand.objects.all(),
+        'units': Product.UNIT_CHOICES,
+        'initial_barcode': request.GET.get('barcode', '').strip(),
+        'form_values': values or {},
+    }
+
+
+def _product_form_values(request):
+    return {
+        key: request.POST.get(key, '').strip()
+        for key in ('name', 'sku', 'barcode', 'category', 'brand', 'new_brand', 'purchase_price',
+                    'retail_price', 'unit', 'stock_qty', 'min_stock_alert')
+    }
+
+
+def _valid_product_numbers(values, *, include_stock=False):
+    fields = ('purchase_price', 'retail_price', 'min_stock_alert')
+    if include_stock:
+        fields += ('stock_qty',)
+    parsed = {}
+    try:
+        for field in fields:
+            parsed[field] = Decimal(values.get(field) or '0')
+            if parsed[field] < 0:
+                raise ValueError(field)
+    except (InvalidOperation, ValueError):
+        return None
+    return parsed
+
+
+def _valid_product_image(request):
+    image = request.FILES.get('image')
+    if not image:
+        return True
+    allowed_types = {'image/jpeg', 'image/png', 'image/webp'}
+    return image.size <= 10 * 1024 * 1024 and image.content_type in allowed_types
 
 @login_required
 def product_list_view(request):
@@ -109,16 +152,31 @@ def product_create_view(request):
         return redirect(product_list_url)
 
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        sku = request.POST.get('sku', '').strip()
-        barcode = request.POST.get('barcode', '').strip()
-        category_id = request.POST.get('category')
-        brand_input = request.POST.get('brand', '').strip()
-        purchase_price = request.POST.get('purchase_price', '').strip() or '0'
-        retail_price = request.POST.get('retail_price', '').strip() or '0'
-        unit = request.POST.get('unit', 'шт')
-        stock_qty = request.POST.get('stock_qty', '').strip() or '0'
-        min_stock_alert = request.POST.get('min_stock_alert', '').strip() or '5'
+        values = _product_form_values(request)
+        name = values['name']
+        sku = values['sku']
+        barcode = values['barcode']
+        category_id = values['category']
+        brand_input = values['brand']
+        if brand_input == '__NEW__':
+            brand_input = request.POST.get('new_brand', '').strip()
+            if not brand_input:
+                messages.error(request, 'Введите название нового бренда или выберите существующий.')
+                return render(request, 'catalog/product_form.html', _product_form_context(request, values=values))
+        numbers = _valid_product_numbers(values, include_stock=True)
+
+        if not name:
+            messages.error(request, 'Укажите наименование товара.')
+            return render(request, 'catalog/product_form.html', _product_form_context(request, values=values))
+        if not category_id or not Category.objects.filter(id=category_id).exists():
+            messages.error(request, 'Выберите категорию товара. Товар не будет автоматически отнесён к чужой категории.')
+            return render(request, 'catalog/product_form.html', _product_form_context(request, values=values))
+        if numbers is None:
+            messages.error(request, 'Цены и остаток должны быть неотрицательными числами.')
+            return render(request, 'catalog/product_form.html', _product_form_context(request, values=values))
+        if not _valid_product_image(request):
+            messages.error(request, 'Загрузите JPEG, PNG или WebP размером не больше 10 МБ.')
+            return render(request, 'catalog/product_form.html', _product_form_context(request, values=values))
 
         if not barcode:
             barcode = f"200{random.randint(100000000, 999999999)}"
@@ -138,13 +196,7 @@ def product_create_view(request):
         elif Product.objects.filter(sku=sku).exists():
             messages.error(request, f'Товар с артикулом {sku} уже существует.')
         else:
-            # Handle category (optional fallback to default)
-            if category_id:
-                category = Category.objects.filter(id=category_id).first()
-            else:
-                category = None
-            if not category:
-                category = Category.objects.first() or Category.objects.create(name='Общая', slug='general')
+            category = Category.objects.get(id=category_id)
 
             # Handle brand (manual text input or get_or_create)
             brand = None
@@ -166,42 +218,61 @@ def product_create_view(request):
                 barcode=barcode,
                 category=category,
                 brand=brand,
-                purchase_price=Decimal(purchase_price),
-                retail_price=Decimal(retail_price),
-                unit=unit,
-                stock_qty=Decimal(stock_qty),
-                min_stock_alert=Decimal(min_stock_alert)
+                purchase_price=numbers['purchase_price'],
+                retail_price=numbers['retail_price'],
+                unit=values['unit'] or 'шт',
+                stock_qty=numbers['stock_qty'],
+                min_stock_alert=numbers['min_stock_alert'],
+                image=request.FILES.get('image'),
             )
 
             # Log stock movement if initial stock > 0
-            if Decimal(stock_qty) > Decimal('0'):
+            if numbers['stock_qty'] > Decimal('0'):
                 StockMovement.objects.create(
                     product=product,
                     movement_type=StockMovement.MovementType.IN,
-                    quantity=Decimal(stock_qty),
-                    cost_price=Decimal(purchase_price),
+                    quantity=numbers['stock_qty'],
+                    cost_price=numbers['purchase_price'],
                     comment='Первичный ввод товара на склад',
                     created_by=request.user
                 )
 
+            from analytics.audit_helpers import build_change_diff, diff_description
+            from catalog.templatetags.dacar_format import format_tenge
+            diff = build_change_diff(
+                {
+                    'name': None,
+                    'sku': None,
+                    'barcode': None,
+                    'purchase_price': None,
+                    'retail_price': None,
+                },
+                {
+                    'name': product.name,
+                    'sku': product.sku,
+                    'barcode': product.barcode,
+                    'purchase_price': product.purchase_price,
+                    'retail_price': product.retail_price,
+                },
+            )
             AuditLog.log(
                 request,
                 AuditLog.ActionType.PRODUCT_CREATE,
-                f"Создан новый товар '{product.name}' (Штрихкод: {product.barcode}, Розница: {product.retail_price} ₸)"
+                f"Создан товар «{product.name}». Розница: {format_tenge(product.retail_price)} ₸. {diff_description(diff)}",
+                metadata={
+                    'action': 'product_create',
+                    'product_id': product.pk,
+                    'product_name': product.name,
+                    **diff,
+                },
             )
 
             messages.success(request, f'Товар "{product.name}" успешно добавлен.')
             return redirect(product_list_url)
 
-    categories = Category.objects.all()
-    brands = Brand.objects.all()
-    initial_barcode = request.GET.get('barcode', '').strip()
-    return render(request, 'catalog/product_form.html', {
-        'categories': categories,
-        'brands': brands,
-        'units': Product.UNIT_CHOICES,
-        'initial_barcode': initial_barcode,
-    })
+    return render(request, 'catalog/product_form.html', _product_form_context(
+        request, values=_product_form_values(request) if request.method == 'POST' else None
+    ))
 
 
 @login_required
@@ -214,25 +285,53 @@ def product_edit_view(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
     if request.method == 'POST':
-        previous_name = product.name
-        previous_purchase_price = product.purchase_price
-        previous_retail_price = product.retail_price
-        previous_barcode = product.barcode
-        product.name = request.POST.get('name', '').strip()
-        if Product.objects.filter(name__iexact=product.name).exclude(pk=product.pk).exists():
+        values = _product_form_values(request)
+        numbers = _valid_product_numbers(values)
+        category = Category.objects.filter(id=values['category']).first() if values['category'] else None
+        if not values['name']:
+            messages.error(request, 'Укажите наименование товара.')
+            return render(request, 'catalog/product_form.html', _product_form_context(request, product=product, values=values))
+        if not category:
+            messages.error(request, 'Выберите категорию товара. Она не подставляется автоматически.')
+            return render(request, 'catalog/product_form.html', _product_form_context(request, product=product, values=values))
+        if numbers is None:
+            messages.error(request, 'Цены и порог остатка должны быть неотрицательными числами.')
+            return render(request, 'catalog/product_form.html', _product_form_context(request, product=product, values=values))
+        if not _valid_product_image(request):
+            messages.error(request, 'Загрузите JPEG, PNG или WebP размером не больше 10 МБ.')
+            return render(request, 'catalog/product_form.html', _product_form_context(request, product=product, values=values))
+        if Product.objects.filter(name__iexact=values['name']).exclude(pk=product.pk).exists():
             messages.error(request, 'Товар с таким названием уже есть в каталоге. Объедините дубликат вручную, не создавая вторую карточку.')
-            return redirect('product_edit', pk=product.pk)
-        sku_input = request.POST.get('sku', '').strip()
+            return render(request, 'catalog/product_form.html', _product_form_context(request, product=product, values=values))
+        if values['barcode'] and Product.objects.filter(barcode=values['barcode']).exclude(pk=product.pk).exists():
+            messages.error(request, f'Товар со штрихкодом {values["barcode"]} уже существует в базе.')
+            return render(request, 'catalog/product_form.html', _product_form_context(request, product=product, values=values))
+        if values['sku'] and Product.objects.filter(sku=values['sku']).exclude(pk=product.pk).exists():
+            messages.error(request, f'Товар с артикулом {values["sku"]} уже существует.')
+            return render(request, 'catalog/product_form.html', _product_form_context(request, product=product, values=values))
+        old_values = {
+            'name': product.name,
+            'sku': product.sku,
+            'barcode': product.barcode,
+            'category': product.category.name if product.category else '',
+            'brand': product.brand.name if product.brand else '',
+            'purchase_price': product.purchase_price,
+            'retail_price': product.retail_price,
+            'unit': product.unit,
+            'min_stock_alert': product.min_stock_alert,
+        }
+        product.name = values['name']
+        sku_input = values['sku']
         if sku_input:
             product.sku = sku_input
-        product.barcode = request.POST.get('barcode', '').strip()
-        category_id = request.POST.get('category')
-        brand_input = request.POST.get('brand', '').strip()
-
-        if category_id:
-            cat = Category.objects.filter(id=category_id).first()
-            if cat:
-                product.category = cat
+        product.barcode = values['barcode']
+        brand_input = values['brand']
+        if brand_input == '__NEW__':
+            brand_input = request.POST.get('new_brand', '').strip()
+            if not brand_input:
+                messages.error(request, 'Введите название нового бренда или выберите существующий.')
+                return render(request, 'catalog/product_form.html', _product_form_context(request, product=product, values=values))
+        product.category = category
         
         # Handle brand
         if brand_input:
@@ -250,40 +349,49 @@ def product_edit_view(request, pk):
         else:
             product.brand = None
         
-        product.purchase_price = Decimal(request.POST.get('purchase_price', '0') or '0')
-        product.retail_price = Decimal(request.POST.get('retail_price', '0') or '0')
-        product.unit = request.POST.get('unit', 'шт')
-        product.min_stock_alert = Decimal(request.POST.get('min_stock_alert', '5') or '5')
+        product.purchase_price = numbers['purchase_price']
+        product.retail_price = numbers['retail_price']
+        product.unit = values['unit'] or 'шт'
+        product.min_stock_alert = numbers['min_stock_alert']
+        if request.FILES.get('image'):
+            product.image = request.FILES['image']
         # Editing metadata must not overwrite stock changed by a concurrent sale.
-        product.save(update_fields=['name', 'sku', 'barcode', 'category', 'brand',
-            'purchase_price', 'retail_price', 'unit', 'min_stock_alert', 'updated_at'])
+        update_fields = ['name', 'sku', 'barcode', 'category', 'brand',
+            'purchase_price', 'retail_price', 'unit', 'min_stock_alert', 'updated_at']
+        if request.FILES.get('image'):
+            update_fields.append('image')
+        product.save(update_fields=update_fields)
 
-        changes = []
-        if previous_name != product.name:
-            changes.append(f'Название: «{previous_name}» → «{product.name}»')
-        if previous_purchase_price != product.purchase_price:
-            changes.append(f'Закупка: {previous_purchase_price} ₸ → {product.purchase_price} ₸')
-        if previous_retail_price != product.retail_price:
-            changes.append(f'Розница: {previous_retail_price} ₸ → {product.retail_price} ₸')
-        if previous_barcode != product.barcode:
-            changes.append(f'Штрихкод: {previous_barcode or "—"} → {product.barcode or "—"}')
+        new_values = {
+            'name': product.name,
+            'sku': product.sku,
+            'barcode': product.barcode,
+            'category': product.category.name if product.category else '',
+            'brand': product.brand.name if product.brand else '',
+            'purchase_price': product.purchase_price,
+            'retail_price': product.retail_price,
+            'unit': product.unit,
+            'min_stock_alert': product.min_stock_alert,
+        }
+        from analytics.audit_helpers import build_change_diff, diff_description
+        diff = build_change_diff(old_values, new_values)
+        description = diff_description(diff) if diff['changes'] else 'Изменены параметры без финансовых изменений.'
         AuditLog.log(
             request,
             AuditLog.ActionType.PRODUCT_UPDATE,
-            f"Карточка товара «{product.name}» изменена. " + ('; '.join(changes) or 'Изменены параметры без финансовых изменений.')
+            f"Карточка товара «{product.name}» изменена. {description}",
+            metadata={
+                'action': 'product_update',
+                'product_id': product.pk,
+                'product_name': product.name,
+                **diff,
+            },
         )
 
         messages.success(request, f'Товар "{product.name}" обновлен.')
         return redirect(product_list_url)
 
-    categories = Category.objects.all()
-    brands = Brand.objects.all()
-    return render(request, 'catalog/product_form.html', {
-        'product': product,
-        'categories': categories,
-        'brands': brands,
-        'units': Product.UNIT_CHOICES
-    })
+    return render(request, 'catalog/product_form.html', _product_form_context(request, product=product))
 
 
 @login_required

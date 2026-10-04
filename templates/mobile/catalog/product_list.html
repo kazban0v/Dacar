@@ -1,4 +1,5 @@
 {% extends 'mobile/base.html' %}
+{% load dacar_format %}
 {% load static l10n %}
 
 {% block title %}Склад и Остатки — DACAR Market{% endblock %}
@@ -444,7 +445,7 @@
                 <span class="warehouse-product-meta">{{ product.sku }} · {{ product.stock_qty|floatformat:0 }} {{ product.unit }}</span>
             </div>
             <div class="warehouse-product-side">
-                <span class="product-card-price">{{ product.retail_price|floatformat:0 }} ₸</span>
+                <span class="product-card-price">{{ product.retail_price|tenge }} ₸</span>
                 {% if product.stock_qty <= 0 %}<span class="product-card-stock-pill stock-danger" id="stock-pill-{{ product.id }}">нет</span>
                 {% elif product.is_low_stock %}<span class="product-card-stock-pill stock-warn" id="stock-pill-{{ product.id }}">мало</span>
                 {% else %}<span class="product-card-stock-pill stock-ok" id="stock-pill-{{ product.id }}"><i class="fa-solid fa-circle-check"></i></span>{% endif %}
@@ -486,7 +487,7 @@
                     <span class="badge badge-cyan">{{ product.category.name|default:"Автохимия" }}</span>
                     {% if product.brand %}<span class="badge badge-orange">{{ product.brand.name }}</span>{% endif %}
                 </td>
-                <td style="font-weight: 800; font-size: 1.05rem; color: var(--text-main);">{{ product.retail_price|floatformat:0 }} ₸</td>
+                <td style="font-weight: 800; font-size: 1.05rem; color: var(--text-main);">{{ product.retail_price|tenge }} ₸</td>
                 <td>
                     {% if product.stock_qty <= 0 %}
                     <span class="badge badge-red">Нет (0 {{ product.unit }})</span>

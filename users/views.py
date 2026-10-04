@@ -140,7 +140,15 @@ def users_list_view(request):
                 target_user.save(update_fields=['is_active'])
                 state = 'разблокирован' if target_user.is_active else 'заблокирован'
                 AuditLog.log(request, AuditLog.ActionType.USER_ACTION,
-                    f"Сотрудник «{target_user.username}» {state}.")
+                    f"Сотрудник «{target_user.username}» {state}.",
+                    metadata={
+                        'action': 'toggle_status',
+                        'target_user_id': target_user.pk,
+                        'target_username': target_user.username,
+                        'changes': [{'field': 'is_active', 'label': 'Статус аккаунта',
+                                     'old': 'Заблокирован' if target_user.is_active else 'Активен',
+                                     'new': 'Активен' if target_user.is_active else 'Заблокирован'}],
+                    })
                 messages.info(request, f'Сотрудник {target_user.username}: {state}.')
             return redirect(redirect_url)
 
@@ -158,7 +166,15 @@ def users_list_view(request):
             target_user.role = role
             target_user.save(update_fields=['role'])
             AuditLog.log(request, AuditLog.ActionType.USER_ACTION,
-                f"Роль сотрудника «{target_user.username}»: {previous_role} → {target_user.get_role_display()}.")
+                f"Роль сотрудника «{target_user.username}»: {previous_role} → {target_user.get_role_display()}.",
+                metadata={
+                    'action': 'set_role',
+                    'target_user_id': target_user.pk,
+                    'target_username': target_user.username,
+                    'changes': [{'field': 'role', 'label': 'Роль',
+                                 'old': previous_role,
+                                 'new': target_user.get_role_display()}],
+                })
             messages.success(request, f'Роль сотрудника {target_user.username} обновлена.')
             return redirect(redirect_url)
 
@@ -174,7 +190,14 @@ def users_list_view(request):
                 target_user.is_active = False
                 target_user.save(update_fields=['is_active'])
                 AuditLog.log(request, AuditLog.ActionType.USER_ACTION,
-                    f"Сотрудник «{target_user.username}» заблокирован. История сохранена.")
+                    f"Сотрудник «{target_user.username}» заблокирован. История сохранена.",
+                    metadata={
+                        'action': 'block_user',
+                        'target_user_id': target_user.pk,
+                        'target_username': target_user.username,
+                        'changes': [{'field': 'is_active', 'label': 'Статус аккаунта',
+                                     'old': 'Активен', 'new': 'Заблокирован'}],
+                    })
                 messages.info(request, f'Сотрудник «{target_user.username}» заблокирован; история не удалена.')
             return redirect(redirect_url)
 
@@ -262,37 +285,11 @@ def users_list_view(request):
             'today_orders': today_stats.get('checks', 0),
             'today_refunds': refunds.get('refunds', 0),
             'today_refunds_total': refunds.get('refunded_total', 0),
-            'shift_started_at': today_stats.get('first_sale'),
-            'shift_last_sale_at': today_stats.get('last_sale'),
             'last_action': last_action,
         })
 
     active_staff_cards = [card for card in staff_cards if card['user'].is_active]
     month_leader = max(active_staff_cards, key=lambda card: card['month_revenue'], default=None)
-
-    # Shift history is calculated from immutable cashier operations.  It does
-    # not invent a "closed" shift: the last recorded sale is shown instead.
-    history_start = today - timedelta(days=13)
-    staff_names = {staff_user.id: (staff_user.get_full_name() or staff_user.username) for staff_user in users}
-    shift_rows = completed_sales.filter(created_at__date__gte=history_start).values(
-        'cashier_id', 'created_at__date'
-    ).annotate(
-        started_at=Min('created_at'), last_sale_at=Max('created_at'), checks=Count('id'), revenue=Sum('total_amount'),
-    ).order_by('-created_at__date', '-last_sale_at')[:60]
-    refunds_by_shift = {
-        (row['cashier_id'], row['refunded_at__date']): row
-        for row in SaleOrder.objects.filter(
-            status=SaleOrder.Status.REFUNDED, refunded_at__date__gte=history_start,
-        ).values('cashier_id', 'refunded_at__date').annotate(refunds=Count('id'), refunded_total=Sum('total_amount'))
-    }
-    shift_history = [
-        {
-            **row,
-            'employee_name': staff_names.get(row['cashier_id'], 'Удалённый сотрудник'),
-            **refunds_by_shift.get((row['cashier_id'], row['created_at__date']), {'refunds': 0, 'refunded_total': 0}),
-        }
-        for row in shift_rows
-    ]
 
     return render(request, 'users/users_list.html', {
         'users_list': users,
@@ -300,6 +297,5 @@ def users_list_view(request):
         'staff_stats': staff_stats,
         'month_leader': month_leader,
         'roles': User.Role.choices,
-        'shift_history': shift_history,
         'ALLOW_REGISTRATION': getattr(settings, 'ALLOW_REGISTRATION', True)
     })

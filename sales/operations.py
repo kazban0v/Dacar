@@ -124,9 +124,19 @@ def checkout(request, data):
             StockMovement.objects.create(product=row['product'], movement_type='SALE',
                 quantity=-row['quantity'], cost_price=row['purchase_price_snapshot'],
                 comment=f'Продажа по чеку {order.order_number}', created_by=request.user)
-        AuditLog.log(request, AuditLog.ActionType.SALE,
-            f'Проведен чек № {order.order_number} на сумму {order.total_amount:.2f} ₸ '
-            f'(Способ оплаты: {order.get_payment_method_display()})')
+        from catalog.templatetags.dacar_format import format_tenge
+        AuditLog.log(
+            request, AuditLog.ActionType.SALE,
+            f'Проведен чек № {order.order_number} на сумму {format_tenge(order.total_amount)} ₸ '
+            f'(Способ оплаты: {order.get_payment_method_display()})',
+            metadata={
+                'action': 'sale',
+                'order_id': order.pk,
+                'order_number': order.order_number,
+                'total_amount': str(order.total_amount),
+                'payment_method': order.payment_method,
+            },
+        )
         OperationReceipt.objects.create(key=data['client_sync_id'], actor=request.user,
             kind='checkout', fingerprint=fingerprint(data), order=order)
         return order, False
@@ -156,7 +166,24 @@ def refund(request, order_id, reason):
         order.refund_reason = reason
         order.refunded_by = request.user
         order.refunded_at = timezone.now()
-        order.save(update_fields=['status', 'refund_reason', 'refunded_by', 'refunded_at', 'updated_at'])
+        update_fields = ['status', 'refund_reason', 'refunded_by', 'refunded_at', 'updated_at']
+        order.save(update_fields=update_fields)
+        from catalog.templatetags.dacar_format import format_tenge
         AuditLog.log(request, AuditLog.ActionType.REFUND,
-            f'Оформлен возврат по чеку № {order.order_number} на сумму {order.total_amount:.2f} ₸. Причина: {reason}')
+            f'Оформлен возврат по чеку № {order.order_number} на сумму {format_tenge(order.total_amount)} ₸. Причина: {reason}',
+            metadata={
+                'action': 'refund',
+                'order_id': order.pk,
+                'order_number': order.order_number,
+                'total_amount': str(order.total_amount),
+                'reason': reason,
+                'items': [
+                    {
+                        'product': item.product_name_snapshot or (item.product.name if item.product else '—'),
+                        'quantity': str(item.quantity),
+                        'amount': str(item.total_amount),
+                    }
+                    for item in items
+                ],
+            })
         return order, False

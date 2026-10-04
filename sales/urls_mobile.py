@@ -9,5 +9,6 @@ urlpatterns = [
     path('orders/<int:pk>/refund/', views.order_refund_view, name='m_order_refund'),
     path('orders/<int:pk>/delete/', views.order_delete_view, name='m_order_delete'),
     path('api/checkout/', views.CheckoutAPIView.as_view(), name='m_api_checkout'),
+    path('api/orders/lookup/', views.order_lookup_api, name='m_api_order_lookup'),
     path('api/orders/<int:pk>/print-raw/', views.OrderDirectPrintAPIView.as_view(), name='m_api_order_print_raw'),
 ]

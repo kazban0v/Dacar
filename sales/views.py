@@ -28,7 +28,6 @@ def pos_interface_view(request):
     """
     categories = Category.objects.all()
     products = Product.objects.select_related('category', 'brand').filter(is_active=True)
-
     return render(request, 'sales/pos_terminal.html', {
         'categories': categories,
         'products': products,
@@ -141,18 +140,13 @@ def sales_orders_list_view(request):
     orders = SaleOrder.objects.select_related('cashier', 'refunded_by').prefetch_related('items__product', 'payments').all()
 
     cashier_period_label = 'сегодня'
-    cashier_stats_label = 'Чеков за смену'
-    shift_start = None
+    cashier_stats_label = 'Чеков сегодня'
 
     # DATA ISOLATION RULE: cashiers can only see their own receipts.  The
     # period switch never weakens this ownership filter.
     if not request.user.is_admin_user:
         today = timezone.localdate()
         own_orders = orders.filter(cashier=request.user)
-        first_shift_order = own_orders.filter(created_at__date=today).order_by('created_at').first()
-        if first_shift_order:
-            shift_start = timezone.localtime(first_shift_order.created_at).strftime('%H:%M')
-
         if cashier_period == 'yesterday':
             selected_day = today - timedelta(days=1)
             orders = own_orders.filter(created_at__date=selected_day)
@@ -282,7 +276,6 @@ def sales_orders_list_view(request):
         'cashier_period': cashier_period,
         'cashier_period_label': cashier_period_label,
         'cashier_stats_label': cashier_stats_label,
-        'shift_start': shift_start,
         'order_stats': order_stats,
         'statuses': SaleOrder.Status.choices,
         'payment_methods': SaleOrder.PaymentMethod.choices,
@@ -307,42 +300,120 @@ def order_detail_print_view(request, pk):
 
 
 @login_required
+def order_lookup_api(request):
+    """Lookup order by receipt number or barcode for return processing in POS."""
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return JsonResponse({'success': False, 'error': 'Введите номер чека.'}, status=400)
+
+    order = SaleOrder.objects.filter(
+        Q(order_number__iexact=query) | Q(order_number__iendswith=query)
+    ).select_related('cashier').prefetch_related('items__product', 'payments').first()
+
+    if not order:
+        return JsonResponse({'success': False, 'error': f'Чек «{query}» не найден.'}, status=404)
+
+    items = [
+        {
+            'product_name': item.product_name_snapshot or (item.product.name if item.product else '—'),
+            'sku': item.sku_snapshot or (item.product.sku if item.product else '—'),
+            'quantity': float(item.quantity),
+            'unit': item.unit_snapshot or (item.product.unit if item.product else 'шт'),
+            'unit_price': str(item.unit_price),
+            'total_amount': str(item.total_amount),
+        }
+        for item in order.items.all()
+    ]
+
+    return JsonResponse({
+        'success': True,
+        'order': {
+            'id': order.pk,
+            'order_number': order.order_number,
+            'status': order.status,
+            'status_display': order.get_status_display(),
+            'created_at': timezone.localtime(order.created_at).strftime('%d.%m.%Y %H:%M'),
+            'cashier': order.cashier.get_full_name() or order.cashier.username if order.cashier else '—',
+            'payment_method': order.get_payment_method_display(),
+            'total_amount': str(order.total_amount),
+            'refund_reason': order.refund_reason,
+            'refunded_at': timezone.localtime(order.refunded_at).strftime('%d.%m.%Y %H:%M') if order.refunded_at else None,
+            'items': items,
+        }
+    })
+
+
+@login_required
 def order_refund_view(request, pk):
     """
-    Refund Engine for administrators.
+    Refund Engine for administrators. A reason is always required.
     Requires specifying a refund_reason. Creates a permanent log in AuditLog and StockMovement.
     """
-    # Determine if we're on mobile based on URL path
     is_mobile = request.path.startswith('/m/')
     orders_list_url = 'm_sales_orders_list' if is_mobile else 'sales_orders_list'
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or (
+        request.content_type and 'application/json' in request.content_type
+    )
 
     if not request.user.is_admin_user:
-        messages.error(request, 'Оформление возврата разрешено только администратору.')
+        if is_ajax:
+            return JsonResponse({'success': False, 'error': 'Оформление возврата доступно администратору.'}, status=403)
+        messages.error(request, 'Оформление возврата доступно администратору.')
         return redirect(orders_list_url)
 
     order = get_object_or_404(SaleOrder, pk=pk)
 
     if order.status == SaleOrder.Status.REFUNDED:
+        if is_ajax:
+            return JsonResponse({'success': False, 'error': f'Чек № {order.order_number} уже был возвращен ранее.'}, status=400)
         messages.warning(request, f'Чек № {order.order_number} уже был возвращен ранее.')
         return redirect(orders_list_url)
 
     if request.method == 'POST':
-        refund_reason = request.POST.get('refund_reason', '').strip()
+        if request.content_type and 'application/json' in request.content_type:
+            try:
+                body = json.loads(request.body.decode('utf-8'))
+                refund_reason = str(body.get('refund_reason', '')).strip()
+            except Exception:
+                refund_reason = ''
+        else:
+            refund_reason = request.POST.get('refund_reason', '').strip()
+
         if not 4 <= len(refund_reason) <= 255:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': 'Укажите причину возврата: от 4 до 255 символов.'}, status=400)
             messages.error(request, 'Укажите причину возврата: от 4 до 255 символов.')
             return redirect(orders_list_url)
+
         from sales.operations import refund
         from rest_framework.exceptions import APIException
         try:
             order, replayed = refund(request, pk, refund_reason)
         except APIException as exc:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': str(exc.detail)}, status=400)
             messages.error(request, str(exc.detail))
             return redirect(orders_list_url)
+        except Exception as exc:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': str(exc)}, status=400)
+            messages.error(request, str(exc))
+            return redirect(orders_list_url)
+
+        from django.core.cache import cache
+        cache.delete('dacar_live_kpi')
+
+        if is_ajax:
+            return JsonResponse({
+                'success': True,
+                'message': f'Возврат по чеку № {order.order_number} оформлен. Остатки восстановлены.',
+                'order_number': order.order_number,
+                'total_amount': str(order.total_amount),
+            })
+
         if replayed:
             messages.info(request, 'Возврат уже оформлен. Повторного изменения остатков нет.')
             return redirect(orders_list_url)
-        from django.core.cache import cache
-        cache.delete('dacar_live_kpi')
         messages.success(request, f'Возврат по чеку № {order.order_number} оформлен. Остатки восстановлены.')
         return redirect(orders_list_url)
 

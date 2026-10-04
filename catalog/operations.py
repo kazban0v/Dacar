@@ -61,9 +61,20 @@ def stock_action(request, data):
         reason_text = ''
         if reason:
             reason_text = f' Причина: {dict(StockMovement.WriteOffReason.choices)[reason]}.'
-        AuditLog.log(request, audit_type,
-            f'{label}: «{product.name}» — {qty} {product.unit} (было {before}, стало {after}).'
-            f'{reason_text} {data["comment"]}'.strip())
+        from analytics.audit_helpers import build_change_diff, diff_description
+        diff = build_change_diff({'stock_qty': before}, {'stock_qty': after})
+        AuditLog.log(
+            request, audit_type,
+            f'{label}: «{product.name}» — {qty} {product.unit}. {diff_description(diff)}.'
+            f'{reason_text} {data["comment"]}'.strip(),
+            metadata={
+                'action': 'stock_action',
+                'product_id': product.pk,
+                'product_name': product.name,
+                'movement': action,
+                **diff,
+            },
+        )
         result = {'success': True, 'message': f'{label}: «{product.name}» — выполнено.',
             'product_id': product.pk, 'product_name': product.name, 'stock_qty': float(after),
             'prev_stock': float(before), 'unit': product.unit, 'is_low_stock': after <= product.min_stock_alert}
@@ -109,10 +120,19 @@ def reverse_writeoff(request, movement_id):
             reversal_of=movement,
         )
         after = before + movement.quantity
+        from analytics.audit_helpers import build_change_diff, diff_description
+        diff = build_change_diff({'stock_qty': before}, {'stock_qty': after})
         AuditLog.log(
             request,
             AuditLog.ActionType.STOCK_ADJUST,
             f'Отменено списание №{movement.pk}: «{product.name}» — восстановлено '
-            f'{movement.quantity} {product.unit} (было {before}, стало {after}).',
+            f'{movement.quantity} {product.unit}. {diff_description(diff)}.',
+            metadata={
+                'action': 'writeoff_reversal',
+                'movement_id': movement.pk,
+                'product_id': product.pk,
+                'product_name': product.name,
+                **diff,
+            },
         )
         return {'success': True, 'replayed': False, 'movement': movement, 'stock_qty': after}

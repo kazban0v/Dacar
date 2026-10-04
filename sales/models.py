@@ -35,6 +35,14 @@ class SaleOrder(models.Model):
 
     order_number = models.CharField(max_length=50, unique=True, db_index=True, verbose_name="Номер чека")
     cashier = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='sales', verbose_name="Кассир")
+    shift = models.ForeignKey(
+        'users.CashShift', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='orders', verbose_name='Кассовая смена'
+    )
+    refund_shift = models.ForeignKey(
+        'users.CashShift', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='refund_orders', verbose_name='Смена возврата'
+    )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.COMPLETED, verbose_name="Статус")
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices, default=PaymentMethod.CASH, verbose_name="Способ оплаты")
 

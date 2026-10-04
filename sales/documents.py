@@ -34,13 +34,21 @@ def allocate_amount(total, weights):
     return [Decimal(value) / 100 for value in floors]
 
 
+def normalize_brand(name):
+    return ''.join(c for c in str(name or '').casefold() if c.isalnum())
+
+
 def is_shine(name):
-    return ''.join(c for c in name.casefold() if c.isalnum()) in {'shinesystem', 'shinesystems'}
+    return normalize_brand(name) in {'shinesystem', 'shinesystems'}
 
 
-def weekly_shine_report(monday):
+def weekly_brand_report(monday, brand_name):
+    """Read-only weekly report for one selected brand/supplier."""
     if monday.weekday() != 0:
         raise ValueError('Выберите понедельник начала недели.')
+    if not str(brand_name or '').strip():
+        raise ValueError('Выберите бренд для отчёта.')
+    selected_brand = normalize_brand(brand_name)
     end_day = monday + timedelta(days=7)
     start = timezone.make_aware(datetime.combine(monday, time.min))
     end = timezone.make_aware(datetime.combine(end_day, time.min))
@@ -62,7 +70,7 @@ def weekly_shine_report(monday):
                 brand = item.product.brand.name if item.product.brand else ''
             if not item.product_name_snapshot and not item.product:
                 warnings.append(f'{order.order_number}: удалённый товар без сохранённого бренда не включён.')
-            if not is_shine(brand):
+            if normalize_brand(brand) != selected_brand:
                 continue
             name = item.display_name
             sku = item.sku_snapshot or (item.product.sku if item.product else '')
@@ -86,12 +94,17 @@ def weekly_shine_report(monday):
     for row in result:
         row['net_qty'] = row['sold_qty'] - row['returned_qty']
         row['net_amount'] = row['sold_amount'] - row['returned_amount']
-    return dict(start=monday, end=end_day, rows=result,
+    return dict(start=monday, end=end_day, brand_name=str(brand_name).strip(), rows=result,
         events=sorted(events, key=lambda row: (row['date'], row['order'])),
         sold_total=sum((row['sold_amount'] for row in result), Decimal('0')),
         returned_total=sum((row['returned_amount'] for row in result), Decimal('0')),
         net_total=sum((row['net_amount'] for row in result), Decimal('0')),
         warnings=sorted(set(warnings)))
+
+
+def weekly_shine_report(monday):
+    """Backward-compatible shortcut used by existing tests and links."""
+    return weekly_brand_report(monday, 'Shine Systems')
 
 
 def create_invoice(user, data):

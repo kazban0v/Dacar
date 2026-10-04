@@ -81,11 +81,6 @@ class Product(models.Model):
             while Product.objects.filter(sku=self.sku).exclude(pk=self.pk).exists():
                 self.sku = f"DAC-{base_code}-{counter}"
                 counter += 1
-        if not self.category_id:
-            cat = Category.objects.first()
-            if not cat:
-                cat = Category.objects.create(name="Автохимия и Аксессуары", slug="autochem")
-            self.category = cat
         super().save(*args, **kwargs)
 
     @property

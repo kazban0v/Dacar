@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load dacar_format %}
 
 {% block title %}Обзор — DACAR Mobile Hub{% endblock %}
 
@@ -506,7 +507,7 @@
             <!-- Revenue Numbers & Growth Pill -->
             <div class="hub-hero-numbers">
                 <div class="hub-hero-amount">
-                    <span id="heroRevenueAmount">{{ today_revenue|floatformat:0 }}</span> ₸
+                    <span id="heroRevenueAmount">{{ today_revenue|tenge }}</span> ₸
                 </div>
                 <div class="hub-growth-pill" id="heroGrowthPill">
                     <i class="fa-solid fa-arrow-trend-up"></i>
@@ -538,7 +539,7 @@
                 <i class="fa-solid fa-bullseye"></i>
             </div>
             <div class="hub-kpi-value">
-                <span id="kpiAvgCheck">{{ today_avg_check|floatformat:0 }}</span> ₸
+                <span id="kpiAvgCheck">{{ today_avg_check|tenge }}</span> ₸
             </div>
             <div class="hub-kpi-label">Средний чек</div>
         </div>
@@ -549,7 +550,7 @@
                 <i class="fa-solid fa-arrow-trend-up"></i>
             </div>
             <div class="hub-kpi-value">
-                <span id="kpiProfit">{{ today_profit|floatformat:0 }}</span> ₸
+                <span id="kpiProfit">{{ today_profit|tenge }}</span> ₸
             </div>
             <div class="hub-kpi-label">Валовая прибыль</div>
         </div>
@@ -636,7 +637,7 @@
                 style="color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: 0.82rem;"
                 id="hubLastSaleText">
                 {% if recent_orders.0 %}
-                №{{ recent_orders.0.order_number }} • {{ recent_orders.0.total_amount|floatformat:0 }} ₸ ({{
+                №{{ recent_orders.0.order_number }} • {{ recent_orders.0.total_amount|tenge }} ₸ ({{
                 recent_orders.0.get_payment_method_display }})
                 {% else %}
                 Ожидание продаж...
@@ -666,7 +667,7 @@
             const p = Math.min(1, elapsed / dur);
             const eased = 1 - Math.pow(1 - p, 3);
             const current = Math.round(startVal + (target - startVal) * eased);
-            el.textContent = current.toLocaleString('ru-RU');
+            el.textContent = current.toLocaleString('ru-RU').replace(/[\u00a0\u202f]/g, ' ');
             if (p < 1) requestAnimationFrame(frame);
         }
         requestAnimationFrame(frame);
@@ -753,7 +754,7 @@
                         displayColors: false,
                         callbacks: {
                             label: function(c) {
-                                return c.raw.toLocaleString('ru-RU') + ' ₸';
+                                return c.raw.toLocaleString('ru-RU').replace(/[\u00a0\u202f]/g, ' ') + ' ₸';
                             }
                         }
                     }
@@ -891,7 +892,7 @@
         // Last sale banner
         const lastSaleEl = document.getElementById('hubLastSaleText');
         if (lastSaleEl && data.last_order) {
-            lastSaleEl.textContent = `№${data.last_order.order_number} • ${Math.round(data.last_order.total_amount).toLocaleString('ru-RU')} ₸ (${data.last_order.payment_method_display})`;
+            lastSaleEl.textContent = `№${data.last_order.order_number} • ${Math.round(data.last_order.total_amount).toLocaleString('ru-RU').replace(/[\u00a0\u202f]/g, ' ')} ₸ (${data.last_order.payment_method_display})`;
         }
 
         // Charts

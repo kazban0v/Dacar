@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load dacar_format %}
 
 {% block title %}Журнал аудита (Audit Trail) — DACAR{% endblock %}
 
@@ -34,6 +35,14 @@
         .audit-filter-search { min-width: 100%; flex: none; }
         .audit-filter-select { width: 100%; }
     }
+
+    /* Structured diff display */
+    .audit-diff { margin-top:.35rem; }
+    .audit-diff-row { display:flex; align-items:baseline; gap:.35rem; padding:.18rem 0; font-size:.76rem; line-height:1.3; }
+    .audit-diff-label { color:var(--text-muted); font-weight:700; min-width:60px; flex-shrink:0; }
+    .audit-diff-old { padding:.12rem .42rem; border-radius:5px; background:rgba(239,68,68,.1); color:#dc2626; text-decoration:line-through; font-weight:600; }
+    .audit-diff-arrow { color:var(--text-muted); font-size:.65rem; }
+    .audit-diff-new { padding:.12rem .42rem; border-radius:5px; background:rgba(34,197,94,.1); color:#16a34a; font-weight:700; }
 
     /* Help (?) Button */
     .pos-help-btn {
@@ -167,7 +176,39 @@
                         {% endif %}
                     </td>
                     <td style="color: var(--text-main); font-size: 0.9rem;">
-                        {{ log.description }}
+                        {{ log.display_description }}
+                        {% if log.metadata.changes %}
+                        <div class="audit-diff">
+                            {% for change in log.metadata.changes %}
+                            <div class="audit-diff-row">
+                                <span class="audit-diff-label">{{ change.label }}:</span>
+                                <span class="audit-diff-old">{{ change.old }}</span>
+                                <span class="audit-diff-arrow">→</span>
+                                <span class="audit-diff-new">{{ change.new }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% elif log.metadata.action == 'shift_open' %}
+                        <div style="margin-top:0.35rem;font-size:0.8rem;color:var(--accent-cyan);">
+                            <i class="fa-solid fa-cash-register"></i> Смена #{{ log.metadata.shift_id }} открыта · Размен в кассе: <strong>{{ log.metadata.opening_cash|tenge }} ₸</strong>
+                        </div>
+                        {% elif log.metadata.action == 'shift_close' %}
+                        <div style="margin-top:0.35rem;font-size:0.78rem;background:rgba(148,163,184,0.08);padding:0.4rem 0.6rem;border-radius:8px;">
+                            <div style="font-weight:700;"><i class="fa-solid fa-vault"></i> Итоги смены #{{ log.metadata.shift_id }}:</div>
+                            <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.25rem;">
+                                <span>Чеков: <strong>{{ log.metadata.totals.check_count }}</strong></span>
+                                <span>Выручка: <strong>{{ log.metadata.totals.total_revenue|tenge }} ₸</strong></span>
+                                <span>Наличные: <strong>{{ log.metadata.totals.cash_revenue|tenge }} ₸</strong></span>
+                                <span>В кассе факт: <strong>{{ log.metadata.counted_cash|tenge }} ₸</strong></span>
+                                <span>Ожидалось: <strong>{{ log.metadata.expected_cash|tenge }} ₸</strong></span>
+                                <span>Расхождение: <strong>{{ log.metadata.difference|tenge }} ₸</strong></span>
+                            </div>
+                        </div>
+                        {% elif log.metadata.action == 'refund' %}
+                        <div style="margin-top:0.35rem;font-size:0.8rem;color:var(--accent-red);">
+                            <i class="fa-solid fa-rotate-left"></i> Возврат чека {{ log.metadata.order_number }} на {{ log.metadata.total_amount|tenge }} ₸. Причина: <em>«{{ log.metadata.reason }}»</em>
+                        </div>
+                        {% endif %}
                     </td>
                     <td class="col-ip" style="font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">
                         {{ log.ip_address|default:"—" }}

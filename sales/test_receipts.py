@@ -47,7 +47,7 @@ class ReceiptPrintTests(TestCase):
             self.assertContains(response, 'var(--receipt-width,71.9mm)')
             self.assertNotContains(response, 'Math.min(')
             self.assertNotContains(response, 'width: 100% !important')
-            self.assertContains(response, '1250,25')
+            self.assertContains(response, '1 250,25')
 
     def test_cashier_cannot_print_other_receipt_in_either_transport(self):
         self.client.force_login(self.other)

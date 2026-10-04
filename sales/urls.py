@@ -14,5 +14,6 @@ urlpatterns = [
     path('orders/<int:pk>/refund/', views.order_refund_view, name='order_refund'),
     path('orders/<int:pk>/delete/', views.order_delete_view, name='order_delete'),
     path('api/checkout/', views.CheckoutAPIView.as_view(), name='api_checkout'),
+    path('api/orders/lookup/', views.order_lookup_api, name='api_order_lookup'),
     path('api/orders/<int:pk>/print-raw/', views.OrderDirectPrintAPIView.as_view(), name='api_order_print_raw'),
 ]

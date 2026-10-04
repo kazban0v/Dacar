@@ -162,7 +162,9 @@ def invoice_pdf(invoice):
 
 def shine_pdf(report):
     period = f"{report['start']:%d.%m.%Y} - {report['end']:%d.%m.%Y}"
-    story = [text('Отчёт для Маршала · Shine Systems', TITLE),
+    recipient = report.get('recipient') or 'получателя не указано'
+    brand_name = report.get('brand_name') or 'бренд не указан'
+    story = [text(f'Отчёт для {recipient} · {brand_name}', TITLE),
              text(f'Период: {period}. Конечный понедельник не включён. Часовой пояс: {timezone.get_current_timezone_name()}.'),
              text('Продажи и возвраты учтены по дате операции. Суммы - цены продажи с учётом всех скидок. Возврат прошлой продажи уменьшает текущую неделю.', SMALL)]
     rows = [['Товар / артикул', 'Ед.', 'Продано', 'Возврат', 'Итого кол-во', 'Продажи, ₸', 'Возвраты, ₸', 'Итого, ₸']]
@@ -172,7 +174,7 @@ def shine_pdf(report):
     if report['rows']:
         story.append(table(rows, [85, 14, 23, 23, 26, 32, 32, 32]))
     else:
-        story.append(text('За выбранную неделю продаж и возвратов Shine Systems не найдено.'))
+        story.append(text(f'За выбранную неделю продаж и возвратов {brand_name} не найдено.'))
     story += [Spacer(1, 5*mm), text(f"Продажи: {amount(report['sold_total'])} ₸ · Возвраты: {amount(report['returned_total'])} ₸", RIGHT),
               text(f"Итого после возвратов: {amount(report['net_total'])} ₸", RIGHT),
               text('Это отчёт о розничной реализации. Сумма к перечислению поставщику по закупочным ценам или комиссии здесь не рассчитывается.', SMALL)]
@@ -185,4 +187,4 @@ def shine_pdf(report):
             events.append([timezone.localtime(event['date']).strftime('%d.%m.%Y %H:%M'), event['order'], event['kind'],
                            event['name'], qty(event['quantity']), amount(event['amount'])])
         story.append(table(events, [32, 53, 26, 103, 20, 33]))
-    return build(story, 'Shine Systems - недельная реализация', wide=True)
+    return build(story, f'{brand_name} - недельная реализация', wide=True)

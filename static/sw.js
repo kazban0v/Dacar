@@ -1,5 +1,5 @@
 // DACAR POS Service Worker
-const CACHE_NAME = 'dacar-pos-v1.1';
+const CACHE_NAME = 'dacar-pos-v1.2';
 const STATIC_ASSETS = [
     '/static/favicon.svg',
     '/static/icons/icon-192.png',

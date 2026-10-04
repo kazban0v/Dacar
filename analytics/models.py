@@ -15,6 +15,7 @@ class AuditLog(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, verbose_name="Сотрудник")
     action_type = models.CharField(max_length=30, choices=ActionType.choices, verbose_name="Тип действия")
     description = models.TextField(verbose_name="Описание действия")
+    metadata = models.JSONField(default=dict, blank=True, verbose_name='Структурированные данные')
     ip_address = models.CharField(max_length=50, blank=True, verbose_name="IP Адрес")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время")
 
@@ -24,7 +25,7 @@ class AuditLog(models.Model):
         ordering = ['-created_at']
 
     @classmethod
-    def log(cls, request, action_type, description):
+    def log(cls, request, action_type, description, *, metadata=None):
         user = request.user if request and hasattr(request, 'user') and request.user.is_authenticated else None
         ip = ''
         if request:
@@ -40,6 +41,7 @@ class AuditLog(models.Model):
             user=user,
             action_type=action_type,
             description=description,
+            metadata=metadata or {},
             ip_address=ip
         )
 

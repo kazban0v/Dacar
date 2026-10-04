@@ -40,6 +40,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ('retail_price', 'purchase_price', 'stock_qty', 'is_active')
     ordering = ('name',)
     date_hierarchy = 'created_at'
+    actions = ('archive_selected_products', 'restore_selected_products')
 
     fieldsets = (
         ('Основная информация', {
@@ -70,6 +71,17 @@ class ProductAdmin(admin.ModelAdmin):
             )
         return "—"
     thumbnail_preview.short_description = "Фото"
+
+    @admin.action(description='Снять выбранные товары с продажи (история сохранится)')
+    def archive_selected_products(self, request, queryset):
+        """Safe alternative to deleting products already used in stock or receipts."""
+        updated = queryset.filter(is_active=True).update(is_active=False)
+        self.message_user(request, f'Снято с продажи: {updated}. История склада и чеки сохранены.')
+
+    @admin.action(description='Вернуть выбранные товары в продажу')
+    def restore_selected_products(self, request, queryset):
+        updated = queryset.filter(is_active=False).update(is_active=True)
+        self.message_user(request, f'Возвращено в продажу: {updated}.')
 
 
 @admin.register(StockMovement)

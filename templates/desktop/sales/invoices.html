@@ -1,7 +1,14 @@
 {% extends 'desktop/base.html' %}
+{% load dacar_format %}
 {% block title %}Счёт для компании{% endblock %}
 {% block content %}
 {% include 'desktop/sales/document_styles.html' %}
+<style>
+    .invoice-line label:first-child { position: relative; }
+    .invoice-product-results { display:block; position:absolute; left:0; right:0; top:100%; z-index:10; max-height:220px; overflow:auto; background:var(--card-bg); border-radius:8px; box-shadow:0 12px 24px rgba(15,23,42,.18); }
+    .invoice-product-results:empty { display:none; }
+    .invoice-product-results .btn { display:block; width:100%; border-radius:0; text-align:left; font-size:.78rem; padding:.5rem .65rem; }
+</style>
 <main class="docs">
     <a href="{% url 'pos' %}">← Касса</a>
     <h1>Счёт на оплату для компании</h1>
@@ -24,7 +31,7 @@
         <div class="actions"><button type="submit" class="btn btn-primary" id="createInvoice">Создать счёт</button><a id="invoiceResult" class="btn btn-secondary" hidden target="_blank" rel="noopener">Открыть PDF</a></div>
     </form>
     <section class="panel"><h2>Последние счета</h2><div class="scroll"><table><thead><tr><th>Номер / дата</th><th>Компания</th><th>Сумма</th><th>Документ</th></tr></thead><tbody>
-    {% for invoice in invoices %}<tr><td>{{ invoice.number }}<br>{{ invoice.created_at|date:'d.m.Y' }}</td><td>{{ invoice.buyer_name }}</td><td class="number">{{ invoice.total_amount|floatformat:2 }} ₸</td><td><a href="{% url 'invoice_pdf' invoice.pk %}" target="_blank" rel="noopener">PDF</a></td></tr>{% empty %}<tr><td colspan="4">Счетов пока нет</td></tr>{% endfor %}
+    {% for invoice in invoices %}<tr><td>{{ invoice.number }}<br>{{ invoice.created_at|date:'d.m.Y' }}</td><td>{{ invoice.buyer_name }}</td><td class="number">{{ invoice.total_amount|tenge }} ₸</td><td><a href="{% url 'invoice_pdf' invoice.pk %}" target="_blank" rel="noopener">PDF</a></td></tr>{% empty %}<tr><td colspan="4">Счетов пока нет</td></tr>{% endfor %}
     </tbody></table></div></section>
 </main>
 {{ products_data|json_script:'invoiceProducts' }}
@@ -37,15 +44,29 @@
     function addLine(item = {}) {
         if (lines.children.length >= 200) return;
         const row = document.createElement('div'); row.className = 'invoice-line';
-        row.innerHTML = '<label>Товар<select required></select></label><label>Количество<input type="number" min="0.001" step="0.001" value="1" required></label><label>Скидка, ₸<input type="number" min="0" step="0.01" value="0" required></label><button type="button" class="btn btn-secondary">Удалить</button>';
-        const select = row.querySelector('select'); select.add(new Option('Выберите товар', ''));
-        products.forEach(p => select.add(new Option(`${p.name} · ${p.sku} · ${p.retail_price} ₸`, p.id)));
-        select.value = item.product_id || '';
-        const inputs = row.querySelectorAll('input'); inputs[0].value = item.quantity || 1; inputs[1].value = item.discount || 0;
+        row.innerHTML = '<label>Товар<input type="search" class="invoice-product-search" placeholder="Название, SKU или штрихкод" autocomplete="off" required><input type="hidden" class="invoice-product-id" required><span class="invoice-product-results"></span></label><label>Количество<input class="invoice-quantity" type="number" min="0.001" step="0.001" value="1" required></label><label>Скидка, ₸<input class="invoice-discount" type="number" min="0" step="0.01" value="0" required></label><button type="button" class="btn btn-secondary">Удалить</button>';
+        const productId = row.querySelector('.invoice-product-id');
+        const search = row.querySelector('.invoice-product-search');
+        const results = row.querySelector('.invoice-product-results');
+        let timer;
+        function choose(product) { productId.value = product.id; search.value = `${product.name} · ${product.sku}`; results.replaceChildren(); changed(); }
+        function renderResults() {
+            const query = search.value.trim().toLocaleLowerCase('ru-RU'); productId.value = '';
+            results.replaceChildren();
+            if (query.length < 2) return;
+            products.filter(p => `${p.name} ${p.sku} ${p.barcode}`.toLocaleLowerCase('ru-RU').includes(query)).slice(0, 12).forEach(product => {
+                const button = document.createElement('button'); button.type='button'; button.className='btn btn-secondary';
+                button.textContent = `${product.name} · ${product.sku} · ${product.retail_price} ₸`;
+                button.addEventListener('click', () => choose(product)); results.append(button);
+            });
+        }
+        search.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(renderResults, 120); });
+        if (item.product_id) { const product = products.find(p => p.id === Number(item.product_id)); if (product) choose(product); }
+        row.querySelector('.invoice-quantity').value = item.quantity || 1; row.querySelector('.invoice-discount').value = item.discount || 0;
         row.querySelector('button').addEventListener('click', () => {row.remove(); changed();});
         lines.append(row); updateTotal();
     }
-    function items() {return Array.from(lines.children).map(row => ({product_id:Number(row.querySelector('select').value), quantity:row.querySelectorAll('input')[0].value, discount:row.querySelectorAll('input')[1].value}));}
+    function items() {return Array.from(lines.children).map(row => ({product_id:Number(row.querySelector('.invoice-product-id').value), quantity:row.querySelector('.invoice-quantity').value, discount:row.querySelector('.invoice-discount').value}));}
     function updateTotal() {
         const total = items().reduce((sum, row) => {
             const product = products.find(p => p.id === row.product_id);

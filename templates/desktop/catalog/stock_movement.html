@@ -179,12 +179,10 @@
             <input type="hidden" name="client_sync_id" value="{{ stock_sync_id }}">
             <div style="margin-bottom: 0.75rem;">
                 <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Выбор товара <span style="color: var(--accent-red);">*</span></label>
-                <select name="product_id" class="form-control" required style="font-size: 0.85rem;">
-                    <option value="">-- Выберите товар --</option>
-                    {% for p in products %}
-                    <option value="{{ p.id }}" {% if selected_product_id == p.id|stringformat:'s' %}selected{% endif %}>{{ p.name }} (Остаток: {{ p.stock_qty }} {{ p.unit }})</option>
-                    {% endfor %}
-                </select>
+                <input type="hidden" name="product_id" id="movementProductId" value="{{ selected_product_id }}" required>
+                <input type="search" id="movementProductSearch" class="form-control" style="font-size:.85rem;" placeholder="Название, SKU или штрихкод" autocomplete="off">
+                <div id="movementProductResults" style="display:none;position:relative;z-index:8;"></div>
+                <div id="movementProductSelected" style="display:none;margin-top:.4rem;font-size:.78rem;color:var(--accent-cyan);font-weight:700;"></div>
             </div>
 
             <div style="margin-bottom: 0.75rem;">
@@ -393,6 +391,36 @@
 
     document.getElementById('movementTypeSelect')?.addEventListener('change', syncWriteoffReason);
     syncWriteoffReason();
+
+    (() => {
+        const search = document.getElementById('movementProductSearch');
+        const hidden = document.getElementById('movementProductId');
+        const results = document.getElementById('movementProductResults');
+        const selected = document.getElementById('movementProductSelected');
+        let timer;
+        function choose(product) {
+            hidden.value = product.id;
+            search.value = product.name;
+            selected.textContent = `Выбрано: ${product.name} · остаток ${product.stock_qty} ${product.unit}`;
+            selected.style.display = 'block'; results.style.display = 'none'; results.replaceChildren();
+        }
+        async function find() {
+            const q = search.value.trim();
+            hidden.value = ''; selected.style.display = 'none';
+            if (q.length < 2) { results.style.display = 'none'; return; }
+            const response = await fetch(`{% url 'api_product_search' %}?q=${encodeURIComponent(q)}`);
+            const data = await response.json();
+            results.replaceChildren();
+            (data.products || []).forEach(product => {
+                const button = document.createElement('button'); button.type = 'button'; button.className = 'btn btn-secondary';
+                button.style.cssText = 'width:100%;text-align:left;border-radius:0;padding:.45rem .6rem;font-size:.78rem;background:var(--card-bg);';
+                button.textContent = `${product.name} · ${product.sku} · ${product.stock_qty} ${product.unit}`;
+                button.addEventListener('click', () => choose(product)); results.append(button);
+            });
+            results.style.display = results.children.length ? 'block' : 'none';
+        }
+        search?.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(find, 180); });
+    })();
 
     function toggleMovementForm() {
         const formCard = document.getElementById('movementFormCard');

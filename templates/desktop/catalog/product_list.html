@@ -1,4 +1,5 @@
 {% extends 'desktop/base.html' %}
+{% load dacar_format %}
 
 {% block title %}Склад и остатки — DACAR{% endblock %}
 
@@ -44,7 +45,15 @@
     .stock-table tbody tr:last-child td { border-bottom:0; }
     .stock-table tbody tr.stock-is-low td:first-child { border-left:4px solid var(--accent-orange); padding-left:calc(.9rem - 4px); }
     .stock-product { display:flex; align-items:center; gap:.55rem; min-width:220px; }
-    .stock-product-icon { width:34px; height:34px; flex:0 0 34px; display:grid; place-items:center; border-radius:10px; color:var(--accent-cyan); background:color-mix(in srgb,var(--accent-cyan) 11%,var(--card-bg)); font-size:.78rem; }
+    .stock-product-icon,.stock-product-photo { width:38px; height:38px; flex:0 0 38px; display:grid; place-items:center; overflow:hidden; border:1px solid var(--card-border); border-radius:10px; color:var(--accent-cyan); background:color-mix(in srgb,var(--accent-cyan) 11%,var(--card-bg)); font-size:.78rem; }
+    .stock-product-photo img { width:100%; height:100%; object-fit:contain; background:#fff; }
+    .stock-product-photo { padding:0; cursor:zoom-in; }
+    .stock-image-preview { position:fixed; inset:0; z-index:1200; display:none; align-items:center; justify-content:center; padding:1.25rem; background:rgba(3,9,20,.78); backdrop-filter:blur(5px); }
+    .stock-image-preview.is-open { display:flex; }
+    .stock-image-preview figure { position:relative; width:min(520px,100%); margin:0; padding:1rem; border:1px solid var(--card-border); border-radius:18px; background:var(--card-bg); box-shadow:0 20px 60px rgba(0,0,0,.42); }
+    .stock-image-preview img { display:block; width:100%; max-height:68vh; object-fit:contain; border-radius:12px; background:#fff; }
+    .stock-image-preview figcaption { padding:.75rem .15rem .1rem; color:var(--text-main); font-size:.86rem; font-weight:800; }
+    .stock-image-preview button { position:absolute; top:.45rem; right:.45rem; z-index:1; width:32px; height:32px; border:0; border-radius:50%; color:#fff; background:rgba(15,23,42,.72); cursor:pointer; }
     .stock-product-name { max-width:215px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-main); font-size:.8rem; font-weight:800; }
     .stock-product-sku { margin-top:.1rem; color:var(--text-muted); font-size:.63rem; font-weight:600; }
     .stock-category-name { color:var(--text-muted); font-size:.76rem; font-weight:650; }
@@ -84,7 +93,7 @@
     <header class="stock-v2-header">
         <div>
             <h1 class="stock-v2-title">Склад и остатки</h1>
-            <p class="stock-v2-summary">{{ all_products_count }} товаров · {{ low_stock_count }} с низким остатком{% if user.is_admin_user %} · сумма склада {{ inventory_value|floatformat:0 }} ₸{% endif %}</p>
+            <p class="stock-v2-summary">{{ all_products_count }} товаров · {{ low_stock_count }} с низким остатком{% if user.is_admin_user %} · сумма склада {{ inventory_value|tenge }} ₸{% endif %}</p>
         </div>
         {% if user.is_admin_user %}<div style="display:flex;gap:.5rem;flex-wrap:wrap;"><a href="{% url 'stock_movement' %}?action=OUT" class="btn btn-secondary stock-v2-add"><i class="fa-solid fa-arrow-up-from-bracket"></i> Списание и история</a><a href="{% url 'product_create' %}" class="btn btn-primary stock-v2-add"><i class="fa-solid fa-plus"></i> Добавить товар</a></div>{% endif %}
     </header>
@@ -92,7 +101,7 @@
     <nav class="stock-category-row" aria-label="Категории товаров">
         <a href="{% url 'product_list' %}" class="stock-category {% if not selected_category %}is-active{% endif %}"><span class="stock-category-icon"><i class="fa-solid fa-table-cells-large"></i></span>Все</a>
         {% for cat in categories %}
-        <a href="?category={{ cat.id }}" class="stock-category {% if selected_category == cat.id|stringformat:'i' %}is-active{% endif %}"><span class="stock-category-icon"><i class="fa-solid {{ cat.icon|default:'fa-tag' }}"></i></span>{{ cat.name }}</a>
+        <a href="?category={{ cat.id }}" class="stock-category {% if selected_category == cat.id|stringformat:'i' %}is-active{% endif %}"><span class="stock-category-icon"><i class="fa-solid {{ cat.name|category_icon:cat.icon }}"></i></span>{{ cat.name }}</a>
         {% endfor %}
     </nav>
 
@@ -132,12 +141,12 @@
             <tbody>
                 {% for p in products %}
                 <tr class="{% if p.is_low_stock %}stock-is-low{% endif %}">
-                    <td><div class="stock-product"><span class="stock-product-icon"><i class="fa-solid {{ p.category.icon|default:'fa-box' }}"></i></span><div><div class="stock-product-name" title="{{ p.name }}">{{ p.name }}</div><div class="stock-product-sku">{{ p.sku }}</div></div></div></td>
+                    <td><div class="stock-product">{% if p.image %}<button type="button" class="stock-product-photo" onclick="openStockImagePreview('{{ p.image.url }}', '{{ p.name|escapejs }}')" aria-label="Увеличить фото: {{ p.name }}"><img src="{{ p.image.url }}" alt="" loading="lazy"></button>{% else %}<span class="stock-product-icon"><i class="fa-solid {% if p.category %}{{ p.category.name|category_icon:p.category.icon }}{% else %}fa-tags{% endif %}"></i></span>{% endif %}<div><div class="stock-product-name" title="{{ p.name }}">{{ p.name }}</div><div class="stock-product-sku">{{ p.sku }}</div></div></div></td>
                     <td class="stock-category-name">{{ p.category.name|default:'—' }}</td>
                     <td class="stock-number {% if p.is_low_stock %}stock-low{% endif %}">{{ p.stock_qty|floatformat:0 }} {{ p.unit }}{% if p.is_low_stock %} <i class="fa-solid fa-triangle-exclamation" title="Низкий остаток"></i>{% endif %}</td>
-                    {% if user.is_admin_user %}<td class="stock-cost">{{ p.purchase_price|floatformat:0 }} ₸</td>{% endif %}
-                    <td class="stock-price">{{ p.retail_price|floatformat:0 }} ₸</td>
-                    {% if user.is_admin_user %}<td class="stock-margin">+{{ p.margin|floatformat:0 }} ₸</td>{% endif %}
+                    {% if user.is_admin_user %}<td class="stock-cost">{{ p.purchase_price|tenge }} ₸</td>{% endif %}
+                    <td class="stock-price">{{ p.retail_price|tenge }} ₸</td>
+                    {% if user.is_admin_user %}<td class="stock-margin">+{{ p.margin|tenge }} ₸</td>{% endif %}
                     {% if user.is_admin_user %}<td><div class="stock-actions"><button class="stock-action stock-refill" type="button" onclick="openStockRefillModal('{{ p.id }}','{{ p.name|escapejs }}','{{ p.stock_qty|floatformat:0 }}')" title="Пополнить"><i class="fa-solid fa-plus"></i></button><a class="stock-action stock-writeoff" href="{% url 'stock_movement' %}?product={{ p.id }}&action=OUT" title="Списать"><i class="fa-solid fa-arrow-up-from-bracket"></i></a><a class="stock-action" href="{% url 'product_edit' p.id %}" title="Редактировать"><i class="fa-solid fa-pen"></i></a></div></td>{% endif %}
                 </tr>
                 {% empty %}
@@ -149,6 +158,14 @@
     </section>
     {% if user.is_admin_user %}<p class="stock-hint">Наведите на строку — появятся быстрые действия: пополнить или отредактировать товар.</p>{% endif %}
 </main>
+
+<div id="stockImagePreview" class="stock-image-preview" role="dialog" aria-modal="true" aria-label="Фото товара" onclick="if(event.target === this) closeStockImagePreview()">
+    <figure>
+        <button type="button" aria-label="Закрыть" onclick="closeStockImagePreview()"><i class="fa-solid fa-xmark"></i></button>
+        <img id="stockImagePreviewImage" alt="">
+        <figcaption id="stockImagePreviewName"></figcaption>
+    </figure>
+</div>
 
 {% if user.is_admin_user %}
 <div id="stockRefillModal" style="display:none;position:fixed;inset:0;background:rgba(3,9,20,.67);backdrop-filter:blur(5px);z-index:1000;align-items:center;justify-content:center;padding:1rem;">
@@ -164,6 +181,8 @@
 <script>
 function openStockRefillModal(id, name, stock) { document.getElementById('modalProductId').value=id; document.getElementById('modalProductName').textContent=name; document.getElementById('modalCurrentStock').textContent=stock; document.getElementById('stockRefillModal').style.display='flex'; document.body.style.overflow='hidden'; }
 function closeStockRefillModal() { const modal=document.getElementById('stockRefillModal'); if (modal) modal.style.display='none'; document.body.style.overflow=''; }
-document.addEventListener('keydown', (event) => { if (event.key==='Escape') closeStockRefillModal(); });
+function openStockImagePreview(imageUrl, name) { const modal=document.getElementById('stockImagePreview'); document.getElementById('stockImagePreviewImage').src=imageUrl; document.getElementById('stockImagePreviewImage').alt=name; document.getElementById('stockImagePreviewName').textContent=name; modal.classList.add('is-open'); document.body.style.overflow='hidden'; }
+function closeStockImagePreview() { const modal=document.getElementById('stockImagePreview'); modal.classList.remove('is-open'); document.getElementById('stockImagePreviewImage').removeAttribute('src'); document.body.style.overflow=''; }
+document.addEventListener('keydown', (event) => { if (event.key==='Escape') { closeStockRefillModal(); closeStockImagePreview(); } });
 </script>
 {% endblock %}

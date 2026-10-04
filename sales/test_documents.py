@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from catalog.models import Brand, Product, StockMovement
-from sales.documents import weekly_shine_report, allocate_amount
+from sales.documents import weekly_shine_report, weekly_brand_report, allocate_amount
 from sales.document_pdf import amount_in_words_ru, payment_total_text
 from sales.models import SaleOrder, SaleOrderItem, CompanyInvoice
 from users.models import User
@@ -180,3 +180,39 @@ class DocumentsAndPaymentsTests(TestCase):
         self.assertEqual(response.context['report']['start'], current)
         self.assertContains(response, 'Текущая неделя')
         self.assertContains(response, 'Прошлая неделя')
+
+    def test_report_can_select_another_brand_and_recipient(self):
+        other_brand = Brand.objects.create(name='Koch Chemie', slug='koch-chemie')
+        other_product = Product.objects.create(
+            name='Koch Green Star', sku='KOCH-01', barcode='KOCH-01', brand=other_brand,
+            retail_price=500, purchase_price=250, stock_qty=10,
+        )
+        order = SaleOrder.objects.create(
+            order_number='KOCH-WEEK-01', cashier=self.admin, total_amount=500, subtotal_amount=500,
+        )
+        monday = date(2026, 9, 14)
+        SaleOrder.objects.filter(pk=order.pk).update(created_at=timezone.make_aware(datetime.combine(monday, time.min)))
+        SaleOrderItem.objects.create(
+            order=order, product=other_product, quantity=1, product_name_snapshot=other_product.name,
+            brand_name_snapshot=other_brand.name, sku_snapshot=other_product.sku, unit_snapshot='шт',
+            purchase_price_snapshot=250, unit_price=500, total_amount=500,
+        )
+        report = weekly_brand_report(monday, 'Koch Chemie')
+        self.assertEqual(report['brand_name'], 'Koch Chemie')
+        self.assertEqual(report['net_total'], Decimal('500'))
+        page = self.client.get('/sales/reports/shine/', {
+            'week': monday.isoformat(), 'brand': other_brand.pk,
+        })
+        self.assertContains(page, 'Koch Chemie')
+        pdf = self.client.get('/sales/reports/shine/', {
+            'week': monday.isoformat(), 'brand': other_brand.pk, 'format': 'pdf',
+        })
+        self.assertEqual(pdf.status_code, 200)
+        self.assertTrue(pdf.content.startswith(b'%PDF-'))
+
+    def test_selecting_brand_without_week_opens_current_week_report(self):
+        brand = Brand.objects.create(name='Auto Magic', slug='auto-magic')
+        response = self.client.get('/sales/reports/shine/', {'brand': brand.pk})
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(response.context['report'])
+        self.assertEqual(response.context['report']['brand_name'], 'Auto Magic')

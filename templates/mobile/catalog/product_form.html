@@ -99,22 +99,24 @@
     </header>
 
     <div class="dacar-card product-form-card">
-        <form method="POST" id="productForm">
+        <form method="POST" enctype="multipart/form-data" id="productForm">
             {% csrf_token %}
             <section class="product-form-section">
                 <div class="product-section-head"><i class="fa-solid fa-barcode"></i> Идентификация</div>
-                <div class="product-field product-field--name"><label for="productName">Наименование товара *</label><input type="text" name="name" id="productName" class="form-control" required value="{{ product.name|default:'' }}" placeholder="Например: Шампунь Detail Nano 1 л" autocomplete="off" {% if initial_barcode %}autofocus{% endif %}></div>
-                <div class="product-field" style="margin-top:.8rem;"><label for="productBarcode">Штрихкод <span id="barcodeScannerBadge" class="badge badge-cyan">Сканер готов</span></label><div class="product-barcode-row"><input type="text" name="barcode" id="productBarcode" class="form-control" value="{% if initial_barcode %}{{ initial_barcode }}{% elif product %}{{ product.barcode }}{% endif %}" placeholder="Отсканируйте или введите" autocomplete="off" {% if not product and not initial_barcode %}autofocus{% endif %}><button type="button" class="product-scan-button haptic-press" onclick="openCameraScannerModal()" aria-label="Сканировать камерой"><i class="fa-solid fa-camera"></i></button></div><span class="product-field-help">Пустое значение — штрихкод создастся автоматически.</span></div>
+                <div class="product-field product-field--name"><label for="productName">Наименование товара *</label><input type="text" name="name" id="productName" class="form-control" required value="{% if form_values.name %}{{ form_values.name }}{% else %}{{ product.name|default:'' }}{% endif %}" placeholder="Например: Шампунь Detail Nano 1 л" autocomplete="off" {% if initial_barcode %}autofocus{% endif %}></div>
+                <div class="product-field" style="margin-top:.8rem;"><label for="productBarcode">Штрихкод <span id="barcodeScannerBadge" class="badge badge-cyan">Сканер готов</span></label><div class="product-barcode-row"><input type="text" name="barcode" id="productBarcode" class="form-control" value="{% if form_values.barcode %}{{ form_values.barcode }}{% elif initial_barcode %}{{ initial_barcode }}{% elif product %}{{ product.barcode }}{% endif %}" placeholder="Отсканируйте или введите" autocomplete="off" {% if not product and not initial_barcode %}autofocus{% endif %}><button type="button" class="product-scan-button haptic-press" onclick="openCameraScannerModal()" aria-label="Сканировать камерой"><i class="fa-solid fa-camera"></i></button></div><span class="product-field-help">Пустое значение — штрихкод создастся автоматически.</span></div>
+                <div class="product-field" style="margin-top:.8rem;"><label>Артикул</label><input type="text" name="sku" class="form-control" value="{% if form_values.sku %}{{ form_values.sku }}{% elif product %}{{ product.sku }}{% endif %}" placeholder="Создастся автоматически"></div>
+                <div class="product-field" style="margin-top:.8rem;"><label>Фото товара</label>{% if product.image %}<img src="{{ product.image.url }}" alt="" style="width:42px;height:42px;object-fit:contain;background:#fff;border-radius:8px;margin-right:.5rem;vertical-align:middle;">{% endif %}<input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="form-control" style="padding:.45rem;"><span class="product-field-help">JPEG, PNG или WebP, до 10 МБ.</span></div>
             </section>
 
             <section class="product-form-section">
                 <div class="product-section-head"><i class="fa-solid fa-tags"></i> Категория и бренд</div>
-                <div class="product-form-grid"><div class="product-field"><label for="productCategorySelect">Категория</label><select name="category" id="productCategorySelect" class="form-control" onchange="handleCategoryChange(this)"><option value="">Общая / Автохимия</option>{% for cat in categories %}<option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}<option value="__NEW__">+ Создать категорию</option></select></div><div class="product-field"><label for="productBrand">Бренд</label><input type="text" name="brand" id="productBrand" list="brandsList" class="form-control" placeholder="Grass, Koch, Soft99…" value="{% if product and product.brand %}{{ product.brand.name }}{% endif %}" autocomplete="off"><datalist id="brandsList">{% for b in brands %}<option value="{{ b.name }}">{% endfor %}</datalist></div></div>
+                <div class="product-form-grid"><div class="product-field"><label for="productCategorySelect">Категория *</label><select name="category" id="productCategorySelect" class="form-control" onchange="handleCategoryChange(this)"><option value="" disabled {% if not product and not form_values.category %}selected{% endif %}>Выберите категорию</option>{% for cat in categories %}<option value="{{ cat.id }}" {% if form_values.category == cat.id|stringformat:'s' or product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}<option value="__NEW__">+ Создать категорию</option></select></div><div class="product-field"><label for="productBrand">Бренд</label><select name="brand" id="productBrand" class="form-control" onchange="toggleNewBrand(this)"><option value="">Не указывать</option>{% for b in brands %}<option value="{{ b.name }}" {% if form_values.brand == b.name or not form_values.brand and product.brand_id == b.id %}selected{% endif %}>{{ b.name }}</option>{% endfor %}<option value="__NEW__" {% if form_values.brand == '__NEW__' %}selected{% endif %}>+ Добавить бренд…</option></select><input type="text" name="new_brand" id="newBrand" class="form-control" maxlength="100" placeholder="Название нового бренда" style="display:none;margin-top:.45rem;"></div></div>
             </section>
 
             <section class="product-form-section">
                 <div class="product-section-head"><i class="fa-solid fa-tenge-sign"></i> Цена и остаток</div>
-                <div class="product-price-grid"><div class="product-field"><label>Цена продажи (₸) *</label><input type="number" step="1" min="0" name="retail_price" inputmode="numeric" class="form-control" required value="{% if product %}{{ product.retail_price|floatformat:0 }}{% endif %}" placeholder="4 500"></div><div class="product-field"><label>Закупочная цена (₸)</label><input type="number" step="1" min="0" name="purchase_price" inputmode="numeric" class="form-control" value="{% if product %}{{ product.purchase_price|floatformat:0 }}{% else %}0{% endif %}" placeholder="0"></div></div>
+                <div class="product-price-grid"><div class="product-field"><label>Цена продажи (₸) *</label><input type="number" step="1" min="0" name="retail_price" inputmode="numeric" class="form-control" required value="{% if form_values.retail_price %}{{ form_values.retail_price }}{% elif product %}{{ product.retail_price|floatformat:0 }}{% endif %}" placeholder="4 500"></div><div class="product-field"><label>Закупочная цена (₸)</label><input type="number" step="1" min="0" name="purchase_price" inputmode="numeric" class="form-control" value="{% if form_values.purchase_price %}{{ form_values.purchase_price }}{% elif product %}{{ product.purchase_price|floatformat:0 }}{% else %}0{% endif %}" placeholder="0"></div></div>
                 <input type="hidden" name="unit" value="шт">
                 <div class="product-price-grid" style="margin-top:.75rem;">{% if not product %}<div class="product-field"><label>Начальный остаток (шт)</label><input type="number" step="1" min="0" name="stock_qty" inputmode="numeric" class="form-control" value="0" placeholder="10"></div>{% endif %}<div class="product-field"><label>Мин. порог остатка</label><input type="number" step="1" min="0" name="min_stock_alert" inputmode="numeric" class="form-control" value="{% if product %}{{ product.min_stock_alert|floatformat:0 }}{% else %}5{% endif %}" placeholder="5"></div></div>
                 {% if product %}<div class="product-stock-note"><i class="fa-solid fa-circle-info"></i> Остаток меняется через действия «Принять» или «В магазин» в карточке товара.</div>{% endif %}
@@ -400,5 +402,14 @@
             formHtml5QrCode.stop().catch(() => {});
         }
     }
+
+    function toggleNewBrand(select) {
+        const input = document.getElementById('newBrand');
+        if (!input) return;
+        input.style.display = select && select.value === '__NEW__' ? 'block' : 'none';
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleNewBrand(document.getElementById('productBrand'));
+    });
 </script>
 {% endblock %}

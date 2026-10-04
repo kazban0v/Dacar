@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load dacar_format %}
 
 {% block title %}Склад и Остатки — DACAR Market{% endblock %}
 
@@ -384,7 +385,7 @@
         <div class="product-list-card-pricing">
             <div>
                 <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">ЦЕНА:</span>
-                <span class="product-card-price">{{ product.retail_price|floatformat:0 }} ₸</span>
+                <span class="product-card-price">{{ product.retail_price|tenge }} ₸</span>
             </div>
             <div>
                 <span
@@ -458,7 +459,7 @@
                     {% if product.brand %}<span class="badge badge-orange">{{ product.brand.name }}</span>{% endif %}
                 </td>
                 <td style="font-weight: 800; font-size: 1.05rem; color: var(--text-main);">{{
-                    product.retail_price|floatformat:0 }} ₸</td>
+                    product.retail_price|tenge }} ₸</td>
                 <td>
                     {% if product.stock_qty <= 0 %} <span class="badge badge-red">Нет (0 {{ product.unit }})</span>
                         {% elif product.is_low_stock %}

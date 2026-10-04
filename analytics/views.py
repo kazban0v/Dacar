@@ -878,6 +878,7 @@ def audit_log_view(request):
     user_filter = request.GET.get('user_id')
     date_filter = request.GET.get('date', '').strip()
     product_filter = request.GET.get('product', '').strip()
+    event_filter = request.GET.get('event', '').strip()
 
     logs = AuditLog.objects.select_related('user').all()
 
@@ -892,6 +893,11 @@ def audit_log_view(request):
         logs = logs.filter(description__icontains=product_filter)
     if action_type:
         logs = logs.filter(action_type=action_type)
+    if event_filter == 'price':
+        logs = logs.filter(
+            action_type=AuditLog.ActionType.PRODUCT_UPDATE,
+            description__icontains='цен'
+        )
     if user_filter:
         logs = logs.filter(user_id=user_filter)
 
@@ -907,6 +913,11 @@ def audit_log_view(request):
     page_number = request.GET.get('page', 1)
     paginator = Paginator(logs, 20)
     page_obj = paginator.get_page(page_number)
+    # Historic audit text is immutable, but legacy Decimal formatting should
+    # not show false precision such as "5.000 шт" in the interface.
+    from analytics.audit_helpers import display_audit_description
+    for log in page_obj.object_list:
+        log.display_description = display_audit_description(log.description)
 
     dangerous_logs = AuditLog.objects.select_related('user').filter(
         Q(action_type=AuditLog.ActionType.REFUND) |
@@ -924,6 +935,7 @@ def audit_log_view(request):
         'user_filter': user_filter,
         'date_filter': date_filter,
         'product_filter': product_filter,
+        'event_filter': event_filter,
         'action_types': AuditLog.ActionType.choices,
         'audit_users': User.objects.filter(auditlog__isnull=False).distinct().order_by('first_name', 'username'),
         'dangerous_logs': dangerous_logs,

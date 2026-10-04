@@ -96,7 +96,7 @@
     </div>
 
     <div class="dacar-card">
-        <form method="POST" id="productForm">
+        <form method="POST" enctype="multipart/form-data" id="productForm">
             {% csrf_token %}
             <div class="product-form-grid">
                 <!-- Штрихкод -->
@@ -105,14 +105,28 @@
                         <span><i class="fa-solid fa-barcode"></i> Штрихкод</span>
                         <span id="barcodeScannerBadge" class="badge badge-cyan"><i class="fa-solid fa-barcode"></i> Сканер готов</span>
                     </label>
-                    <input type="text" name="barcode" id="productBarcode" class="form-control" style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan);" value="{% if initial_barcode %}{{ initial_barcode }}{% elif product %}{{ product.barcode }}{% endif %}" placeholder="Отсканируйте или введите штрихкод..." inputmode="text" autocomplete="off" {% if not product and not initial_barcode %}autofocus{% endif %}>
+                    <input type="text" name="barcode" id="productBarcode" class="form-control" style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan);" value="{% if form_values.barcode %}{{ form_values.barcode }}{% elif initial_barcode %}{{ initial_barcode }}{% elif product %}{{ product.barcode }}{% endif %}" placeholder="Отсканируйте или введите штрихкод..." inputmode="text" autocomplete="off" {% if not product and not initial_barcode %}autofocus{% endif %}>
                     <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 3px; display: block;">Если оставить пустым, штрихкод сгенерируется автоматически</small>
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:.85rem;color:var(--text-muted);margin-bottom:.35rem;">Артикул</label>
+                    <input type="text" name="sku" class="form-control" value="{% if form_values.sku %}{{ form_values.sku }}{% elif product %}{{ product.sku }}{% endif %}" placeholder="Создастся автоматически">
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:.85rem;color:var(--text-muted);margin-bottom:.35rem;">Фото товара</label>
+                    <div style="display:flex;align-items:center;gap:.65rem;">
+                        {% if product.image %}<img src="{{ product.image.url }}" alt="" style="width:42px;height:42px;object-fit:contain;border:1px solid var(--card-border);border-radius:8px;background:white;padding:2px;">{% endif %}
+                        <input type="file" name="image" accept="image/jpeg,image/png,image/webp" class="form-control" style="padding:.45rem;">
+                    </div>
+                    <small style="color:var(--text-muted);font-size:.75rem;display:block;margin-top:3px;">JPEG, PNG или WebP, до 10 МБ.</small>
                 </div>
 
                 <!-- Наименование -->
                 <div class="full-width">
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Наименование товара *</label>
-                    <input type="text" name="name" id="productName" class="form-control" required value="{{ product.name|default:'' }}" placeholder="Например: Шампунь Detail Nano 1 л" autocomplete="off" {% if initial_barcode %}autofocus{% endif %}>
+                    <input type="text" name="name" id="productName" class="form-control" required value="{% if form_values.name %}{{ form_values.name }}{% else %}{{ product.name|default:'' }}{% endif %}" placeholder="Например: Шампунь Detail Nano 1 л" autocomplete="off" {% if initial_barcode %}autofocus{% endif %}>
                 </div>
 
                 <!-- Бренд (ручной ввод) -->
@@ -120,12 +134,13 @@
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
                         <i class="fa-solid fa-copyright"></i> Бренд (вручную)
                     </label>
-                    <input type="text" name="brand" id="productBrand" list="brandsList" class="form-control" placeholder="Например: Detail, Grass, Koch, Soft99..." value="{% if product and product.brand %}{{ product.brand.name }}{% endif %}" autocomplete="off">
-                    <datalist id="brandsList">
-                        {% for b in brands %}
-                        <option value="{{ b.name }}">
-                        {% endfor %}
-                    </datalist>
+                    <select name="brand" id="productBrand" class="form-control" onchange="toggleNewBrand(this)">
+                        <option value="">Не указывать</option>
+                        {% for b in brands %}<option value="{{ b.name }}" {% if form_values.brand == b.name or not form_values.brand and product.brand_id == b.id %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
+                        <option value="__NEW__" {% if form_values.brand == '__NEW__' %}selected{% endif %}>+ Добавить новый бренд…</option>
+                    </select>
+                    <input type="text" name="new_brand" id="newBrand" class="form-control" maxlength="100" value="{{ form_values.new_brand }}" placeholder="Название нового бренда" style="display:none;margin-top:.5rem;">
+                    <small style="color:var(--text-muted);font-size:.75rem;display:block;margin-top:3px;">Выберите существующий бренд, чтобы не создавать дубли из-за опечатки.</small>
                 </div>
 
                 <!-- Категория (необязательно) -->
@@ -134,9 +149,9 @@
                         <i class="fa-solid fa-tags"></i> Категория
                     </label>
                     <select name="category" id="productCategorySelect" class="form-control" onchange="handleCategoryChange(this)">
-                        <option value="">Общая / Автохимия</option>
+                        <option value="" disabled {% if not product and not form_values.category %}selected{% endif %}>Выберите категорию</option>
                         {% for cat in categories %}
-                        <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                        <option value="{{ cat.id }}" {% if form_values.category == cat.id|stringformat:'s' or product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
                         {% endfor %}
                         <option value="__NEW__" style="color: var(--accent-cyan); font-weight: 700; background: #F0F9FF;">➕ Создать новую категорию...</option>
                     </select>
@@ -145,13 +160,13 @@
                 <!-- Цена продажи -->
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: var(--accent-cyan); font-weight: 700; margin-bottom: 0.35rem;">Цена продажи (₸) *</label>
-                    <input type="number" step="1" name="retail_price" inputmode="numeric" class="form-control" style="font-weight: 800; font-size: 1.05rem;" required value="{% if product %}{{ product.retail_price|floatformat:0 }}{% endif %}" placeholder="например: 4500">
+                    <input type="number" step="1" min="0" name="retail_price" inputmode="numeric" class="form-control" style="font-weight: 800; font-size: 1.05rem;" required value="{% if form_values.retail_price %}{{ form_values.retail_price }}{% elif product %}{{ product.retail_price|floatformat:0 }}{% endif %}" placeholder="например: 4500">
                 </div>
 
                 <!-- Закупочная цена -->
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Закупочная цена (₸)</label>
-                    <input type="number" step="1" name="purchase_price" inputmode="numeric" class="form-control" value="{% if product %}{{ product.purchase_price|floatformat:0 }}{% else %}0{% endif %}" placeholder="0">
+                    <input type="number" step="1" min="0" name="purchase_price" inputmode="numeric" class="form-control" value="{% if form_values.purchase_price %}{{ form_values.purchase_price }}{% elif product %}{{ product.purchase_price|floatformat:0 }}{% else %}0{% endif %}" placeholder="0">
                 </div>
 
                 <input type="hidden" name="unit" value="шт">
@@ -160,14 +175,14 @@
                 {% if not product %}
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Начальное количество (шт)</label>
-                    <input type="number" step="1" name="stock_qty" inputmode="numeric" class="form-control" value="0" placeholder="например: 10">
+                    <input type="number" step="1" min="0" name="stock_qty" inputmode="numeric" class="form-control" value="{% if form_values.stock_qty %}{{ form_values.stock_qty }}{% else %}0{% endif %}" placeholder="например: 10">
                 </div>
                 {% endif %}
 
                 <!-- Мин. порог остатка -->
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">Мин. порог (сигнал)</label>
-                    <input type="number" step="1" name="min_stock_alert" inputmode="numeric" class="form-control" value="{% if product %}{{ product.min_stock_alert|floatformat:0 }}{% else %}5{% endif %}" placeholder="5">
+                    <input type="number" step="1" min="0" name="min_stock_alert" inputmode="numeric" class="form-control" value="{% if form_values.min_stock_alert %}{{ form_values.min_stock_alert }}{% elif product %}{{ product.min_stock_alert|floatformat:0 }}{% else %}5{% endif %}" placeholder="5">
                 </div>
             </div>
 
@@ -265,5 +280,14 @@
             formBarcodeBuffer += e.key;
         }
     });
+</script>
+<script>
+function toggleNewBrand(select) {
+    const input = document.getElementById('newBrand');
+    if (!input) return;
+    input.style.display = select.value === '__NEW__' ? 'block' : 'none';
+    if (select.value === '__NEW__') input.focus();
+}
+document.addEventListener('DOMContentLoaded', () => toggleNewBrand(document.getElementById('productBrand')));
 </script>
 {% endblock %}

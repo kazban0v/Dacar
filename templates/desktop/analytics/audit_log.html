@@ -1,4 +1,5 @@
 {% extends 'desktop/base.html' %}
+{% load dacar_format %}
 
 {% block title %}Журнал аудита — DACAR{% endblock %}
 
@@ -11,20 +12,238 @@
     .audit-date { display:flex; align-items:center; gap:.45rem; min-height:40px; padding:0 .72rem; border:1px solid var(--card-border); border-radius:11px; background:var(--card-bg); color:var(--text-muted); font-size:.8rem; font-weight:700; }
     .audit-date input { width:122px; border:0; outline:0; background:transparent; color:var(--text-main); font:inherit; }
 
-    .audit-filter-bar { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.42rem .5rem; margin-bottom:.7rem; border:1px solid var(--card-border); border-radius:14px; background:var(--card-bg); box-shadow:var(--shadow-xs); }
-    .audit-search-form { display:flex; align-items:center; gap:.5rem; flex:1; min-width:0; }.audit-search-form input { min-width:205px; width:min(320px,100%); }.audit-search-form select { width:150px; }
-    .audit-search-form .form-control,.audit-search-form .btn { height:42px; min-height:42px; padding-top:.35rem; padding-bottom:.35rem; font-size:.8rem; }
-    .audit-tabs { display:flex; align-items:center; gap:.4rem; overflow-x:auto; white-space:nowrap; }.audit-tab { display:inline-flex; align-items:center; gap:.35rem; padding:.5rem .74rem; border:1px solid var(--card-border); border-radius:999px; background:var(--card-bg); color:var(--text-muted); text-decoration:none; font-size:.75rem; font-weight:800; }.audit-tab:hover { border-color:var(--accent-cyan); color:var(--accent-cyan); }.audit-tab.is-active { border-color:#111827; background:#111827; color:#fff; }.audit-tab.sale i { color:var(--accent-green); }.audit-tab.refund i { color:var(--accent-red); }.audit-tab.in i { color:var(--accent-cyan); }.audit-tab.out i { color:var(--accent-orange); }.audit-tab.user i { color:var(--accent-purple); }.audit-tab.is-active i { color:#fff; }
+    .audit-filter-bar {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        margin-bottom: 1.1rem;
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        background: var(--card-bg);
+        box-shadow: var(--shadow-xs);
+    }
+    .audit-search-form {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        width: 100%;
+    }
+    .audit-field-group {
+        position: relative;
+        flex: 1 1 200px;
+        min-width: 170px;
+    }
+    .audit-field-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 0.78rem;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+    .audit-field-group .form-control {
+        width: 100%;
+        padding-left: 34px !important;
+    }
+    .audit-select-wrap {
+        flex: 0 1 190px;
+        min-width: 160px;
+    }
+    .audit-select-wrap select {
+        width: 100%;
+        cursor: pointer;
+    }
+    .audit-buttons-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+    .audit-search-form .form-control {
+        height: 40px;
+        min-height: 40px;
+        padding: 0.4rem 0.8rem;
+        border-radius: 10px;
+        border: 1px solid var(--card-border);
+        background: var(--card-bg);
+        color: var(--text-main);
+        font-size: 0.82rem;
+        font-weight: 550;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .audit-search-form .form-control:focus {
+        outline: none;
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
+    }
+    .audit-submit-btn {
+        height: 40px;
+        min-height: 40px;
+        padding: 0 1.15rem;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 750;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        background: var(--accent-cyan, #0284C7);
+        color: #ffffff !important;
+        border: 1px solid var(--accent-cyan, #0284C7);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .audit-submit-btn:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+    .audit-reset-btn {
+        height: 40px;
+        min-height: 40px;
+        padding: 0 0.9rem;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 650;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(148, 163, 184, 0.1);
+        color: var(--text-muted);
+        border: 1px solid var(--card-border);
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .audit-reset-btn:hover {
+        color: var(--accent-red, #EF4444);
+        border-color: rgba(239, 68, 68, 0.4);
+        background: rgba(239, 68, 68, 0.08);
+    }
+    .audit-divider {
+        height: 1px;
+        background: var(--card-border);
+        width: 100%;
+        opacity: 0.7;
+    }
+    .audit-tabs {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 0.15rem 0;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+    }
+    .audit-tabs-title {
+        font-size: 0.76rem;
+        font-weight: 750;
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-right: 0.2rem;
+        flex-shrink: 0;
+    }
+    .audit-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.45rem 0.95rem;
+        border: 1px solid var(--card-border);
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.06);
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.78rem;
+        font-weight: 750;
+        flex-shrink: 0;
+        transition: all 0.15s ease;
+    }
+    .audit-tab:hover {
+        border-color: var(--accent-cyan);
+        color: var(--accent-cyan);
+        background: rgba(2, 132, 199, 0.08);
+    }
+    .audit-tab.is-active {
+        background: var(--accent-cyan, #0284C7) !important;
+        border-color: var(--accent-cyan, #0284C7) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 2px 10px rgba(2, 132, 199, 0.35);
+    }
+    .audit-tab.is-active i {
+        color: #FFFFFF !important;
+    }
+    .audit-tab.sale i { color: var(--accent-green, #10B981); }
+    .audit-tab.refund i { color: var(--accent-red, #EF4444); }
+    .audit-tab.in i { color: var(--accent-cyan, #0284C7); }
+    .audit-tab.out i { color: var(--accent-orange, #F59E0B); }
+    .audit-tab.price i { color: #8B5CF6; }
+    .audit-tab.user i { color: var(--accent-purple, #A855F7); }
 
     .audit-timeline { position:relative; padding:0 0 0 4.2rem; }.audit-timeline::before { position:absolute; top:1.15rem; bottom:1.15rem; left:1.82rem; width:2px; border-radius:99px; background:var(--card-border); content:''; }
     .audit-event { position:relative; margin-bottom:.62rem; }.audit-dot { position:absolute; top:1.02rem; left:-3.15rem; display:grid; width:38px; height:38px; place-items:center; border-radius:50%; color:var(--accent-cyan); background:color-mix(in srgb,var(--accent-cyan) 10%,var(--card-bg)); font-size:.88rem; z-index:1; }.audit-event.sale .audit-dot { color:var(--accent-green); background:color-mix(in srgb,var(--accent-green) 11%,var(--card-bg)); }.audit-event.refund .audit-dot { color:var(--accent-red); background:color-mix(in srgb,var(--accent-red) 11%,var(--card-bg)); }.audit-event.in .audit-dot { color:var(--accent-cyan); background:color-mix(in srgb,var(--accent-cyan) 11%,var(--card-bg)); }.audit-event.out .audit-dot { color:var(--accent-orange); background:color-mix(in srgb,var(--accent-orange) 11%,var(--card-bg)); }.audit-event.user .audit-dot { color:var(--accent-purple); background:color-mix(in srgb,var(--accent-purple) 11%,var(--card-bg)); }
     .audit-event-card { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.7rem; min-height:70px; padding:.82rem 1rem; border:1px solid var(--card-border); border-radius:15px; background:var(--card-bg); box-shadow:var(--shadow-xs); transition:border-color .15s ease,transform .15s ease; }.audit-event-card:hover { border-color:color-mix(in srgb,var(--accent-cyan) 55%,var(--card-border)); transform:translateX(2px); }.audit-event.refund .audit-event-card { border-left:3px solid var(--accent-red); padding-left:calc(1rem - 2px); }
-    .audit-event-description { overflow:hidden; color:var(--text-main); font-size:.84rem; font-weight:800; line-height:1.3; text-overflow:ellipsis; white-space:nowrap; }.audit-event-meta { display:flex; align-items:center; gap:.45rem; margin-top:.28rem; overflow:hidden; color:var(--text-muted); font-size:.69rem; font-weight:600; white-space:nowrap; }.audit-event-meta span { overflow:hidden; text-overflow:ellipsis; }.audit-event-meta i { opacity:.8; }.audit-event-time { align-self:start; color:var(--text-muted); font-size:.7rem; font-weight:650; white-space:nowrap; }
+    .audit-event-description { display:-webkit-box; overflow:hidden; color:var(--text-main); font-size:.84rem; font-weight:800; line-height:1.38; -webkit-box-orient:vertical; -webkit-line-clamp:2; }.audit-event-meta { display:flex; align-items:center; gap:.45rem; margin-top:.28rem; overflow:hidden; color:var(--text-muted); font-size:.69rem; font-weight:600; white-space:nowrap; }.audit-event-meta span { overflow:hidden; text-overflow:ellipsis; }.audit-event-meta i { opacity:.8; }.audit-event-time { align-self:start; color:var(--text-muted); font-size:.7rem; font-weight:650; white-space:nowrap; }.audit-event-more { margin-top:.4rem; color:var(--text-muted); font-size:.68rem; }.audit-event-more summary { width:max-content; color:var(--accent-cyan); cursor:pointer; font-weight:750; }.audit-event-more p { margin:.35rem 0 0; line-height:1.45; }
     .audit-empty { margin-left:-4.2rem; padding:4rem 1rem; text-align:center; color:var(--text-muted); }.audit-empty i { color:var(--accent-cyan); font-size:2rem; opacity:.5; }.audit-empty p { margin:.65rem 0 .15rem; color:var(--text-main); font-weight:800; }
     .audit-pagination { display:flex; justify-content:space-between; align-items:center; gap:.75rem; margin:.8rem 0 0 4.2rem; padding:.7rem .9rem; border:1px solid var(--card-border); border-radius:12px; background:var(--card-bg); color:var(--text-muted); font-size:.75rem; }.audit-pages { display:flex; gap:.3rem; }.audit-pages a,.audit-pages span { min-width:28px; padding:.28rem .42rem; border:1px solid var(--card-border); border-radius:7px; color:var(--text-muted); text-align:center; text-decoration:none; font-weight:750; }.audit-pages span { color:#fff; background:var(--accent-cyan); border-color:var(--accent-cyan); }
-    html[data-theme="dark"] .audit-date,html[data-theme="dark"] .audit-search-form .form-control,html[data-theme="dark"] .audit-search-form .btn.btn-secondary { background:#121C2E; border-color:#2A3B55; color:#E2E8F0; } html[data-theme="dark"] .audit-search-form .form-control::placeholder { color:#8EA0BA; } html[data-theme="dark"] .audit-search-form select option { background:#121C2E; color:#F1F5F9; } html[data-theme="dark"] .audit-tab.is-active { background:#E2E8F0; border-color:#E2E8F0; color:#111827; }
-    @media (max-width:980px) { .audit-filter-bar { align-items:stretch; flex-direction:column; }.audit-tabs { justify-content:flex-end; } }
-    @media (max-width:650px) { .audit-v2-header { flex-direction:column; }.audit-date { width:100%; justify-content:center; }.audit-search-form { flex-wrap:wrap; }.audit-search-form input,.audit-search-form select { width:100%; }.audit-search-form .btn { flex:1; }.audit-tabs { justify-content:flex-start; }.audit-timeline { padding-left:3.25rem; }.audit-timeline::before { left:1.38rem; }.audit-dot { left:-2.55rem; width:34px; height:34px; }.audit-event-card { padding:.72rem .8rem; }.audit-event-description { white-space:normal; }.audit-event-meta { gap:.3rem; }.audit-event-time { font-size:.64rem; }.audit-pagination { align-items:flex-start; flex-direction:column; margin-left:3.25rem; }.audit-empty { margin-left:-3.25rem; } }
+    .audit-diff-card { margin-top:.45rem; padding:.55rem .75rem; border-radius:10px; background:rgba(148,163,184,.08); border:1px solid var(--card-border); font-size:.76rem; }
+    .audit-diff-title { font-weight:800; color:var(--text-muted); margin-bottom:.35rem; display:flex; align-items:center; gap:.4rem; }
+    .audit-diff-list { display:flex; flex-direction:column; gap:.25rem; }
+    .audit-diff-row { display:flex; align-items:baseline; gap:.4rem; flex-wrap:wrap; }
+    .audit-diff-label { font-weight:750; color:var(--text-muted); min-width:85px; }
+    .audit-diff-old { padding:.1rem .4rem; border-radius:5px; background:rgba(239,68,68,.12); color:#dc2626; text-decoration:line-through; font-weight:600; }
+    .audit-diff-arrow { color:var(--text-muted); font-size:.68rem; }
+    .audit-diff-new { padding:.1rem .4rem; border-radius:5px; background:rgba(34,197,94,.12); color:#16a34a; font-weight:750; }
+    .audit-diff-card.shift-card { background:rgba(2,132,199,.06); border-color:rgba(2,132,199,.25); color:var(--text-main); }
+    .audit-diff-card.shift-close-card { background:rgba(148,163,184,.08); border-color:var(--card-border); }
+    .audit-diff-chips { display:flex; flex-wrap:wrap; gap:.4rem; }
+    .audit-diff-chips span { padding:.18rem .45rem; border-radius:6px; background:var(--card-bg); border:1px solid var(--card-border); font-size:.72rem; }
+    .audit-diff-chips .chip-even { border-color:rgba(34,197,94,.4); background:rgba(34,197,94,.08); color:#16a34a; }
+    .audit-diff-chips .chip-under { border-color:rgba(239,68,68,.4); background:rgba(239,68,68,.08); color:#dc2626; }
+    .audit-diff-chips .chip-over { border-color:rgba(245,158,11,.4); background:rgba(245,158,11,.08); color:#d97706; }
+    .audit-diff-card.refund-card { background:rgba(239,68,68,.05); border-color:rgba(239,68,68,.25); }
+    .audit-diff-items { margin-top:.3rem; color:var(--text-muted); font-size:.72rem; }
+
+    /* Dark theme overrides */
+    html[data-theme="dark"] .audit-diff-card { background:#1E293B; border-color:#334155; }
+    html[data-theme="dark"] .audit-diff-chips span { background:#121C2E; border-color:#334155; }
+    html[data-theme="dark"] .audit-filter-bar { background: #0F172A; border-color: #1E293B; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35); }
+    html[data-theme="dark"] .audit-divider { background: #1E293B; }
+    html[data-theme="dark"] .audit-date { background: #0F172A; border-color: #1E293B; color: #CBD5E1; }
+    html[data-theme="dark"] .audit-search-form .form-control { background: #0A0F1D; border-color: #1E293B; color: #F8FAFC; }
+    html[data-theme="dark"] .audit-search-form .form-control::placeholder { color: #64748B; }
+    html[data-theme="dark"] .audit-search-form select option { background: #0A0F1D; color: #F8FAFC; }
+    html[data-theme="dark"] .audit-reset-btn { background: #1E293B; border-color: #334155; color: #94A3B8; }
+    html[data-theme="dark"] .audit-tab { background: #1E293B; border-color: #334155; color: #94A3B8; }
+    html[data-theme="dark"] .audit-tab:hover { background: #253349; border-color: var(--accent-cyan); color: #F1F5F9; }
+    html[data-theme="dark"] .audit-tab.is-active { background: #0284C7 !important; border-color: #0284C7 !important; color: #FFFFFF !important; }
+
+    @media (max-width: 980px) {
+        .audit-search-form { flex-wrap: wrap; }
+        .audit-field-group { flex: 1 1 calc(50% - 0.5rem); }
+        .audit-select-wrap { flex: 1 1 100%; }
+        .audit-buttons-wrap { width: 100%; justify-content: flex-end; }
+    }
+    @media (max-width: 650px) {
+        .audit-v2-header { flex-direction: column; }
+        .audit-date { width: 100%; justify-content: center; }
+        .audit-field-group { flex: 1 1 100%; min-width: 100%; }
+        .audit-select-wrap { flex: 1 1 100%; }
+        .audit-buttons-wrap { width: 100%; }
+        .audit-submit-btn, .audit-reset-btn { flex: 1; justify-content: center; }
+        .audit-tabs-title { display: none; }
+        .audit-timeline { padding-left: 3.25rem; }
+        .audit-timeline::before { left: 1.38rem; }
+        .audit-dot { left: -2.55rem; width: 34px; height: 34px; }
+        .audit-event-card { padding: 0.72rem 0.8rem; }
+        .audit-pagination { align-items: flex-start; flex-direction: column; margin-left: 3.25rem; }
+        .audit-empty { margin-left: -3.25rem; }
+    }
 </style>
 {% endblock %}
 
@@ -33,18 +252,133 @@
     <header class="audit-v2-header"><div><h1 class="audit-v2-title">Журнал аудита</h1><p class="audit-v2-subtitle">Неизменяемая история всех критичных действий в системе</p></div><form method="get"><label class="audit-date"><i class="fa-regular fa-calendar"></i><input type="date" name="date" value="{{ date_filter }}" onchange="this.form.submit()" aria-label="Дата событий"></label></form></header>
 
     <section class="audit-filter-bar" aria-label="Фильтры аудита">
-        <form method="get" class="audit-search-form">{% if date_filter %}<input type="hidden" name="date" value="{{ date_filter }}">{% endif %}<input type="search" class="form-control" name="q" value="{{ search }}" placeholder="Поиск по описанию или сотруднику"><select class="form-control" name="user_id" aria-label="Сотрудник"><option value="">Все сотрудники</option>{% for audit_user in audit_users %}<option value="{{ audit_user.id }}" {% if user_filter == audit_user.id|stringformat:'i' %}selected{% endif %}>{{ audit_user.get_full_name|default:audit_user.username }}</option>{% endfor %}</select><button class="btn btn-secondary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Найти</button>{% if search or user_filter or action_type or date_filter %}<a href="{% url 'audit_log' %}" class="btn btn-secondary" title="Сбросить"><i class="fa-solid fa-xmark"></i></a>{% endif %}</form>
-        <nav class="audit-tabs" aria-label="Типы событий"><a href="{% url 'audit_log' %}" class="audit-tab {% if not action_type %}is-active{% endif %}">Все</a><a href="?action_type=SALE" class="audit-tab sale {% if action_type == 'SALE' %}is-active{% endif %}"><i class="fa-solid fa-money-bill-wave"></i>Продажи</a><a href="?action_type=REFUND" class="audit-tab refund {% if action_type == 'REFUND' %}is-active{% endif %}"><i class="fa-solid fa-receipt"></i>Возвраты</a><a href="?action_type=STOCK_IN" class="audit-tab in {% if action_type == 'STOCK_IN' %}is-active{% endif %}"><i class="fa-solid fa-arrow-down"></i>Приход</a><a href="?action_type=STOCK_OUT" class="audit-tab out {% if action_type == 'STOCK_OUT' %}is-active{% endif %}"><i class="fa-solid fa-triangle-exclamation"></i>Списание</a><a href="?action_type=USER_ACTION" class="audit-tab user {% if action_type == 'USER_ACTION' %}is-active{% endif %}"><i class="fa-solid fa-user-gear"></i>Персонал</a></nav>
+        <!-- Search & Filters Form -->
+        <form method="get" class="audit-search-form">
+            {% if date_filter %}<input type="hidden" name="date" value="{{ date_filter }}">{% endif %}
+            {% if action_type %}<input type="hidden" name="action_type" value="{{ action_type }}">{% endif %}
+            {% if event_filter %}<input type="hidden" name="event" value="{{ event_filter }}">{% endif %}
+
+            <div class="audit-field-group">
+                <i class="fa-solid fa-magnifying-glass audit-field-icon"></i>
+                <input type="search" class="form-control" name="q" value="{{ search }}" placeholder="Событие или сотрудник">
+            </div>
+
+            <div class="audit-field-group">
+                <i class="fa-solid fa-barcode audit-field-icon"></i>
+                <input type="search" class="form-control" name="product" value="{{ product_filter }}" placeholder="Товар или № чека">
+            </div>
+
+            <div class="audit-select-wrap">
+                <select class="form-control" name="user_id" aria-label="Сотрудник">
+                    <option value="">Все сотрудники</option>
+                    {% for audit_user in audit_users %}
+                    <option value="{{ audit_user.id }}" {% if user_filter == audit_user.id|stringformat:'i' %}selected{% endif %}>{{ audit_user.get_full_name|default:audit_user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="audit-buttons-wrap">
+                <button class="btn btn-primary audit-submit-btn" type="submit">
+                    <i class="fa-solid fa-magnifying-glass"></i> Найти
+                </button>
+                {% if search or product_filter or user_filter or action_type or date_filter or event_filter %}
+                <a href="{% url 'audit_log' %}" class="btn btn-secondary audit-reset-btn" title="Сбросить все фильтры">
+                    <i class="fa-solid fa-xmark"></i> Сбросить
+                </a>
+                {% endif %}
+            </div>
+        </form>
+
+        <div class="audit-divider"></div>
+
+        <!-- Event Type Tabs -->
+        <nav class="audit-tabs" aria-label="Типы событий">
+            <span class="audit-tabs-title"><i class="fa-solid fa-sliders"></i> Тип события:</span>
+            <a href="{% url 'audit_log' %}{% if date_filter %}?date={{ date_filter }}{% endif %}" class="audit-tab {% if not action_type and not event_filter %}is-active{% endif %}">
+                Все
+            </a>
+            <a href="?action_type=SALE{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab sale {% if action_type == 'SALE' %}is-active{% endif %}">
+                <i class="fa-solid fa-money-bill-wave"></i>Продажи
+            </a>
+            <a href="?action_type=REFUND{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab refund {% if action_type == 'REFUND' %}is-active{% endif %}">
+                <i class="fa-solid fa-receipt"></i>Возвраты
+            </a>
+            <a href="?action_type=STOCK_IN{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab in {% if action_type == 'STOCK_IN' %}is-active{% endif %}">
+                <i class="fa-solid fa-arrow-down"></i>Приход
+            </a>
+            <a href="?action_type=STOCK_OUT{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab out {% if action_type == 'STOCK_OUT' %}is-active{% endif %}">
+                <i class="fa-solid fa-triangle-exclamation"></i>Списание
+            </a>
+            <a href="?action_type=PRODUCT_UPDATE&amp;event=price{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab price {% if event_filter == 'price' %}is-active{% endif %}">
+                <i class="fa-solid fa-tenge-sign"></i>Цены
+            </a>
+            <a href="?action_type=USER_ACTION{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab user {% if action_type == 'USER_ACTION' %}is-active{% endif %}">
+                <i class="fa-solid fa-user-gear"></i>Персонал
+            </a>
+        </nav>
     </section>
+
 
     <section class="audit-timeline" aria-label="События аудита">
         {% for log in logs %}
         <article class="audit-event {% if log.action_type == 'SALE' %}sale{% elif log.action_type == 'REFUND' %}refund{% elif log.action_type == 'STOCK_IN' %}in{% elif log.action_type == 'STOCK_OUT' or log.action_type == 'STOCK_ADJUST' %}out{% else %}user{% endif %}">
             <span class="audit-dot">{% if log.action_type == 'SALE' %}<i class="fa-solid fa-money-bill-wave"></i>{% elif log.action_type == 'REFUND' %}<i class="fa-solid fa-receipt"></i>{% elif log.action_type == 'STOCK_IN' %}<i class="fa-solid fa-arrow-down"></i>{% elif log.action_type == 'STOCK_OUT' or log.action_type == 'STOCK_ADJUST' %}<i class="fa-solid fa-triangle-exclamation"></i>{% elif log.action_type == 'PRODUCT_CREATE' or log.action_type == 'PRODUCT_UPDATE' %}<i class="fa-solid fa-box"></i>{% else %}<i class="fa-solid fa-user-gear"></i>{% endif %}</span>
-            <div class="audit-event-card"><div><div class="audit-event-description" title="{{ log.description }}">{{ log.description }}</div><div class="audit-event-meta"><span><i class="fa-regular fa-user"></i> {% if log.user %}{{ log.user.get_full_name|default:log.user.username }}{% else %}Удалённый пользователь{% endif %}</span>{% if log.user %}<span>· {{ log.user.get_role_display }}</span>{% endif %}<span><i class="fa-solid fa-location-dot"></i> {{ log.ip_address|default:'—' }}</span></div></div><time class="audit-event-time">{{ log.created_at|date:'d.m · H:i' }}</time></div>
+            <div class="audit-event-card">
+                <div>
+                    <div class="audit-event-description" title="{{ log.display_description }}">{{ log.display_description }}</div>
+                    {% if log.metadata.changes %}
+                    <div class="audit-diff-card">
+                        <div class="audit-diff-title"><i class="fa-solid fa-code-compare"></i> Было → Стало:</div>
+                        <div class="audit-diff-list">
+                            {% for ch in log.metadata.changes %}
+                            <div class="audit-diff-row">
+                                <span class="audit-diff-label">{{ ch.label }}:</span>
+                                <span class="audit-diff-old">{{ ch.old }}</span>
+                                <span class="audit-diff-arrow">→</span>
+                                <span class="audit-diff-new">{{ ch.new }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% elif log.metadata.action == 'shift_open' %}
+                    <div class="audit-diff-card shift-card">
+                        <i class="fa-solid fa-cash-register"></i> Смена #{{ log.metadata.shift_id }} открыта · Размен в кассе: <strong>{{ log.metadata.opening_cash|tenge }} ₸</strong>
+                    </div>
+                    {% elif log.metadata.action == 'shift_close' %}
+                    <div class="audit-diff-card shift-close-card">
+                        <div class="audit-diff-title"><i class="fa-solid fa-vault"></i> Итоги смены #{{ log.metadata.shift_id }}:</div>
+                        <div class="audit-diff-chips">
+                            <span>Чеков: <strong>{{ log.metadata.totals.check_count }}</strong></span>
+                            <span>Выручка: <strong>{{ log.metadata.totals.total_revenue|tenge }} ₸</strong></span>
+                            <span>Наличные: <strong>{{ log.metadata.totals.cash_revenue|tenge }} ₸</strong></span>
+                            <span>В кассе факт: <strong>{{ log.metadata.counted_cash|tenge }} ₸</strong></span>
+                            <span>Ожидалось: <strong>{{ log.metadata.expected_cash|tenge }} ₸</strong></span>
+                            <span class="{% if log.metadata.difference == '0.00' or log.metadata.difference == '0' %}chip-even{% elif '-' in log.metadata.difference %}chip-under{% else %}chip-over{% endif %}">
+                                Расхождение: <strong>{{ log.metadata.difference|tenge }} ₸</strong>
+                            </span>
+                        </div>
+                    </div>
+                    {% elif log.metadata.action == 'refund' %}
+                    <div class="audit-diff-card refund-card">
+                        <div class="audit-diff-title"><i class="fa-solid fa-rotate-left"></i> Возврат {{ log.metadata.order_number }} на {{ log.metadata.total_amount|tenge }} ₸</div>
+                        <div class="audit-diff-text">Причина: <em>«{{ log.metadata.reason }}»</em></div>
+                        {% if log.metadata.items %}
+                        <div class="audit-diff-items">
+                            {% for it in log.metadata.items %}
+                            <span>{{ it.product }} ({{ it.quantity }} шт. — {{ it.amount|tenge }} ₸)</span>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    <div class="audit-event-meta"><span><i class="fa-regular fa-user"></i> {% if log.user %}{{ log.user.get_full_name|default:log.user.username }}{% else %}Удалённый пользователь{% endif %}</span>{% if log.user %}<span>· {{ log.user.get_role_display }}</span>{% endif %}</div>
+                    <details class="audit-event-more"><summary>Подробнее</summary><p>{{ log.display_description }}<br>IP: {{ log.ip_address|default:'не определён' }}</p></details>
+                </div>
+                <time class="audit-event-time">{{ log.created_at|date:'d.m · H:i' }}</time>
+            </div>
         </article>
         {% empty %}<div class="audit-empty"><i class="fa-solid fa-shield-halved"></i><p>Записей не найдено</p><small>Измените период или параметры поиска.</small></div>{% endfor %}
     </section>
-    {% if page_obj.has_other_pages %}<div class="audit-pagination"><span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }} · всего {{ page_obj.paginator.count }} записей</span><div class="audit-pages">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&q={{ search }}&action_type={{ action_type|default:'' }}&user_id={{ user_filter|default:'' }}&date={{ date_filter }}">‹</a>{% endif %}{% for n in page_obj.paginator.page_range %}{% if n == page_obj.number %}<span>{{ n }}</span>{% elif n > page_obj.number|add:'-3' and n < page_obj.number|add:'3' %}<a href="?page={{ n }}&q={{ search }}&action_type={{ action_type|default:'' }}&user_id={{ user_filter|default:'' }}&date={{ date_filter }}">{{ n }}</a>{% endif %}{% endfor %}{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&q={{ search }}&action_type={{ action_type|default:'' }}&user_id={{ user_filter|default:'' }}&date={{ date_filter }}">›</a>{% endif %}</div></div>{% endif %}
+    {% if page_obj.has_other_pages %}<div class="audit-pagination"><span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }} · всего {{ page_obj.paginator.count }} записей</span><div class="audit-pages">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&q={{ search }}&product={{ product_filter }}&action_type={{ action_type|default:'' }}&event={{ event_filter }}&user_id={{ user_filter|default:'' }}&date={{ date_filter }}">‹</a>{% endif %}{% for n in page_obj.paginator.page_range %}{% if n == page_obj.number %}<span>{{ n }}</span>{% elif n > page_obj.number|add:'-3' and n < page_obj.number|add:'3' %}<a href="?page={{ n }}&q={{ search }}&product={{ product_filter }}&action_type={{ action_type|default:'' }}&event={{ event_filter }}&user_id={{ user_filter|default:'' }}&date={{ date_filter }}">{{ n }}</a>{% endif %}{% endfor %}{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&q={{ search }}&product={{ product_filter }}&action_type={{ action_type|default:'' }}&event={{ event_filter }}&user_id={{ user_filter|default:'' }}&date={{ date_filter }}">›</a>{% endif %}</div></div>{% endif %}
 </main>
 {% endblock %}

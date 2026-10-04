@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load dacar_format %}
 {% load static %}
 
 {% block title %}DACAR Кассовый Терминал (POS){% endblock %}
@@ -1625,7 +1626,7 @@
                     </div>
                 </div>
                 <div class="product-card-bottom">
-                    <div class="product-price">{{ p.retail_price|floatformat:0 }} ₸</div>
+                    <div class="product-price">{{ p.retail_price|tenge }} ₸</div>
                     <div class="product-stock {% if p.is_low_stock %}low{% endif %}">
                         <span>Остаток: {{ p.stock_qty|floatformat:0 }} {{ p.unit }}</span>
                         {% if p.is_low_stock %}<span class="badge badge-red"

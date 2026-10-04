@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from users.models import User
+from users.models import User, CashShift
 from users.permissions import can_manage_staff
 from django.core.exceptions import PermissionDenied
 
@@ -49,3 +49,11 @@ class UserAdmin(BaseUserAdmin):
         if any(not can_manage_staff(request.user, target) for target in queryset):
             raise PermissionDenied
         super().delete_queryset(request, queryset)
+
+
+@admin.register(CashShift)
+class CashShiftAdmin(admin.ModelAdmin):
+    list_display = ('id', 'cashier', 'status', 'opened_at', 'closed_at', 'opening_cash', 'counted_cash')
+    list_filter = ('status', 'cashier')
+    readonly_fields = ('cashier', 'opened_at', 'closed_at', 'opening_cash', 'counted_cash', 'opening_note', 'closing_note')
+    ordering = ('-opened_at',)

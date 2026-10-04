@@ -1,4 +1,5 @@
 {% extends 'desktop/base.html' %}
+{% load dacar_format %}
 
 {% block title %}DACAR Кассовый Терминал (POS){% endblock %}
 
@@ -187,7 +188,9 @@
     .product-photo img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
+        padding: 2px;
+        background: #fff;
     }
 
     .product-photo i {
@@ -2377,6 +2380,51 @@
         height: 40px;
     }
 
+    /* On regular laptops the basket must not squeeze the catalogue columns.
+       Keep both panels visible, but give the catalogue the space it needs. */
+    @media (min-width:901px) and (max-width:1320px) {
+        .pos-grid {
+            grid-template-columns: minmax(0, 1fr) 365px;
+        }
+
+        .catalog-panel {
+            padding: .9rem;
+        }
+
+        .product-card,
+        .catalog-columns-header {
+            grid-template-columns: 42px minmax(170px, 1fr) 92px 126px 70px 78px 32px;
+            gap: .45rem;
+            padding-left: .6rem;
+            padding-right: .6rem;
+        }
+
+        .product-photo {
+            width: 42px;
+            height: 42px;
+        }
+
+        .product-title {
+            font-size: .82rem;
+        }
+
+        .product-meta-cell,
+        .product-price,
+        .product-stock-cell {
+            font-size: .72rem;
+        }
+
+        .product-stock-cell {
+            min-width: 54px;
+            padding: 3px 5px;
+        }
+
+        .product-add-btn {
+            width: 30px;
+            height: 30px;
+        }
+    }
+
     .empty-cart-state {
         display: grid;
         place-items: center;
@@ -2491,6 +2539,227 @@
         .product-details-image { width: 70px; height: 70px; border-radius: 12px; }
         .product-details-stats { grid-template-columns: 1fr; }
     }
+
+    /* ===== SHIFT AND RETURN WIDGETS ===== */
+    .pos-shift-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+        text-decoration: none;
+    }
+    .pos-shift-btn.open {
+        background: rgba(34, 197, 94, 0.12);
+        color: #15803d;
+        border-color: rgba(34, 197, 94, 0.35);
+    }
+    .pos-shift-btn.open:hover {
+        background: rgba(34, 197, 94, 0.22);
+        border-color: #22c55e;
+        transform: translateY(-1px);
+    }
+    .pos-shift-btn.closed {
+        background: rgba(239, 68, 68, 0.1);
+        color: #b91c1c;
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+    .pos-shift-btn.closed:hover {
+        background: rgba(239, 68, 68, 0.18);
+        border-color: #ef4444;
+        transform: translateY(-1px);
+    }
+    .pos-shift-indicator-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #22c55e;
+        box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+        animation: pulseShiftDot 2s infinite ease-in-out;
+    }
+    @keyframes pulseShiftDot {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.3); opacity: 0.7; }
+    }
+    .pos-shift-sub {
+        font-size: 0.72rem;
+        opacity: 0.85;
+        font-weight: 600;
+    }
+    .pos-shortcut.refund-shortcut {
+        background: rgba(239, 68, 68, 0.08);
+        color: #dc2626;
+        border-color: rgba(239, 68, 68, 0.25);
+    }
+    .pos-shortcut.refund-shortcut:hover {
+        background: rgba(239, 68, 68, 0.16);
+        border-color: #ef4444;
+    }
+
+    /* Shift modal boxes */
+    .shift-modal-box {
+        background: var(--card-bg, #fff);
+        color: var(--text-main, #1e293b);
+        width: 100%;
+        max-width: 580px;
+        border-radius: 16px;
+        border: 1px solid var(--card-border, #e2e8f0);
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);
+        max-height: calc(100dvh - 3rem);
+        overflow-y: auto;
+        padding: 1.5rem;
+        box-sizing: border-box;
+    }
+    .shift-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 0.9rem;
+        border-bottom: 1px solid var(--card-border, #e2e8f0);
+        margin-bottom: 1.1rem;
+    }
+    .shift-modal-title {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--text-main, #0f172a);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .shift-modal-close {
+        background: transparent;
+        border: none;
+        color: var(--text-muted, #64748b);
+        cursor: pointer;
+        font-size: 1.2rem;
+        padding: 0.3rem 0.5rem;
+        border-radius: 8px;
+        transition: all 0.15s;
+    }
+    .shift-modal-close:hover {
+        background: rgba(148, 163, 184, 0.15);
+        color: var(--text-main, #0f172a);
+    }
+
+    .shift-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.65rem;
+        margin-bottom: 1.1rem;
+    }
+    .shift-kpi-card {
+        padding: 0.75rem 0.85rem;
+        border-radius: 12px;
+        background: rgba(148, 163, 184, 0.06);
+        border: 1px solid var(--card-border, #e2e8f0);
+    }
+    .shift-kpi-label {
+        font-size: 0.72rem;
+        color: var(--text-muted, #64748b);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-bottom: 0.25rem;
+    }
+    .shift-kpi-val {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-main, #0f172a);
+    }
+    .shift-kpi-card.highlight {
+        background: rgba(2, 132, 199, 0.08);
+        border-color: rgba(2, 132, 199, 0.35);
+    }
+    .shift-kpi-card.highlight .shift-kpi-val {
+        color: var(--accent-cyan, #0284c7);
+    }
+    .shift-kpi-card.cash-expected {
+        background: rgba(34, 197, 94, 0.08);
+        border-color: rgba(34, 197, 94, 0.35);
+        grid-column: span 3;
+    }
+    .shift-kpi-card.cash-expected .shift-kpi-val {
+        font-size: 1.25rem;
+        color: #16a34a;
+    }
+
+    .shift-diff-box {
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        margin: 0.85rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 800;
+        font-size: 0.95rem;
+    }
+    .shift-diff-box.even {
+        background: rgba(34, 197, 94, 0.12);
+        color: #15803d;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .shift-diff-box.over {
+        background: rgba(245, 158, 11, 0.12);
+        color: #b45309;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .shift-diff-box.under {
+        background: rgba(239, 68, 68, 0.12);
+        color: #b91c1c;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .cash-presets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin: 0.5rem 0 1rem;
+    }
+    .cash-preset-btn {
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid var(--card-border, #cbd5e1);
+        background: var(--card-bg, #fff);
+        color: var(--text-main, #334155);
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .cash-preset-btn:hover {
+        background: rgba(2, 132, 199, 0.08);
+        border-color: var(--accent-cyan, #0284c7);
+        color: var(--accent-cyan, #0284c7);
+    }
+
+    html[data-theme="dark"] .shift-modal-box {
+        background: #0F172A;
+        border-color: #334155;
+        color: #F8FAFC;
+    }
+    html[data-theme="dark"] .shift-modal-title {
+        color: #F8FAFC;
+    }
+    html[data-theme="dark"] .shift-kpi-card {
+        background: #1E293B;
+        border-color: #334155;
+    }
+    html[data-theme="dark"] .shift-kpi-val {
+        color: #F8FAFC;
+    }
+    html[data-theme="dark"] .cash-preset-btn {
+        background: #1E293B;
+        border-color: #334155;
+        color: #E2E8F0;
+    }
 </style>
 {% endblock %}
 {% block content %}
@@ -2512,6 +2781,12 @@
         <div class="pos-terminal-meta">
             <span><i class="fa-regular fa-user"></i> {{ user.get_full_name|default:user.username }}</span>
             <span><i class="fa-regular fa-clock"></i> <time id="posClock">--:--</time></span>
+
+            <!-- RETURN SHORTCUT -->
+            <button type="button" class="pos-shortcut refund-shortcut" onclick="openPosRefundModal()" title="Оформить возврат чека">
+                <i class="fa-solid fa-rotate-left"></i> Возврат
+            </button>
+
             <button type="button" class="pos-shortcut" onclick="clearCart()">Esc — очистить</button>
             <button type="button" class="pos-shortcut pay" onclick="submitCheckout()">F9 — оплата</button>
         </div>
@@ -2593,7 +2868,7 @@
                         <div class="product-title">{{ p.name }}</div>
                         <div class="product-category-label">{{ p.category.name|default:"—" }}</div>
                         <span class="product-mobile-stock">Ост: {{ p.stock_qty|floatformat:0 }} {{ p.unit }} · {{
-                            p.retail_price|floatformat:0 }} ₸</span>
+                            p.retail_price|tenge }} ₸</span>
                     </div>
                     <div class="product-meta-cell">{{ p.sku|default:"—" }}</div>
                     <div class="product-meta-cell">{{ p.barcode|default:"—" }}</div>
@@ -2601,7 +2876,7 @@
                         class="product-stock-cell {% if p.stock_qty <= 0 %}zero-stock{% elif p.stock_qty <= 2 %}low-stock{% else %}in-stock{% endif %}">
                         {{ p.stock_qty|floatformat:0 }} {{ p.unit }}
                     </div>
-                    <div class="product-price">{{ p.retail_price|floatformat:0 }} ₸</div>
+                    <div class="product-price">{{ p.retail_price|tenge }} ₸</div>
                     <button type="button" class="product-add-btn" aria-label="Добавить {{ p.name }} в корзину"
                         onclick="event.stopPropagation(); addToCartFromElement(this.closest('.product-card'))">
                         <i class="fa-solid fa-plus"></i>
@@ -2862,6 +3137,241 @@
             <button class="btn btn-secondary"
                 style="flex: 1; padding: 0.6rem 0.4rem; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem; white-space: nowrap;"
                 onclick="closeReceiptModal()">
+                <i class="fa-solid fa-xmark"></i> Закрыть
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- SHIFT OPEN MODAL -->
+<div class="modal-overlay" id="shiftOpenModal" onclick="if(event.target===this)closeShiftOpenModal()">
+    <div class="shift-modal-box">
+        <div class="shift-modal-header">
+            <h3 class="shift-modal-title"><i class="fa-solid fa-cash-register" style="color:var(--accent-cyan)"></i> Открытие кассовой смены</h3>
+            <button type="button" class="shift-modal-close" onclick="closeShiftOpenModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;">
+            Кассир: <strong style="color:var(--text-main)">{{ user.get_full_name|default:user.username }}</strong> · Текущее время: <span id="shiftOpenCurrentTime">--:--</span>
+        </div>
+        <form id="shiftOpenForm" onsubmit="event.preventDefault();submitShiftOpen();">
+            <label style="display:block;font-size:0.85rem;font-weight:700;margin-bottom:0.35rem;">
+                Сумма размена в кассе при открытии (₸):
+            </label>
+            <input type="number" id="shiftOpeningCash" class="form-control" min="0" step="100" value="10000" style="font-size:1.15rem;font-weight:800;padding:0.6rem 0.8rem;" required>
+            <div class="cash-presets">
+                <button type="button" class="cash-preset-btn" onclick="setOpeningCash(0)">0 ₸</button>
+                <button type="button" class="cash-preset-btn" onclick="setOpeningCash(5000)">5 000 ₸</button>
+                <button type="button" class="cash-preset-btn" onclick="setOpeningCash(10000)">10 000 ₸</button>
+                <button type="button" class="cash-preset-btn" onclick="setOpeningCash(20000)">20 000 ₸</button>
+                <button type="button" class="cash-preset-btn" onclick="setOpeningCash(50000)">50 000 ₸</button>
+            </div>
+
+            <label style="display:block;font-size:0.85rem;font-weight:700;margin-bottom:0.35rem;">
+                Примечание (необязательно):
+            </label>
+            <input type="text" id="shiftOpeningNote" class="form-control" placeholder="Например: размен купюрами по 1000 и 2000" maxlength="255" style="margin-bottom:1.25rem;">
+
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="closeShiftOpenModal()">Отмена</button>
+                <button type="submit" class="btn btn-success" id="btnShiftOpenSubmit" style="font-weight:800;padding:0.65rem 1.4rem;">
+                    <i class="fa-solid fa-lock-open"></i> Открыть смену
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- SHIFT MANAGER MODAL (LIVE X-REPORT / CLOSING Z-REPORT) -->
+<div class="modal-overlay" id="shiftManagerModal" onclick="if(event.target===this)closeShiftManagerModal()">
+    <div class="shift-modal-box" style="max-width:640px;">
+        <div class="shift-modal-header">
+            <h3 class="shift-modal-title">
+                <i class="fa-solid fa-vault" style="color:var(--accent-green)"></i>
+                <span>Кассовая смена #<span id="smShiftId">--</span></span>
+            </h3>
+            <button type="button" class="shift-modal-close" onclick="closeShiftManagerModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;background:rgba(148,163,184,0.06);padding:0.6rem 0.8rem;border-radius:10px;">
+            <div>Кассир: <strong id="smCashier" style="color:var(--text-main)">--</strong></div>
+            <div>Открыта: <strong id="smOpenedAt" style="color:var(--text-main)">--</strong></div>
+        </div>
+
+        <!-- LIVE SUMMARY KPI GRID (X-REPORT) -->
+        <div class="shift-kpi-grid">
+            <div class="shift-kpi-card">
+                <div class="shift-kpi-label"><i class="fa-solid fa-coins"></i> Размен при открытии</div>
+                <div class="shift-kpi-val"><span id="smOpeningCash">0</span> ₸</div>
+            </div>
+            <div class="shift-kpi-card highlight">
+                <div class="shift-kpi-label"><i class="fa-solid fa-receipt"></i> Чеков продаж</div>
+                <div class="shift-kpi-val"><span id="smCheckCount">0</span></div>
+            </div>
+            <div class="shift-kpi-card highlight">
+                <div class="shift-kpi-label"><i class="fa-solid fa-chart-line"></i> Выручка (продажи)</div>
+                <div class="shift-kpi-val"><span id="smTotalRevenue">0</span> ₸</div>
+            </div>
+            <div class="shift-kpi-card">
+                <div class="shift-kpi-label"><i class="fa-solid fa-money-bill-wave" style="color:#16a34a"></i> Наличные</div>
+                <div class="shift-kpi-val"><span id="smCashRevenue">0</span> ₸</div>
+            </div>
+            <div class="shift-kpi-card">
+                <div class="shift-kpi-label"><i class="fa-solid fa-credit-card" style="color:#0284c7"></i> Карты</div>
+                <div class="shift-kpi-val"><span id="smCardRevenue">0</span> ₸</div>
+            </div>
+            <div class="shift-kpi-card">
+                <div class="shift-kpi-label"><i class="fa-solid fa-qrcode" style="color:#9333ea"></i> Kaspi QR</div>
+                <div class="shift-kpi-val"><span id="smTransferRevenue">0</span> ₸</div>
+            </div>
+            <div class="shift-kpi-card" style="grid-column: span 3; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div class="shift-kpi-label"><i class="fa-solid fa-rotate-left" style="color:#dc2626"></i> Возвраты за смену</div>
+                    <div class="shift-kpi-val" style="color:#dc2626; font-size:0.95rem;"><span id="smRefundCount">0</span> шт. на сумму <span id="smRefundAmount">0</span> ₸</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:0.72rem; color:var(--text-muted);">Выдано наличными по возвратам</div>
+                    <strong style="color:#dc2626; font-size:0.95rem;">-<span id="smCashRefunds">0</span> ₸</strong>
+                </div>
+            </div>
+            <div class="shift-kpi-card cash-expected">
+                <div class="shift-kpi-label"><i class="fa-solid fa-calculator"></i> Расчетная наличка в кассе (Размен + Наличные - Возвраты)</div>
+                <div class="shift-kpi-val"><span id="smExpectedCash">0</span> ₸</div>
+            </div>
+        </div>
+
+        <!-- CLOSING SECTION (Z-REPORT) -->
+        <div style="border-top:1px solid var(--card-border);padding-top:1rem;margin-top:0.75rem;">
+            <h4 style="margin:0 0 0.6rem;font-size:0.92rem;font-weight:800;color:var(--text-main);">
+                <i class="fa-solid fa-calculator" style="color:var(--accent-orange)"></i> Пересчет кассы для закрытия смены
+            </h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;align-items:end;">
+                <div>
+                    <label style="display:block;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:0.25rem;">
+                        Фактическая сумма наличных в ящике (₸):
+                    </label>
+                    <input type="number" id="shiftCountedCash" class="form-control" min="0" step="10" placeholder="Пересчитайте наличные" style="font-size:1.1rem;font-weight:800;padding:0.5rem 0.75rem;" oninput="recalcShiftDiff()">
+                </div>
+                <div>
+                    <div class="shift-diff-box even" id="shiftDiffBox">
+                        <span id="shiftDiffLabel">Касса сходится</span>
+                        <span id="shiftDiffValue">0 ₸</span>
+                    </div>
+                </div>
+            </div>
+
+            <label style="display:block;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-top:0.6rem;margin-bottom:0.25rem;">
+                Комментарий при закрытии (обязательно при расхождении):
+            </label>
+            <input type="text" id="shiftClosingNote" class="form-control" placeholder="Заметки по кассе..." maxlength="255">
+
+            <div style="display:flex;gap:0.6rem;justify-content:space-between;margin-top:1.15rem;flex-wrap:wrap;">
+                <button type="button" class="btn btn-secondary" onclick="printShiftXReport()" style="display:inline-flex;align-items:center;gap:0.4rem;">
+                    <i class="fa-solid fa-print"></i> Печать X-отчета
+                </button>
+                <div style="display:flex;gap:0.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeShiftManagerModal()">Закрыть окно</button>
+                    <button type="button" class="btn btn-danger" id="btnShiftCloseSubmit" onclick="submitShiftClose()" style="font-weight:800;display:inline-flex;align-items:center;gap:0.4rem;">
+                        <i class="fa-solid fa-lock"></i> Закрыть смену (Z-отчет)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- POS RETURN / REFUND MODAL -->
+<div class="modal-overlay" id="posRefundModal" onclick="if(event.target===this)closePosRefundModal()">
+    <div class="shift-modal-box" style="max-width:560px;">
+        <div class="shift-modal-header">
+            <h3 class="shift-modal-title"><i class="fa-solid fa-rotate-left" style="color:var(--accent-red)"></i> Возврат товара по чеку</h3>
+            <button type="button" class="shift-modal-close" onclick="closePosRefundModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <form id="posRefundSearchForm" onsubmit="event.preventDefault();searchOrderForRefund();" style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+            <input type="search" id="refundSearchOrderNum" class="form-control" placeholder="Номер чека (например DACAR-20260928-0001)..." required style="flex:1;">
+            <button type="submit" class="btn btn-primary" id="btnSearchRefundOrder"><i class="fa-solid fa-magnifying-glass"></i> Найти</button>
+        </form>
+
+        <div id="refundOrderDetails" style="display:none;background:rgba(148,163,184,0.06);border:1px solid var(--card-border);border-radius:12px;padding:0.9rem;margin-bottom:1rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                <div>Чек: <strong id="roNum" style="color:var(--accent-cyan);font-size:0.95rem;"></strong></div>
+                <div id="roStatusBadge" class="badge"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;">
+                <div>Дата: <span id="roDate" style="color:var(--text-main)"></span></div>
+                <div>Кассир: <span id="roCashier" style="color:var(--text-main)"></span></div>
+                <div>Оплата: <span id="roPayment" style="color:var(--text-main)"></span></div>
+                <div>Сумма чека: <strong id="roTotal" style="color:var(--text-main);font-size:0.95rem;"></strong> ₸</div>
+            </div>
+
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:0.35rem;">Состав чека:</div>
+            <div id="roItemsList" style="max-height:160px;overflow-y:auto;border-top:1px solid var(--card-border);margin-bottom:0.75rem;"></div>
+
+            <div id="refundActionSection">
+                <label style="display:block;font-size:0.82rem;font-weight:700;margin-bottom:0.35rem;color:var(--text-main);">
+                    Причина возврата (от 4 символов) *:
+                </label>
+                <input type="text" id="refundReasonInput" class="form-control" minlength="4" maxlength="255" placeholder="Например: брак, ошибочная покупка, клиент передумал" required style="margin-bottom:1rem;">
+
+                <div style="display:flex;gap:0.6rem;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closePosRefundModal()">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmRefund" onclick="submitPosRefund()" style="font-weight:800;">
+                        <i class="fa-solid fa-rotate-left"></i> Оформить полный возврат
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SHIFT REPORT SLIP MODAL (X/Z-REPORT THERMAL SLIP) -->
+<div class="modal-overlay" id="shiftReportSlipModal" onclick="if(event.target===this)closeShiftSlipModal()">
+    <div class="receipt-modal-box">
+        <div class="receipt-header">
+            <h3>{{ SHOP_NAME }}</h3>
+            <p id="slipReportTypeTitle" style="font-weight:800;font-size:1.05rem;margin:0.25rem 0;color:#000;">Z-ОТЧЕТ КАССОВОЙ СМЕНЫ</p>
+            <p>{{ SHOP_ADDRESS }} · {{ SHOP_PHONE }}</p>
+        </div>
+
+        <table class="receipt-meta-table">
+            <tr><td>Смена №</td><td style="text-align:right;"><strong id="slipShiftId"></strong></td></tr>
+            <tr><td>Кассир</td><td style="text-align:right;" id="slipCashier"></td></tr>
+            <tr><td>Открыта</td><td style="text-align:right;" id="slipOpenedAt"></td></tr>
+            <tr><td>Закрыта</td><td style="text-align:right;" id="slipClosedAt"></td></tr>
+        </table>
+
+        <div style="border-top:1px dashed #475569;margin:0.6rem 0;"></div>
+
+        <table class="receipt-meta-table" style="font-size:0.88rem;">
+            <tr><td>Размен при открытии:</td><td style="text-align:right;"><span id="slipOpeningCash"></span> ₸</td></tr>
+            <tr><td>Чеков продаж:</td><td style="text-align:right;"><strong id="slipCheckCount"></strong></td></tr>
+            <tr><td><strong>ВЫРУЧКА ОБЩАЯ:</strong></td><td style="text-align:right;"><strong id="slipTotalRevenue"></strong> ₸</td></tr>
+            <tr><td style="padding-left:0.6rem;">• Наличные:</td><td style="text-align:right;"><span id="slipCashRevenue"></span> ₸</td></tr>
+            <tr><td style="padding-left:0.6rem;">• Карты:</td><td style="text-align:right;"><span id="slipCardRevenue"></span> ₸</td></tr>
+            <tr><td style="padding-left:0.6rem;">• Kaspi QR:</td><td style="text-align:right;"><span id="slipTransferRevenue"></span> ₸</td></tr>
+            <tr><td>Возвраты:</td><td style="text-align:right;"><span id="slipRefundInfo"></span></td></tr>
+            <tr><td style="padding-left:0.6rem;">• Выдано наличными:</td><td style="text-align:right;">-<span id="slipCashRefunds"></span> ₸</td></tr>
+        </table>
+
+        <div style="border-top:1px dashed #475569;margin:0.6rem 0;"></div>
+
+        <table class="receipt-meta-table" style="font-size:0.92rem;font-weight:800;">
+            <tr><td>Ожидалось в кассе:</td><td style="text-align:right;"><span id="slipExpectedCash"></span> ₸</td></tr>
+            <tr id="slipCountedRow"><td>Фактически в кассе:</td><td style="text-align:right;"><span id="slipCountedCash"></span> ₸</td></tr>
+            <tr id="slipDiffRow"><td>Расхождение:</td><td style="text-align:right;"><span id="slipDifference"></span> ₸</td></tr>
+        </table>
+
+        <div class="receipt-footer" style="margin-top:0.8rem;">
+            <p id="slipNoteText" style="font-style:italic;margin-bottom:0.4rem;"></p>
+            <p>Отчет сформирован: <span id="slipPrintedAt"></span></p>
+            <p style="margin-top:0.6rem;">Подпись кассира: ____________________</p>
+        </div>
+
+        <div class="receipt-actions no-print">
+            <button class="btn btn-success" style="flex:1.2;font-size:0.85rem;" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> Печать отчета
+            </button>
+            <button class="btn btn-secondary" style="flex:1;font-size:0.85rem;" onclick="closeShiftSlipModal()">
                 <i class="fa-solid fa-xmark"></i> Закрыть
             </button>
         </div>
@@ -3764,7 +4274,7 @@
         return num.toLocaleString('ru-RU', {
             minimumFractionDigits: 0,
             maximumFractionDigits: num % 1 === 0 ? 0 : 2
-        });
+        }).replace(/[\u00a0\u202f]/g, ' ');
     }
 
     function getCookie(name) {
@@ -3792,5 +4302,435 @@
     }
     updatePosClock();
     window.setInterval(updatePosClock, 30000);
+
+    // ===== CASH SHIFT & RETURN MANAGEMENT =====
+    let currentShiftId = {% if current_shift %}{{ current_shift.id }}{% else %}null{% endif %};
+    let currentShiftData = null;
+
+    function updateShiftWidgetUI(shift) {
+        const widget = document.getElementById('posShiftWidget');
+        if (!widget) return;
+        if (shift && shift.status === 'OPEN') {
+            currentShiftId = shift.id;
+            const openTime = shift.opened_at ? new Date(shift.opened_at).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'}) : '--:--';
+            widget.innerHTML = `
+                <button type="button" class="pos-shift-btn open" id="posShiftBtn" onclick="openShiftManagerModal()" title="Управление сменой и кассой (X/Z-отчет)">
+                    <span class="pos-shift-indicator-dot"></span>
+                    <i class="fa-solid fa-cash-register"></i>
+                    <span>Смена #<strong id="posShiftNum">${shift.id}</strong></span>
+                    <span class="pos-shift-sub" id="posShiftTime">с ${openTime}</span>
+                </button>
+            `;
+        } else {
+            currentShiftId = null;
+            currentShiftData = null;
+            widget.innerHTML = `
+                <button type="button" class="pos-shift-btn closed" id="posShiftBtn" onclick="openShiftOpenModal()" title="Открыть кассовую смену">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Открыть смену</span>
+                </button>
+            `;
+        }
+    }
+
+    function openShiftOpenModal() {
+        const timeEl = document.getElementById('shiftOpenCurrentTime');
+        if (timeEl) {
+            timeEl.textContent = new Intl.DateTimeFormat('ru-RU', {
+                hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit'
+            }).format(new Date());
+        }
+        document.getElementById('shiftOpenModal').classList.add('active');
+        const input = document.getElementById('shiftOpeningCash');
+        if (input) {
+            input.focus();
+            input.select();
+        }
+    }
+
+    function closeShiftOpenModal() {
+        document.getElementById('shiftOpenModal').classList.remove('active');
+    }
+
+    function setOpeningCash(val) {
+        const input = document.getElementById('shiftOpeningCash');
+        if (input) {
+            input.value = val;
+            input.focus();
+        }
+    }
+
+    async function submitShiftOpen() {
+        const btn = document.getElementById('btnShiftOpenSubmit');
+        const cashInput = document.getElementById('shiftOpeningCash');
+        const noteInput = document.getElementById('shiftOpeningNote');
+        const openingCash = parseFloat(cashInput.value) || 0;
+        const openingNote = (noteInput.value || '').trim();
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Открытие...';
+
+        try {
+            const resp = await fetch('/api/shifts/open/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    opening_cash: openingCash,
+                    opening_note: openingNote
+                })
+            });
+            const data = await resp.json();
+            if (resp.ok && data.success) {
+                closeShiftOpenModal();
+                updateShiftWidgetUI(data.shift);
+                showPosToast(`Смена #${data.shift.id} успешно открыта! Размен: ${formatMoney(openingCash)} ₸`, 'success');
+            } else {
+                alert(data.error || 'Ошибка открытия смены');
+            }
+        } catch (err) {
+            alert('Сетевая ошибка при открытии смены: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Открыть смену';
+        }
+    }
+
+    async function openShiftManagerModal() {
+        document.getElementById('shiftManagerModal').classList.add('active');
+        await fetchCurrentShiftTotals();
+    }
+
+    function closeShiftManagerModal() {
+        document.getElementById('shiftManagerModal').classList.remove('active');
+    }
+
+    async function fetchCurrentShiftTotals() {
+        try {
+            const resp = await fetch('/api/shifts/current/');
+            const data = await resp.json();
+            if (resp.ok && data.success && data.shift) {
+                currentShiftData = data;
+                renderShiftManagerData(data);
+            } else {
+                closeShiftManagerModal();
+                updateShiftWidgetUI(null);
+                showPosToast('Активная смена не найдена.', 'info');
+            }
+        } catch (err) {
+            console.error('Ошибка загрузки данных смены:', err);
+        }
+    }
+
+    function renderShiftManagerData(data) {
+        const shift = data.shift;
+        const totals = data.totals || {};
+
+        document.getElementById('smShiftId').textContent = shift.id;
+        document.getElementById('smCashier').textContent = shift.cashier_name || 'Кассир';
+        const openDate = shift.opened_at ? new Date(shift.opened_at).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '—';
+        document.getElementById('smOpenedAt').textContent = openDate;
+
+        document.getElementById('smOpeningCash').textContent = formatMoney(shift.opening_cash);
+        document.getElementById('smCheckCount').textContent = totals.check_count || 0;
+        document.getElementById('smTotalRevenue').textContent = formatMoney(totals.total_revenue);
+        document.getElementById('smCashRevenue').textContent = formatMoney(totals.cash_revenue);
+        document.getElementById('smCardRevenue').textContent = formatMoney(totals.card_revenue);
+        document.getElementById('smTransferRevenue').textContent = formatMoney(totals.transfer_revenue);
+
+        document.getElementById('smRefundCount').textContent = totals.refund_count || 0;
+        document.getElementById('smRefundAmount').textContent = formatMoney(totals.refund_amount);
+        document.getElementById('smCashRefunds').textContent = formatMoney(totals.cash_refunds);
+
+        const expected = parseFloat(data.expected_cash || (totals && totals.expected_cash) || 0);
+        document.getElementById('smExpectedCash').textContent = formatMoney(expected);
+
+        // Pre-fill counted cash if empty
+        const countedInput = document.getElementById('shiftCountedCash');
+        if (!countedInput.value) {
+            countedInput.value = expected;
+        }
+        recalcShiftDiff();
+    }
+
+    function recalcShiftDiff() {
+        if (!currentShiftData) return;
+        const expected = parseFloat(currentShiftData.expected_cash || (currentShiftData.totals && currentShiftData.totals.expected_cash) || 0);
+        const counted = parseFloat(document.getElementById('shiftCountedCash').value) || 0;
+        const diff = counted - expected;
+
+        const diffBox = document.getElementById('shiftDiffBox');
+        const diffLabel = document.getElementById('shiftDiffLabel');
+        const diffValue = document.getElementById('shiftDiffValue');
+
+        diffBox.className = 'shift-diff-box';
+        if (Math.abs(diff) < 0.01) {
+            diffBox.classList.add('even');
+            diffLabel.textContent = 'Касса сошлась:';
+            diffValue.textContent = '0 ₸';
+        } else if (diff > 0) {
+            diffBox.classList.add('over');
+            diffLabel.textContent = 'Излишек в кассе:';
+            diffValue.textContent = `+${formatMoney(diff)} ₸`;
+        } else {
+            diffBox.classList.add('under');
+            diffLabel.textContent = 'Недостача в кассе:';
+            diffValue.textContent = `${formatMoney(diff)} ₸`;
+        }
+    }
+
+    async function submitShiftClose() {
+        if (!currentShiftId) return;
+        const countedInput = document.getElementById('shiftCountedCash');
+        const noteInput = document.getElementById('shiftClosingNote');
+        const countedCash = parseFloat(countedInput.value);
+
+        if (isNaN(countedCash) || countedCash < 0) {
+            alert('Укажите корректную сумму наличных при закрытии смены.');
+            countedInput.focus();
+            return;
+        }
+
+        const expected = parseFloat(currentShiftData.expected_cash || (currentShiftData.totals && currentShiftData.totals.expected_cash) || 0);
+        const diff = countedCash - expected;
+        let confirmMsg = `Закрыть смену #${currentShiftId}?\nФактически в кассе: ${formatMoney(countedCash)} ₸\nОжидалось: ${formatMoney(expected)} ₸`;
+        if (Math.abs(diff) > 0.01) {
+            confirmMsg += `\nРасхождение: ${diff > 0 ? '+' : ''}${formatMoney(diff)} ₸`;
+        }
+        if (!confirm(confirmMsg)) return;
+
+        const btn = document.getElementById('btnShiftCloseSubmit');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Закрытие...';
+
+        try {
+            const resp = await fetch(`/api/shifts/${currentShiftId}/close/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    counted_cash: countedCash,
+                    closing_note: (noteInput.value || '').trim()
+                })
+            });
+            const data = await resp.json();
+            if (resp.ok && data.success) {
+                closeShiftManagerModal();
+                updateShiftWidgetUI(null);
+                showPosToast(`Смена #${data.shift.id} успешно закрыта!`, 'success');
+                openShiftSlipModal('Z', data);
+            } else {
+                alert(data.error || 'Ошибка при закрытии смены.');
+            }
+        } catch (err) {
+            alert('Сетевая ошибка при закрытии смены: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-lock"></i> Закрыть смену (Z-отчет)';
+        }
+    }
+
+    function printShiftXReport() {
+        if (!currentShiftData) return;
+        openShiftSlipModal('X', currentShiftData);
+    }
+
+    function openShiftSlipModal(type, data) {
+        const shift = data.shift || {};
+        const totals = data.totals || {};
+        const isZ = (type === 'Z');
+
+        document.getElementById('slipReportTypeTitle').textContent = isZ ? 'Z-ОТЧЕТ КАССОВОЙ СМЕНЫ' : 'X-ОТЧЕТ КАССОВОЙ СМЕНЫ';
+        document.getElementById('slipShiftId').textContent = shift.id || '—';
+        document.getElementById('slipCashier').textContent = shift.cashier_name || '—';
+        document.getElementById('slipOpenedAt').textContent = shift.opened_at ? new Date(shift.opened_at).toLocaleString('ru-RU') : '—';
+        document.getElementById('slipClosedAt').textContent = isZ ? (shift.closed_at ? new Date(shift.closed_at).toLocaleString('ru-RU') : new Date().toLocaleString('ru-RU')) : 'Смена открыта';
+
+        document.getElementById('slipOpeningCash').textContent = formatMoney(shift.opening_cash);
+        document.getElementById('slipCheckCount').textContent = totals.check_count || 0;
+        document.getElementById('slipTotalRevenue').textContent = formatMoney(totals.total_revenue);
+        document.getElementById('slipCashRevenue').textContent = formatMoney(totals.cash_revenue);
+        document.getElementById('slipCardRevenue').textContent = formatMoney(totals.card_revenue);
+        document.getElementById('slipTransferRevenue').textContent = formatMoney(totals.transfer_revenue);
+
+        const refCount = totals.refund_count || 0;
+        const refAmount = totals.refund_amount || 0;
+        document.getElementById('slipRefundInfo').textContent = `${refCount} шт. (${formatMoney(refAmount)} ₸)`;
+        document.getElementById('slipCashRefunds').textContent = formatMoney(totals.cash_refunds);
+
+        const expected = parseFloat(data.expected_cash || totals.expected_cash || 0);
+        document.getElementById('slipExpectedCash').textContent = formatMoney(expected);
+
+        const countedRow = document.getElementById('slipCountedRow');
+        const diffRow = document.getElementById('slipDiffRow');
+        if (isZ) {
+            countedRow.style.display = '';
+            diffRow.style.display = '';
+            const counted = parseFloat(data.counted_cash || shift.counted_cash || 0);
+            const diff = parseFloat(data.difference || 0);
+            document.getElementById('slipCountedCash').textContent = formatMoney(counted);
+            document.getElementById('slipDifference').textContent = (diff > 0 ? '+' : '') + formatMoney(diff);
+        } else {
+            countedRow.style.display = 'none';
+            diffRow.style.display = 'none';
+        }
+
+        const noteText = document.getElementById('slipNoteText');
+        noteText.textContent = (shift.closing_note || shift.opening_note) ? `Примечание: ${shift.closing_note || shift.opening_note}` : '';
+        document.getElementById('slipPrintedAt').textContent = new Date().toLocaleString('ru-RU');
+
+        document.getElementById('shiftReportSlipModal').classList.add('active');
+    }
+
+    function closeShiftSlipModal() {
+        document.getElementById('shiftReportSlipModal').classList.remove('active');
+    }
+
+    // ===== POS RECEIPT RETURN / REFUND =====
+    let currentRefundOrder = null;
+
+    function openPosRefundModal() {
+        currentRefundOrder = null;
+        document.getElementById('refundSearchOrderNum').value = '';
+        document.getElementById('refundOrderDetails').style.display = 'none';
+        document.getElementById('posRefundModal').classList.add('active');
+        document.getElementById('refundSearchOrderNum').focus();
+    }
+
+    function closePosRefundModal() {
+        document.getElementById('posRefundModal').classList.remove('active');
+    }
+
+    async function searchOrderForRefund() {
+        const query = (document.getElementById('refundSearchOrderNum').value || '').trim();
+        if (!query) return;
+        const btn = document.getElementById('btnSearchRefundOrder');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+        try {
+            const resp = await fetch(`/sales/api/orders/lookup/?q=${encodeURIComponent(query)}`);
+            const data = await resp.json();
+            if (resp.ok && data.success && data.order) {
+                currentRefundOrder = data.order;
+                renderRefundOrder(data.order);
+            } else {
+                alert(data.error || 'Чек не найден.');
+                document.getElementById('refundOrderDetails').style.display = 'none';
+            }
+        } catch (err) {
+            alert('Ошибка поиска чека: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Найти';
+        }
+    }
+
+    function renderRefundOrder(ord) {
+        const box = document.getElementById('refundOrderDetails');
+        box.style.display = 'block';
+
+        document.getElementById('roNum').textContent = ord.order_number;
+        const badge = document.getElementById('roStatusBadge');
+        if (ord.status === 'REFUNDED') {
+            badge.className = 'badge badge-red';
+            badge.textContent = 'Уже возвращен';
+        } else {
+            badge.className = 'badge badge-green';
+            badge.textContent = 'Проведён';
+        }
+
+        document.getElementById('roDate').textContent = ord.created_at || '—';
+        document.getElementById('roCashier').textContent = ord.cashier || '—';
+        document.getElementById('roPayment').textContent = ord.payment_method || '—';
+        document.getElementById('roTotal').textContent = formatMoney(ord.total_amount);
+
+        const itemsBox = document.getElementById('roItemsList');
+        itemsBox.innerHTML = (ord.items || []).map(it => `
+            <div style="display:flex;justify-content:space-between;gap:0.5rem;padding:0.35rem 0;border-bottom:1px solid var(--card-border);font-size:0.8rem;">
+                <div>
+                    <div>${it.product_name}</div>
+                    <small style="color:var(--text-muted);">${it.sku} · ${it.quantity} ${it.unit} × ${formatMoney(it.unit_price)} ₸</small>
+                </div>
+                <strong style="color:var(--text-main);">${formatMoney(it.total_amount)} ₸</strong>
+            </div>
+        `).join('');
+
+        const actionSection = document.getElementById('refundActionSection');
+        if (ord.status === 'REFUNDED') {
+            actionSection.innerHTML = `
+                <div style="padding:0.75rem;border-radius:8px;background:rgba(239,68,68,0.1);color:#dc2626;font-size:0.82rem;font-weight:700;margin-top:0.6rem;">
+                    <i class="fa-solid fa-circle-exclamation"></i> Этот чек уже был возвращен ${ord.refunded_at || ''}.
+                    ${ord.refund_reason ? `<br><small>Причина: ${ord.refund_reason}</small>` : ''}
+                </div>
+            `;
+        } else {
+            actionSection.innerHTML = `
+                <label style="display:block;font-size:0.82rem;font-weight:700;margin-bottom:0.35rem;color:var(--text-main);">
+                    Причина возврата (от 4 символов) *:
+                </label>
+                <input type="text" id="refundReasonInput" class="form-control" minlength="4" maxlength="255" placeholder="Например: брак, ошибочная покупка, клиент передумал" required style="margin-bottom:1rem;">
+
+                <div style="display:flex;gap:0.6rem;justify-content:flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closePosRefundModal()">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmRefund" onclick="submitPosRefund()" style="font-weight:800;">
+                        <i class="fa-solid fa-rotate-left"></i> Оформить полный возврат
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    async function submitPosRefund() {
+        if (!currentRefundOrder) return;
+        const reasonInput = document.getElementById('refundReasonInput');
+        const reason = (reasonInput ? reasonInput.value : '').trim();
+
+        if (!reason || reason.length < 4) {
+            alert('Укажите причину возврата (от 4 до 255 символов).');
+            if (reasonInput) reasonInput.focus();
+            return;
+        }
+
+        if (!confirm(`Подтвердите возврат по чеку ${currentRefundOrder.order_number} на сумму ${formatMoney(currentRefundOrder.total_amount)} ₸.\nТовары вернутся на склад.`)) {
+            return;
+        }
+
+        const btn = document.getElementById('btnConfirmRefund');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Оформление...';
+        }
+
+        try {
+            const resp = await fetch(`/sales/orders/${currentRefundOrder.id}/refund/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ refund_reason: reason })
+            });
+            const data = await resp.json();
+            if (resp.ok && data.success) {
+                closePosRefundModal();
+                showPosToast(`Возврат по чеку ${currentRefundOrder.order_number} оформлен!`, 'success');
+            } else {
+                alert(data.error || 'Ошибка оформления возврата.');
+            }
+        } catch (err) {
+            alert('Сетевая ошибка: ' + err.message);
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Оформить полный возврат';
+            }
+        }
+    }
 </script>
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends 'mobile/base.html' %}
+{% load dacar_format %}
 
 {% block title %}Обзор — DACAR Mobile Hub{% endblock %}
 {% block body_class %}dashboard-page{% endblock %}
@@ -756,7 +757,7 @@
                     <!-- Revenue Numbers & Growth Pill -->
                     <div class="hub-hero-numbers">
                         <div class="hub-hero-amount">
-                            <span id="heroRevenueAmount">{{ today_revenue|floatformat:0 }}</span> ₸
+                            <span id="heroRevenueAmount">{{ today_revenue|tenge }}</span> ₸
                         </div>
                         <div class="hub-growth-pill" id="heroGrowthPill">
                             <i class="fa-solid fa-arrow-trend-up"></i>
@@ -791,7 +792,7 @@
                     </div>
                     <div class="hub-kpi-info">
                         <div class="hub-kpi-value">
-                            <span id="kpiAvgCheck">{{ today_avg_check|floatformat:0 }}</span> ₸
+                            <span id="kpiAvgCheck">{{ today_avg_check|tenge }}</span> ₸
                         </div>
                         <div class="hub-kpi-label">Средний чек</div>
                     </div>
@@ -804,7 +805,7 @@
                     </div>
                     <div class="hub-kpi-info">
                         <div class="hub-kpi-value">
-                            <span id="kpiProfit">{{ today_profit|floatformat:0 }}</span> ₸
+                            <span id="kpiProfit">{{ today_profit|tenge }}</span> ₸
                         </div>
                         <div class="hub-kpi-label">Валовая прибыль</div>
                     </div>
@@ -918,7 +919,7 @@
                         style="color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-size: 0.82rem;"
                         id="hubLastSaleText">
                         {% if recent_orders.0 %}
-                        №{{ recent_orders.0.order_number }} • {{ recent_orders.0.total_amount|floatformat:0 }} ₸ ({{
+                        №{{ recent_orders.0.order_number }} • {{ recent_orders.0.total_amount|tenge }} ₸ ({{
                         recent_orders.0.get_payment_method_display }})
                         {% else %}
                         Ожидание продаж...
@@ -963,10 +964,10 @@
 
     <div class="dashboard-ticker marquee-container" role="status" aria-label="Последние события">
         <div class="marquee-track">
-            <span class="dashboard-ticker-item"><i class="fa-solid fa-receipt" style="color:var(--accent-cyan);"></i>{% if recent_orders.0 %}<strong>Чек №{{ recent_orders.0.order_number }}</strong> — {{ recent_orders.0.total_amount|floatformat:0 }} ₸{% else %}Ожидание первой продажи{% endif %}</span>
+            <span class="dashboard-ticker-item"><i class="fa-solid fa-receipt" style="color:var(--accent-cyan);"></i>{% if recent_orders.0 %}<strong>Чек №{{ recent_orders.0.order_number }}</strong> — {{ recent_orders.0.total_amount|tenge }} ₸{% else %}Ожидание первой продажи{% endif %}</span>
             <span class="dashboard-ticker-item"><i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>{% if low_stock_count %}Мало на складе: <strong>{{ low_stock_count }}</strong> поз.{% else %}Склад в порядке{% endif %}</span>
-            <span class="dashboard-ticker-item"><i class="fa-solid fa-chart-line" style="color:#34d399;"></i>Чеков сегодня: <strong>{{ today_count }}</strong> · Средний чек: <strong>{{ today_avg_check|floatformat:0 }} ₸</strong></span>
-            <span class="dashboard-ticker-item" aria-hidden="true"><i class="fa-solid fa-receipt" style="color:var(--accent-cyan);"></i>{% if recent_orders.0 %}<strong>Чек №{{ recent_orders.0.order_number }}</strong> — {{ recent_orders.0.total_amount|floatformat:0 }} ₸{% else %}Ожидание первой продажи{% endif %}</span>
+            <span class="dashboard-ticker-item"><i class="fa-solid fa-chart-line" style="color:#34d399;"></i>Чеков сегодня: <strong>{{ today_count }}</strong> · Средний чек: <strong>{{ today_avg_check|tenge }} ₸</strong></span>
+            <span class="dashboard-ticker-item" aria-hidden="true"><i class="fa-solid fa-receipt" style="color:var(--accent-cyan);"></i>{% if recent_orders.0 %}<strong>Чек №{{ recent_orders.0.order_number }}</strong> — {{ recent_orders.0.total_amount|tenge }} ₸{% else %}Ожидание первой продажи{% endif %}</span>
             <span class="dashboard-ticker-item" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>{% if low_stock_count %}Мало на складе: <strong>{{ low_stock_count }}</strong> поз.{% else %}Склад в порядке{% endif %}</span>
         </div>
     </div>
@@ -974,11 +975,11 @@
     <section class="hero-carousel" id="dashboardHero" role="region" aria-roledescription="carousel" aria-label="Ключевые показатели">
         <div class="hero-carousel-track">
             <a class="hero-slide hero-slide--revenue hero-slide-link" href="{% url 'm_sales_orders_list' %}?period=today" aria-label="Открыть чеки за сегодня">
-                <div><div class="hero-kicker">Выручка сегодня</div><div class="hero-value"><span id="dashHeroRevenue">{{ today_revenue|floatformat:0 }}</span> ₸</div></div>
+                <div><div class="hero-kicker">Выручка сегодня</div><div class="hero-value"><span id="dashHeroRevenue">{{ today_revenue|tenge }}</span> ₸</div></div>
                 <div class="hero-meta"><i class="fa-solid fa-arrow-trend-up"></i><span id="dashHeroGrowth">{{ growth_percent|floatformat:0 }}% к вчера</span></div>
             </a>
             <a class="hero-slide hero-slide--profit hero-slide-link" href="{% url 'm_sales_orders_list' %}?period=today" aria-label="Открыть чеки для анализа прибыли">
-                <div><div class="hero-kicker">Прибыль сегодня</div><div class="hero-value"><span id="dashHeroProfit">{{ today_profit|floatformat:0 }}</span> ₸</div></div>
+                <div><div class="hero-kicker">Прибыль сегодня</div><div class="hero-value"><span id="dashHeroProfit">{{ today_profit|tenge }}</span> ₸</div></div>
                 <div class="hero-meta"><i class="fa-solid fa-sack-dollar"></i><span id="dashHeroMargin">{% if margin_available %}Маржа {{ profit_margin|floatformat:0 }}%{% else %}Маржа не рассчитывается{% endif %}</span></div>
             </a>
             <article class="hero-slide hero-slide--goal">
@@ -1006,7 +1007,7 @@
     <section class="dashboard-section" aria-label="Краткие показатели">
         <div class="dashboard-metric-row snap-row">
             <a class="dashboard-metric haptic-press" href="{% url 'm_sales_orders_list' %}?period=today" style="text-decoration:none;" aria-label="Открыть чеки за сегодня"><span class="dashboard-metric-icon"><i class="fa-solid fa-receipt"></i></span><strong class="dashboard-metric-value" id="dashChecks">{{ today_count }}</strong><span class="dashboard-metric-label">чеков сегодня</span></a>
-            <a class="dashboard-metric dashboard-metric--green haptic-press" href="{% url 'm_sales_orders_list' %}?period=today" style="text-decoration:none;" aria-label="Открыть чеки для среднего чека"><span class="dashboard-metric-icon"><i class="fa-solid fa-money-bill-wave"></i></span><strong class="dashboard-metric-value"><span id="dashAvg">{{ today_avg_check|floatformat:0 }}</span> ₸</strong><span class="dashboard-metric-label">средний чек</span></a>
+            <a class="dashboard-metric dashboard-metric--green haptic-press" href="{% url 'm_sales_orders_list' %}?period=today" style="text-decoration:none;" aria-label="Открыть чеки для среднего чека"><span class="dashboard-metric-icon"><i class="fa-solid fa-money-bill-wave"></i></span><strong class="dashboard-metric-value"><span id="dashAvg">{{ today_avg_check|tenge }}</span> ₸</strong><span class="dashboard-metric-label">средний чек</span></a>
             <a class="dashboard-metric dashboard-metric--warn haptic-press" href="{% url 'm_product_list' %}?low_stock=1" style="text-decoration:none;"><span class="dashboard-metric-icon"><i class="fa-solid fa-triangle-exclamation"></i></span><strong class="dashboard-metric-value" id="dashStock">{{ low_stock_count }}</strong><span class="dashboard-metric-label">мало на складе</span></a>
             <a class="dashboard-metric dashboard-metric--purple haptic-press" href="{% url 'm_users_list' %}" style="text-decoration:none;" aria-label="Открыть персонал"><span class="dashboard-metric-icon"><i class="fa-solid fa-users"></i></span><strong class="dashboard-metric-value">{{ cashier_stats|length }}</strong><span class="dashboard-metric-label">кассиров в отчёте</span></a>
         </div>
@@ -1016,7 +1017,7 @@
         <div class="dashboard-section-head"><h2 class="dashboard-section-title">Топ товаров</h2><a href="{% url 'm_product_list' %}" class="dashboard-section-link">Все</a></div>
         <div class="dashboard-card-row dashboard-product-row snap-row" data-autoplay-row>
             {% for product in top_products %}
-            <article class="dashboard-product-card"><span class="dashboard-card-icon"><i class="fa-solid {{ product.product__category__icon|default:'fa-bottle-droplet' }}"></i></span><div class="dashboard-card-title">{{ product.product__name }}</div><div class="dashboard-card-sub">{{ product.total_qty|floatformat:0 }} продажи</div><div class="dashboard-card-value">{{ product.total_sum|floatformat:0 }} ₸</div></article>
+            <article class="dashboard-product-card"><span class="dashboard-card-icon"><i class="fa-solid {{ product.product__category__icon|default:'fa-bottle-droplet' }}"></i></span><div class="dashboard-card-title">{{ product.product__name }}</div><div class="dashboard-card-sub">{{ product.total_qty|floatformat:0 }} продажи</div><div class="dashboard-card-value">{{ product.total_sum|tenge }} ₸</div></article>
             {% empty %}<article class="dashboard-product-card"><span class="dashboard-card-icon"><i class="fa-solid fa-box-open"></i></span><div class="dashboard-card-title">Нет продаж</div><div class="dashboard-card-sub">Топ появится после первой продажи</div></article>{% endfor %}
         </div>
     </section>
@@ -1025,7 +1026,7 @@
         <div class="dashboard-section-head"><h2 class="dashboard-section-title">Кассир дня</h2><a href="{% url 'm_sales_orders_list' %}" class="dashboard-section-link">Чеки</a></div>
         <div class="dashboard-card-row dashboard-cashier-row snap-row" data-autoplay-row>
             {% for cs in cashier_stats %}
-            <article class="dashboard-cashier-card"><div class="dashboard-card-title"><span class="dashboard-avatar">{% if cs.user %}{{ cs.user.first_name|first }}{{ cs.user.last_name|first }}{% else %}К{% endif %}</span>{% if cs.user %}{{ cs.user.get_full_name|default:cs.user.username }}{% else %}Удалённый кассир{% endif %}</div><div class="dashboard-card-value">{{ cs.revenue|floatformat:0 }} ₸</div><div class="dashboard-card-sub">{{ cs.count }} чек{{ cs.count|pluralize:"а,ов" }} · средний {{ cs.avg_check|floatformat:0 }} ₸</div></article>
+            <article class="dashboard-cashier-card"><div class="dashboard-card-title"><span class="dashboard-avatar">{% if cs.user %}{{ cs.user.first_name|first }}{{ cs.user.last_name|first }}{% else %}К{% endif %}</span>{% if cs.user %}{{ cs.user.get_full_name|default:cs.user.username }}{% else %}Удалённый кассир{% endif %}</div><div class="dashboard-card-value">{{ cs.revenue|tenge }} ₸</div><div class="dashboard-card-sub">{{ cs.count }} чек{{ cs.count|pluralize:"а,ов" }} · средний {{ cs.avg_check|tenge }} ₸</div></article>
             {% empty %}<article class="dashboard-cashier-card"><div class="dashboard-card-title">Нет данных по кассирам</div></article>{% endfor %}
         </div>
     </section>
@@ -1063,7 +1064,7 @@
             const p = Math.min(1, elapsed / dur);
             const eased = 1 - Math.pow(1 - p, 3);
             const current = Math.round(startVal + (target - startVal) * eased);
-            el.textContent = current.toLocaleString('ru-RU');
+            el.textContent = current.toLocaleString('ru-RU').replace(/[\u00a0\u202f]/g, ' ');
             if (p < 1) requestAnimationFrame(frame);
         }
         requestAnimationFrame(frame);
@@ -1152,7 +1153,7 @@
                         displayColors: false,
                         callbacks: {
                             label: function(c) {
-                                return c.raw.toLocaleString('ru-RU') + ' ₸';
+                                return c.raw.toLocaleString('ru-RU').replace(/[\u00a0\u202f]/g, ' ') + ' ₸';
                             }
                         }
                     }
@@ -1291,7 +1292,7 @@
         // Last sale banner
         const lastSaleEl = document.getElementById('hubLastSaleText');
         if (lastSaleEl && data.last_order) {
-            lastSaleEl.textContent = `№${data.last_order.order_number} • ${Math.round(data.last_order.total_amount).toLocaleString('ru-RU')} ₸ (${data.last_order.payment_method_display})`;
+            lastSaleEl.textContent = `№${data.last_order.order_number} • ${Math.round(data.last_order.total_amount).toLocaleString('ru-RU').replace(/[\u00a0\u202f]/g, ' ')} ₸ (${data.last_order.payment_method_display})`;
         }
 
         // Charts
@@ -1318,7 +1319,7 @@
 <script>
     (() => {
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const money = value => Math.round(Number(value || 0)).toLocaleString('ru-RU');
+        const money = value => Math.round(Number(value || 0)).toLocaleString('ru-RU').replace(/[\u00a0\u202f]/g, ' ');
         const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = money(value); };
 
         function createHeroCarousel() {
