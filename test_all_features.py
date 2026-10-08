@@ -1,4 +1,10 @@
 import os, django
+from unittest import SkipTest
+
+# This legacy smoke script writes real orders and stock. It must never run when
+# Django's test discovery imports every test_*.py module.
+if __name__ != '__main__':
+    raise SkipTest('Standalone smoke script; run only with an explicit disposable database.')
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()

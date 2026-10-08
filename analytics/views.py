@@ -169,6 +169,37 @@ def _inventory_summary():
         'without_price_count': active.filter(retail_price__lte=0).count(),
         'without_barcode_count': active.filter(Q(barcode='') | Q(barcode__isnull=True)).count(),
         'without_category_count': active.filter(category__isnull=True).count(),
+        'without_image_count': active.filter(Q(image='') | Q(image__isnull=True)).count(),
+    }
+
+
+def _gift_card_summary(start, end):
+    """Certificate activity for the selected period plus current liability."""
+    from sales.models import GiftCard, GiftCardEvent
+
+    period_events = GiftCardEvent.objects.filter(
+        created_at__date__gte=start,
+        created_at__date__lte=end,
+    )
+    activated = period_events.filter(kind=GiftCardEvent.Kind.ACTIVATE)
+    redeemed = period_events.filter(kind=GiftCardEvent.Kind.REDEEM)
+    refunded = period_events.filter(kind=GiftCardEvent.Kind.REFUND)
+    active_cards = GiftCard.objects.filter(
+        activated_at__isnull=False,
+        expires_at__gt=timezone.now(),
+        balance__gt=0,
+        is_blocked=False,
+    )
+    return {
+        'activated_count': activated.count(),
+        'activated_amount': _money_sum(activated, 'amount'),
+        'redeemed_count': redeemed.count(),
+        'redeemed_amount': _money_sum(redeemed, 'amount'),
+        'refund_count': refunded.count(),
+        'refund_amount': _money_sum(refunded, 'amount'),
+        'net_redeemed_amount': _money_sum(redeemed, 'amount') - _money_sum(refunded, 'amount'),
+        'active_count': active_cards.count(),
+        'active_balance': _money_sum(active_cards, 'balance'),
     }
 
 
@@ -311,6 +342,7 @@ def _analytics_report(start, end):
 
     summary.update({
         'inventory': _inventory_summary(),
+        'gift_cards': _gift_card_summary(start, end),
         'payment_rows': payment_rows,
         'top_products': top_products,
         'category_rows': category_rows,
@@ -839,6 +871,17 @@ def analytics_export_csv(request):
         [row['name'], row['checks'], row['amount'], row['share'].quantize(Decimal('0.01'))]
         for row in report['payment_rows']
     ])
+    gift = report['gift_cards']
+    section('Подарочные сертификаты', ['Показатель', 'Значение'], [
+        ['Активировано карт за период', gift['activated_count']],
+        ['Номинал активированных карт, ₸', gift['activated_amount']],
+        ['Оплат сертификатами', gift['redeemed_count']],
+        ['Списано с сертификатов, ₸', gift['redeemed_amount']],
+        ['Возвратов на сертификаты', gift['refund_count']],
+        ['Возвращено на сертификаты, ₸', gift['refund_amount']],
+        ['Активных карт сейчас', gift['active_count']],
+        ['Доступный баланс активных карт, ₸', gift['active_balance']],
+    ])
     section('Товары', ['Товар', 'Количество', 'Выручка, ₸', 'Себестоимость, ₸', 'Прибыль, ₸'], [
         [row['product__name'] or 'Удалённый товар', row['total_qty'], row['total_sum'], row['total_cost'], row['profit']]
         for row in report['top_products']
@@ -850,16 +893,24 @@ def analytics_export_csv(request):
         [row['name'], row['checks'], row['revenue'], row['average_check'], row['profit']]
         for row in report['cashier_rows']
     ])
-    section('Чеки периода', ['Номер', 'Дата', 'Кассир', 'Оплата', 'Статус', 'Сумма, ₸', 'Скидка, ₸'], [
+    orders = report['sales'].select_related('cashier').prefetch_related('payments', 'gift_events__card').order_by('-created_at')
+    section('Чеки периода', ['Номер', 'Дата', 'Кассир', 'Оплата', 'Расшифровка оплаты',
+                             'Сертификат', 'Статус', 'Сумма, ₸', 'Скидка, ₸'], [
         [
             order.order_number,
             timezone.localtime(order.created_at).strftime('%d.%m.%Y %H:%M'),
             (order.cashier.get_full_name() or order.cashier.username) if order.cashier else 'Удалённый кассир',
             order.get_payment_method_display(),
+            ' + '.join(f'{payment.get_method_display()}: {payment.amount} ₸' for payment in order.payments.all()),
+            ', '.join(
+                f'••••{event.card.code_last4}: {event.amount} ₸'
+                for event in order.gift_events.all()
+                if event.kind == 'REDEEM'
+            ),
             order.get_status_display(),
             order.total_amount,
             order.discount_amount,
-        ] for order in report['sales'].select_related('cashier').order_by('-created_at')
+        ] for order in orders
     ])
     return response
 

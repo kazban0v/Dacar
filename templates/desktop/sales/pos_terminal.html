@@ -826,6 +826,146 @@
         pointer-events: auto;
     }
 
+    .gift-overage-box {
+        width: min(100%, 470px);
+        padding: 1.35rem;
+        border: 1px solid color-mix(in srgb, var(--accent-orange) 45%, var(--card-border));
+        border-radius: 22px;
+        background: var(--card-bg);
+        color: var(--text-main);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, .42);
+        animation: receiptSlideIn .22s ease;
+    }
+
+    .gift-overage-head {
+        display: flex;
+        gap: .85rem;
+        align-items: flex-start;
+    }
+
+    .gift-overage-icon {
+        display: grid;
+        width: 46px;
+        height: 46px;
+        flex: 0 0 46px;
+        place-items: center;
+        border-radius: 14px;
+        background: rgba(245, 158, 11, .14);
+        color: #f59e0b;
+        font-size: 1.2rem;
+    }
+
+    .gift-overage-head h3 {
+        margin: 0;
+        font: 800 1.15rem/1.25 'Outfit', sans-serif;
+    }
+
+    .gift-overage-head p {
+        margin: .25rem 0 0;
+        color: var(--text-muted);
+        font-size: .8rem;
+        line-height: 1.45;
+    }
+
+    .gift-overage-summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .5rem;
+        margin: 1rem 0;
+    }
+
+    .gift-overage-summary div {
+        padding: .7rem;
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--text-main) 3%, var(--card-bg));
+    }
+
+    .gift-overage-summary span {
+        display: block;
+        color: var(--text-muted);
+        font-size: .65rem;
+        font-weight: 700;
+    }
+
+    .gift-overage-summary strong {
+        display: block;
+        margin-top: .2rem;
+        font-size: .88rem;
+        white-space: nowrap;
+    }
+
+    .gift-topup-label {
+        display: block;
+        margin-bottom: .45rem;
+        font-size: .74rem;
+        font-weight: 800;
+    }
+
+    .gift-topup-methods {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .45rem;
+    }
+
+    .gift-topup-method {
+        min-height: 46px;
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        background: var(--card-bg);
+        color: var(--text-main);
+        font: 750 .75rem/1.2 inherit;
+        cursor: pointer;
+    }
+
+    .gift-topup-method i {
+        display: block;
+        margin-bottom: .25rem;
+        color: var(--accent-cyan);
+    }
+
+    .gift-topup-method.active {
+        border-color: var(--accent-cyan);
+        background: rgba(2, 132, 199, .11);
+        box-shadow: 0 0 0 2px rgba(2, 132, 199, .12);
+    }
+
+    .gift-overage-actions {
+        display: grid;
+        grid-template-columns: 1fr 1.6fr;
+        gap: .55rem;
+        margin-top: 1rem;
+    }
+
+    .gift-overage-actions .btn {
+        min-height: 44px;
+    }
+
+    @media(max-width:520px) {
+        .gift-overage-box {
+            padding: 1rem;
+            border-radius: 18px;
+        }
+
+        .gift-overage-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .gift-overage-summary div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gift-overage-summary strong {
+            margin: 0;
+        }
+
+        .gift-overage-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+
     .receipt-modal-box {
         background: #FEFEFE;
         color: #1a1a1a;
@@ -1411,6 +1551,9 @@
             overflow-x: auto !important;
             -webkit-overflow-scrolling: touch !important;
             flex-wrap: nowrap !important;
+            padding-right: 1.75rem !important;
+            -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+            mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
         }
 
         .pos-catalog-toolbar {
@@ -1421,7 +1564,7 @@
 
         .products-grid {
             display: grid !important;
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            grid-template-columns: 1fr !important;
             gap: 0.5rem !important;
             width: 100% !important;
             max-width: 100% !important;
@@ -1686,7 +1829,7 @@
 
     .pos-terminal {
         display: grid;
-        grid-template-rows: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) auto;
         width: min(1540px, calc(100% - 2rem));
         height: calc(100dvh - var(--header-h) - 1.5rem);
         min-height: 0;
@@ -1948,19 +2091,163 @@
         font-size: .9rem;
     }
 
-    .cart-summary {
-        gap: .42rem;
-        padding: .7rem 1rem .8rem;
+    /* ===== TWO-STATE CART & CHECKOUT PANEL ===== */
+    .pos-panel-view {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .pos-panel-view[hidden] {
+        display: none !important;
+    }
+
+    /* Compact Cart Footer (~110px) */
+    .cart-footer-compact {
+        padding: 0.65rem 1rem 0.75rem;
+        background: #F9FAFB;
+        border-top: 1px solid var(--card-border, #E5E7EB);
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        flex-shrink: 0;
+    }
+
+    .cart-footer-summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.82rem;
+        color: var(--text-muted);
+    }
+
+    .cart-footer-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 0.15rem;
+        border-top: 1px dashed var(--card-border, #E5E7EB);
+    }
+
+    .btn-proceed-pay {
+        width: 100%;
+        min-height: 44px;
+        padding: 0.65rem 1rem;
+        border-radius: 12px !important;
+        font-weight: 800;
+        font-size: 0.98rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #0EA5E9, #0284C7) !important;
+        color: #fff !important;
+        border: none !important;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
+        cursor: pointer;
+        transition: transform 0.12s, box-shadow 0.12s;
+    }
+
+    .btn-proceed-pay:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(2, 132, 199, 0.35);
+    }
+
+    /* Checkout View Components */
+    .checkout-header {
+        min-height: 54px;
+        padding: 0.65rem 1rem;
         background: #fff;
+        border-bottom: 1px solid var(--card-border, #E5E7EB);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        flex-shrink: 0;
     }
 
-    .summary-row {
-        font-size: .8rem;
+    .btn-back-to-cart {
+        padding: 0.35rem 0.65rem !important;
+        font-size: 0.78rem !important;
+        font-weight: 750 !important;
+        border-radius: 9px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.35rem !important;
+        background: #F1F4F9 !important;
+        border: 1px solid #DDE4EC !important;
+        color: var(--text-main) !important;
+        cursor: pointer;
     }
 
-    .summary-total {
-        padding-top: .35rem;
-        font-size: 1.2rem;
+    .btn-back-to-cart:hover {
+        background: #E2E8F0 !important;
+    }
+
+    .checkout-header-title {
+        font-weight: 850;
+        font-size: 0.95rem;
+        color: var(--text-main);
+    }
+
+    .checkout-scroll-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0.75rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .checkout-scroll-body::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .checkout-scroll-body::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    .checkout-amount-card {
+        background: linear-gradient(135deg, rgba(2, 132, 199, 0.08), rgba(14, 165, 233, 0.03));
+        border: 1px solid rgba(2, 132, 199, 0.22);
+        border-radius: 13px;
+        padding: 0.65rem 0.9rem;
+        text-align: center;
+    }
+
+    .checkout-amount-label {
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-muted);
+    }
+
+    .checkout-amount-val {
+        font-size: 1.65rem;
+        font-weight: 900;
+        color: var(--accent-cyan, #0284C7);
+        line-height: 1.2;
+        margin: 0.15rem 0;
+    }
+
+    .checkout-amount-sub {
+        font-size: 0.74rem;
+        color: var(--text-muted);
+    }
+
+    .checkout-section-label {
+        font-size: 0.78rem;
+        font-weight: 750;
+        color: var(--text-muted);
+        margin-bottom: 0.3rem;
+        display: block;
     }
 
     .payment-grid {
@@ -1978,6 +2265,7 @@
         background: transparent;
         font-size: .74rem;
         flex-direction: row;
+        cursor: pointer;
     }
 
     .pay-method-btn i {
@@ -1989,10 +2277,241 @@
         color: #fff;
     }
 
-    .cart-summary .btn-primary {
+    .cash-calc-row {
+        display: flex;
+        gap: 0.65rem;
+        align-items: center;
+        background: #fff;
+        border: 1px solid var(--card-border, #E5E7EB);
+        border-radius: 12px;
+        padding: 0.55rem 0.75rem;
+    }
+
+    .quick-cash-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.3rem;
+        margin-top: 0.35rem;
+    }
+
+    .quick-cash-grid .btn {
+        padding: 0.35rem 0.4rem !important;
+        font-size: 0.76rem !important;
+        font-weight: 750 !important;
+        border-radius: 8px !important;
+    }
+
+    .checkout-footer-pinned {
+        flex-shrink: 0;
+        padding: 0.65rem 1rem 0.75rem;
+        border-top: 1px solid var(--card-border, #E5E7EB);
+        background: #F9FAFB;
+    }
+
+    .checkout-actions-row {
+        display: flex;
+        gap: 0.45rem;
+        align-items: stretch;
+        position: relative;
+    }
+
+    .btn-submit-pay {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
         border-radius: 14px !important;
         background: linear-gradient(135deg, #0EA5E9, #0284C7) !important;
-        box-shadow: 0 8px 18px rgba(2, 132, 199, .24);
+        color: #fff !important;
+        border: none !important;
+        box-shadow: 0 6px 18px rgba(2, 132, 199, .25);
+    }
+
+    .pos-more-dropdown-wrap {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .pos-more-btn {
+        width: 48px;
+        min-width: 48px;
+        height: 100%;
+        min-height: 48px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        border-radius: 14px !important;
+        border: 1px solid #DDE4EC;
+        background: #F1F4F9;
+        color: var(--text-muted, #64748B);
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .pos-more-btn:hover,
+    .pos-more-btn.active {
+        background: #E2E8F0;
+        border-color: #CBD5E1;
+        color: var(--text-main, #0F172A);
+    }
+
+    .pos-more-menu {
+        position: absolute;
+        right: 0;
+        bottom: calc(100% + 8px);
+        width: 270px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06);
+        padding: 0.45rem;
+        z-index: 1050;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        animation: posMoreMenuPop 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Cart header ⋮ menu opens DOWNWARD (button is at the top) */
+    #cartMoreWrap .pos-more-menu {
+        top: calc(100% + 8px);
+        bottom: auto;
+    }
+
+    .pos-more-menu[hidden] {
+        display: none !important;
+    }
+
+    @keyframes posMoreMenuPop {
+        from {
+            opacity: 0;
+            transform: translateY(6px) scale(0.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .pos-more-menu-header {
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted, #94A3B8);
+        padding: 0.35rem 0.65rem 0.2rem;
+    }
+
+    .pos-more-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.55rem 0.7rem;
+        border-radius: 11px;
+        border: none;
+        background: transparent;
+        color: var(--text-main, #0F172A);
+        text-align: left;
+        text-decoration: none;
+        cursor: pointer;
+        width: 100%;
+        transition: background 0.12s, color 0.12s;
+        box-sizing: border-box;
+    }
+
+    .pos-more-menu-item:hover {
+        background: #F1F5F9;
+        color: var(--accent-cyan, #0284C7);
+    }
+
+    .pos-more-menu-item i {
+        font-size: 1rem;
+        width: 22px;
+        text-align: center;
+        color: var(--accent-cyan, #0284C7);
+        flex-shrink: 0;
+    }
+
+    .pos-more-menu-item div {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.25;
+        min-width: 0;
+    }
+
+    .pos-more-menu-item strong {
+        font-size: 0.82rem;
+        font-weight: 750;
+    }
+
+    .pos-more-menu-item small {
+        font-size: 0.68rem;
+        color: var(--text-muted, #64748B);
+    }
+
+    /* Dark mode overrides */
+    html[data-theme="dark"] .cart-footer-compact,
+    html[data-theme="dark"] .checkout-header,
+    html[data-theme="dark"] .checkout-footer-pinned {
+        background: #121C2E !important;
+        border-color: #26344A !important;
+    }
+
+    html[data-theme="dark"] .btn-back-to-cart {
+        background: #1A2638 !important;
+        border-color: #26344A !important;
+        color: #F1F5F9 !important;
+    }
+
+    html[data-theme="dark"] .cash-calc-row {
+        background: #162235 !important;
+        border-color: #26344A !important;
+    }
+
+    html[data-theme="dark"] .checkout-amount-card {
+        background: linear-gradient(135deg, rgba(2, 132, 199, 0.16), rgba(15, 23, 42, 0.6)) !important;
+        border-color: #1E3A5F !important;
+    }
+
+    html[data-theme="dark"] .pos-more-btn {
+        background: #1A2638;
+        border-color: #26344A;
+        color: #94A3B8;
+    }
+
+    html[data-theme="dark"] .pos-more-btn:hover,
+    html[data-theme="dark"] .pos-more-btn.active {
+        background: #24354D;
+        border-color: #38BDF8;
+        color: #F1F5F9;
+    }
+
+    html[data-theme="dark"] .pos-more-menu {
+        background: #121C2E;
+        border-color: #26344A;
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
+    }
+
+    html[data-theme="dark"] .pos-more-menu-item {
+        color: #F1F5F9;
+    }
+
+    html[data-theme="dark"] .pos-more-menu-item:hover {
+        background: #1A2638;
+        color: #38BDF8;
+    }
+
+    html[data-theme="dark"] .pos-more-menu-item small {
+        color: #94A3B8;
     }
 
     @media (max-width:1120px) {
@@ -2106,13 +2625,18 @@
         }
 
         .cart-panel {
-            display: grid;
-            grid-template-rows: 58px minmax(210px, 1fr) auto;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
             overflow: hidden;
+            position: relative;
         }
 
         .cart-items-container {
+            flex: 1 1 auto;
             min-height: 0;
+            overflow-y: auto;
             padding: .2rem 1rem;
         }
 
@@ -2325,7 +2849,9 @@
         font-size: 0.9rem;
     }
 
-    .cart-item::before { display: none !important; }
+    .cart-item::before {
+        display: none !important;
+    }
 
     html[data-theme="dark"] .cart-item-photo {
         border-color: #334155;
@@ -2503,10 +3029,30 @@
         object-fit: contain;
     }
 
-    .product-details-image i { color: #94A3B8; font-size: 2rem; }
-    .product-details-title { margin: 0; font-size: 1.1rem; line-height: 1.28; }
-    .product-details-meta { margin-top: .3rem; color: var(--text-muted); font-size: .8rem; }
-    .product-details-close { border: 0; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; }
+    .product-details-image i {
+        color: #94A3B8;
+        font-size: 2rem;
+    }
+
+    .product-details-title {
+        margin: 0;
+        font-size: 1.1rem;
+        line-height: 1.28;
+    }
+
+    .product-details-meta {
+        margin-top: .3rem;
+        color: var(--text-muted);
+        font-size: .8rem;
+    }
+
+    .product-details-close {
+        border: 0;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 1.1rem;
+    }
 
     .product-details-stats {
         display: grid;
@@ -2522,22 +3068,77 @@
         background: rgba(148, 163, 184, .06);
     }
 
-    .product-details-stat span { display: block; color: var(--text-muted); font-size: .7rem; }
-    .product-details-stat strong { display: block; margin-top: .18rem; font-size: .9rem; }
-    .product-details-movements h4 { margin: 0 0 .5rem; font-size: .88rem; }
-    .product-details-movements ul { margin: 0; padding: 0; list-style: none; }
-    .product-details-movements li { display: flex; justify-content: space-between; gap: .5rem; padding: .5rem 0; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: .77rem; }
-    .product-details-movements li strong { color: var(--text-main); font-weight: 700; }
-    .product-details-actions { display: flex; justify-content: flex-end; gap: .55rem; margin-top: 1.15rem; }
+    .product-details-stat span {
+        display: block;
+        color: var(--text-muted);
+        font-size: .7rem;
+    }
+
+    .product-details-stat strong {
+        display: block;
+        margin-top: .18rem;
+        font-size: .9rem;
+    }
+
+    .product-details-movements h4 {
+        margin: 0 0 .5rem;
+        font-size: .88rem;
+    }
+
+    .product-details-movements ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .product-details-movements li {
+        display: flex;
+        justify-content: space-between;
+        gap: .5rem;
+        padding: .5rem 0;
+        border-top: 1px solid var(--card-border);
+        color: var(--text-muted);
+        font-size: .77rem;
+    }
+
+    .product-details-movements li strong {
+        color: var(--text-main);
+        font-weight: 700;
+    }
+
+    .product-details-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: .55rem;
+        margin-top: 1.15rem;
+    }
 
     html[data-theme="dark"] .product-details-box,
-    html[data-theme="dark"] .product-details-image { background: #121C2E; border-color: #334155; }
-    html[data-theme="dark"] .product-details-stat { border-color: #334155; background: #172235; }
+    html[data-theme="dark"] .product-details-image {
+        background: #121C2E;
+        border-color: #334155;
+    }
+
+    html[data-theme="dark"] .product-details-stat {
+        border-color: #334155;
+        background: #172235;
+    }
 
     @media (max-width: 600px) {
-        .product-details-top { grid-template-columns: 70px minmax(0, 1fr) auto; gap: .7rem; }
-        .product-details-image { width: 70px; height: 70px; border-radius: 12px; }
-        .product-details-stats { grid-template-columns: 1fr; }
+        .product-details-top {
+            grid-template-columns: 70px minmax(0, 1fr) auto;
+            gap: .7rem;
+        }
+
+        .product-details-image {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+        }
+
+        .product-details-stats {
+            grid-template-columns: 1fr;
+        }
     }
 
     /* ===== SHIFT AND RETURN WIDGETS ===== */
@@ -2555,26 +3156,31 @@
         border: 1px solid transparent;
         text-decoration: none;
     }
+
     .pos-shift-btn.open {
         background: rgba(34, 197, 94, 0.12);
         color: #15803d;
         border-color: rgba(34, 197, 94, 0.35);
     }
+
     .pos-shift-btn.open:hover {
         background: rgba(34, 197, 94, 0.22);
         border-color: #22c55e;
         transform: translateY(-1px);
     }
+
     .pos-shift-btn.closed {
         background: rgba(239, 68, 68, 0.1);
         color: #b91c1c;
         border-color: rgba(239, 68, 68, 0.3);
     }
+
     .pos-shift-btn.closed:hover {
         background: rgba(239, 68, 68, 0.18);
         border-color: #ef4444;
         transform: translateY(-1px);
     }
+
     .pos-shift-indicator-dot {
         width: 8px;
         height: 8px;
@@ -2583,23 +3189,167 @@
         box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
         animation: pulseShiftDot 2s infinite ease-in-out;
     }
+
     @keyframes pulseShiftDot {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.3); opacity: 0.7; }
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.3);
+            opacity: 0.7;
+        }
     }
+
     .pos-shift-sub {
         font-size: 0.72rem;
         opacity: 0.85;
         font-weight: 600;
     }
+
     .pos-shortcut.refund-shortcut {
         background: rgba(239, 68, 68, 0.08);
         color: #dc2626;
         border-color: rgba(239, 68, 68, 0.25);
     }
+
     .pos-shortcut.refund-shortcut:hover {
         background: rgba(239, 68, 68, 0.16);
         border-color: #ef4444;
+    }
+
+    .gift-pay-box {
+        margin: .35rem 0;
+        padding: .55rem .75rem;
+        border: 1px solid #a5793d;
+        border-radius: 11px;
+        background: linear-gradient(135deg, #0d1c2c, #172b40);
+        color: #f3e8d6
+    }
+
+    .gift-pay-box[hidden] {
+        display: none
+    }
+
+    .gift-pay-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: .4rem;
+        margin-bottom: .35rem;
+        color: #e9bf77;
+        font-size: .75rem;
+        font-weight: 850
+    }
+
+    .gift-pay-head a {
+        color: #e5c997;
+        font-size: .67rem;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 2px
+    }
+
+    .gift-pay-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: .35rem
+    }
+
+    .gift-pay-row input {
+        min-width: 0;
+        min-height: 34px;
+        padding: .38rem .55rem;
+        border: 1px solid #54708e;
+        border-radius: 8px;
+        background: #0a1726;
+        color: #fff;
+        font-size: .75rem
+    }
+
+    .gift-pay-row input:focus {
+        outline: 2px solid #e5bd77;
+        outline-offset: 1px
+    }
+
+    .gift-pay-row button {
+        padding: 0 .75rem;
+        border: 1px solid #d6a75d;
+        border-radius: 8px;
+        background: #d5aa69;
+        color: #132236;
+        font-size: .72rem;
+        font-weight: 850;
+        cursor: pointer
+    }
+
+    .gift-pay-status {
+        margin-top: .35rem;
+        color: #c6d4e2;
+        font-size: .68rem;
+        line-height: 1.35
+    }
+
+    .gift-pay-status strong {
+        color: #f4cd8e
+    }
+
+    @media(max-width:540px) {
+        .gift-pay-row {
+            grid-template-columns: 1fr
+        }
+
+        .gift-pay-row button {
+            min-height: 38px
+        }
+    }
+
+    .pos-desktop-hints {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        padding: .48rem .85rem;
+        border-top: 1px solid var(--card-border);
+        color: var(--text-muted);
+        background: color-mix(in srgb, var(--accent-cyan) 3%, var(--card-bg));
+        font-size: .68rem;
+        font-weight: 650;
+    }
+
+    .pos-desktop-hints span {
+        display: inline-flex;
+        align-items: center;
+        gap: .34rem;
+        white-space: nowrap;
+    }
+
+    .pos-desktop-hints kbd {
+        min-width: 22px;
+        padding: .12rem .32rem;
+        border: 1px solid var(--card-border);
+        border-bottom-width: 2px;
+        border-radius: 5px;
+        background: var(--card-bg);
+        color: var(--text-main);
+        font: 800 .62rem 'Inter', sans-serif;
+        text-align: center;
+    }
+
+    .pos-product-details-hint {
+        color: var(--text-muted);
+        font-size: .7rem;
+    }
+
+    @media (max-width:900px) {
+
+        .pos-desktop-hints,
+        .pos-product-details-hint {
+            display: none;
+        }
     }
 
     /* Shift modal boxes */
@@ -2610,12 +3360,13 @@
         max-width: 580px;
         border-radius: 16px;
         border: 1px solid var(--card-border, #e2e8f0);
-        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
         max-height: calc(100dvh - 3rem);
         overflow-y: auto;
         padding: 1.5rem;
         box-sizing: border-box;
     }
+
     .shift-modal-header {
         display: flex;
         justify-content: space-between;
@@ -2624,6 +3375,7 @@
         border-bottom: 1px solid var(--card-border, #e2e8f0);
         margin-bottom: 1.1rem;
     }
+
     .shift-modal-title {
         margin: 0;
         font-size: 1.15rem;
@@ -2633,6 +3385,7 @@
         align-items: center;
         gap: 0.5rem;
     }
+
     .shift-modal-close {
         background: transparent;
         border: none;
@@ -2643,6 +3396,7 @@
         border-radius: 8px;
         transition: all 0.15s;
     }
+
     .shift-modal-close:hover {
         background: rgba(148, 163, 184, 0.15);
         color: var(--text-main, #0f172a);
@@ -2654,12 +3408,14 @@
         gap: 0.65rem;
         margin-bottom: 1.1rem;
     }
+
     .shift-kpi-card {
         padding: 0.75rem 0.85rem;
         border-radius: 12px;
         background: rgba(148, 163, 184, 0.06);
         border: 1px solid var(--card-border, #e2e8f0);
     }
+
     .shift-kpi-label {
         font-size: 0.72rem;
         color: var(--text-muted, #64748b);
@@ -2669,23 +3425,28 @@
         gap: 0.35rem;
         margin-bottom: 0.25rem;
     }
+
     .shift-kpi-val {
         font-size: 1.05rem;
         font-weight: 800;
         color: var(--text-main, #0f172a);
     }
+
     .shift-kpi-card.highlight {
         background: rgba(2, 132, 199, 0.08);
         border-color: rgba(2, 132, 199, 0.35);
     }
+
     .shift-kpi-card.highlight .shift-kpi-val {
         color: var(--accent-cyan, #0284c7);
     }
+
     .shift-kpi-card.cash-expected {
         background: rgba(34, 197, 94, 0.08);
         border-color: rgba(34, 197, 94, 0.35);
         grid-column: span 3;
     }
+
     .shift-kpi-card.cash-expected .shift-kpi-val {
         font-size: 1.25rem;
         color: #16a34a;
@@ -2701,16 +3462,19 @@
         font-weight: 800;
         font-size: 0.95rem;
     }
+
     .shift-diff-box.even {
         background: rgba(34, 197, 94, 0.12);
         color: #15803d;
         border: 1px solid rgba(34, 197, 94, 0.3);
     }
+
     .shift-diff-box.over {
         background: rgba(245, 158, 11, 0.12);
         color: #b45309;
         border: 1px solid rgba(245, 158, 11, 0.3);
     }
+
     .shift-diff-box.under {
         background: rgba(239, 68, 68, 0.12);
         color: #b91c1c;
@@ -2723,6 +3487,7 @@
         gap: 0.4rem;
         margin: 0.5rem 0 1rem;
     }
+
     .cash-preset-btn {
         padding: 0.35rem 0.75rem;
         border-radius: 8px;
@@ -2734,6 +3499,7 @@
         cursor: pointer;
         transition: all 0.15s;
     }
+
     .cash-preset-btn:hover {
         background: rgba(2, 132, 199, 0.08);
         border-color: var(--accent-cyan, #0284c7);
@@ -2745,16 +3511,20 @@
         border-color: #334155;
         color: #F8FAFC;
     }
+
     html[data-theme="dark"] .shift-modal-title {
         color: #F8FAFC;
     }
+
     html[data-theme="dark"] .shift-kpi-card {
         background: #1E293B;
         border-color: #334155;
     }
+
     html[data-theme="dark"] .shift-kpi-val {
         color: #F8FAFC;
     }
+
     html[data-theme="dark"] .cash-preset-btn {
         background: #1E293B;
         border-color: #334155;
@@ -2783,7 +3553,8 @@
             <span><i class="fa-regular fa-clock"></i> <time id="posClock">--:--</time></span>
 
             <!-- RETURN SHORTCUT -->
-            <button type="button" class="pos-shortcut refund-shortcut" onclick="openPosRefundModal()" title="Оформить возврат чека">
+            <button type="button" class="pos-shortcut refund-shortcut" onclick="openPosRefundModal()"
+                title="Оформить возврат чека">
                 <i class="fa-solid fa-rotate-left"></i> Возврат
             </button>
 
@@ -2834,7 +3605,8 @@
 
             <!-- Catalog Toolbar: Item count -->
             <div class="pos-catalog-toolbar">
-                <span id="catalogItemsCount">{{ products|length }} товаров</span>
+                <span id="catalogItemsCount">{{ products|length }} товаров</span><span
+                    class="pos-product-details-hint">Нажмите товар, чтобы посмотреть детали</span>
             </div>
 
             <!-- Column headers (desktop only) -->
@@ -2891,119 +3663,252 @@
             </div>
         </div>
 
-        <!-- RIGHT PANEL: CART & CHECKOUT -->
+        <!-- RIGHT PANEL: CART & CHECKOUT (TWO-STATE VIEW) -->
         <div class="cart-panel pos-panel-hidden" id="posCartPanel">
-            <div class="cart-header">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="fa-solid fa-cart-shopping" style="color: var(--accent-cyan); font-size: 1.05rem;"></i>
-                    <span style="font-weight: 800; font-size: 1rem; color: var(--text-main);">Корзина</span>
-                    <span class="badge badge-cyan" id="cartHeaderCountBadge" style="font-size: 0.72rem;">0 поз</span>
-                </div>
-                <button type="button" class="btn btn-danger cart-clear-btn" id="btnClearCartHeader"
-                    onclick="clearCart()">
-                    <i class="fa-solid fa-trash-can"></i> <span>Очистить</span> <span class="hk">Esc</span>
-                </button>
-            </div>
 
-            <div class="cart-items-container" id="cartItemsList">
-                <div class="empty-cart-state" id="emptyCartMessage">
-                    <div class="empty-cart-icon"><i class="fa-solid fa-basket-shopping"></i></div>
-                    <p>Корзина пока пуста</p>
-                    <span>Найдите товар или отсканируйте штрихкод</span>
-                    <button type="button" class="btn btn-secondary" onclick="switchPosTab('catalog')">
-                        <i class="fa-solid fa-boxes-stacked"></i> Перейти в каталог
+            <!-- STATE 1: CART VIEW -->
+            <div class="pos-panel-view" id="posCartView">
+                <div class="cart-header">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-cart-shopping" style="color: var(--accent-cyan); font-size: 1.05rem;"></i>
+                        <span style="font-weight: 800; font-size: 1rem; color: var(--text-main);">Корзина</span>
+                        <span class="badge badge-cyan" id="cartHeaderCountBadge" style="font-size: 0.72rem;">0
+                            поз</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.4rem; position: relative;">
+                        <!-- ⋮ More actions always accessible from cart view -->
+                        <div class="pos-more-dropdown-wrap" id="cartMoreWrap">
+                            <button type="button" class="pos-more-btn" id="btnCartMoreActions"
+                                onclick="toggleCartMoreMenu(event)"
+                                title="Дополнительные действия"
+                                aria-haspopup="true" aria-expanded="false" aria-label="Дополнительные действия">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <div class="pos-more-menu" id="cartMoreMenu" hidden role="menu">
+                                <div class="pos-more-menu-header">Дополнительно</div>
+                                <button type="button" class="pos-more-menu-item" role="menuitem" onclick="openCompanyInvoice(); closeCartMoreMenu();">
+                                    <i class="fa-solid fa-file-invoice"></i>
+                                    <div>
+                                        <strong>Счёт на оплату компании</strong>
+                                        <small>Сформировать счёт юрлицу</small>
+                                    </div>
+                                </button>
+                                <a class="pos-more-menu-item" href="{% url 'gift_cards' %}" role="menuitem" onclick="closeCartMoreMenu();">
+                                    <i class="fa-solid fa-gift"></i>
+                                    <div>
+                                        <strong>Продать сертификат</strong>
+                                        <small>Новая подарочная карта ↗</small>
+                                    </div>
+                                </a>
+                                <button type="button" class="pos-more-menu-item" role="menuitem" onclick="openPosRefundModal(); closeCartMoreMenu();">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                    <div>
+                                        <strong>Оформить возврат</strong>
+                                        <small>Возврат по номеру чека</small>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-danger cart-clear-btn" id="btnClearCartHeader"
+                            onclick="clearCart()">
+                            <i class="fa-solid fa-trash-can"></i> <span>Очистить</span> <span class="hk">Esc</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="cart-items-container" id="cartItemsList">
+                    <div class="empty-cart-state" id="emptyCartMessage">
+                        <div class="empty-cart-icon"><i class="fa-solid fa-basket-shopping"></i></div>
+                        <p>Корзина пока пуста</p>
+                        <span>Найдите товар или отсканируйте штрихкод</span>
+                        <button type="button" class="btn btn-secondary" onclick="switchPosTab('catalog')">
+                            <i class="fa-solid fa-boxes-stacked"></i> Перейти в каталог
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Compact Cart Footer (~110px) -->
+                <div class="cart-footer-compact">
+                    <div class="cart-footer-summary-row">
+                        <span id="cartItemsCountText"
+                            style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700;">0 позиций</span>
+                        <div style="display: flex; align-items: center; gap: 0.35rem;">
+                            <span style="font-size: 0.78rem; color: var(--text-muted);">Скидка:</span>
+                            <input type="number" id="globalDiscountInput" class="form-control"
+                                style="width: 75px; padding: 0.15rem 0.4rem; text-align: right; height: 26px; font-size: 0.82rem;"
+                                value="0" min="0" oninput="updateCartTotals()">
+                            <span style="font-size: 0.78rem; color: var(--text-muted);">₸</span>
+                        </div>
+                    </div>
+                    <div class="cart-footer-total-row">
+                        <span
+                            style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Итого:</span>
+                        <span id="summaryFinalTotal"
+                            style="font-size: 1.45rem; font-weight: 900; color: var(--accent-cyan);">0 ₸</span>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-proceed-pay" id="btnGoToCheckout"
+                        onclick="openCheckoutView()">
+                        <span>Перейти к оплате</span> <i class="fa-solid fa-arrow-right"></i> <span class="hk">F9</span>
                     </button>
                 </div>
             </div>
 
-            <div class="cart-summary">
-                <div class="summary-row">
-                    <span>Сумма без скидки:</span>
-                    <span id="summarySubtotal">0 ₸</span>
-                </div>
-                <div class="summary-row">
-                    <span>Скидка на чек (₸):</span>
-                    <input type="number" id="globalDiscountInput" class="form-control"
-                        style="width: 100px; padding: 0.25rem 0.5rem; text-align: right; height: 30px;" value="0"
-                        min="0" oninput="updateCartTotals()">
-                </div>
-                <div class="summary-total">
-                    <span style="font-size: 1rem; color: var(--text-muted);">ИТОГО К ОПЛАТЕ:</span>
-                    <span style="color: var(--accent-cyan);" id="summaryFinalTotal">0 ₸</span>
+            <!-- STATE 2: CHECKOUT VIEW -->
+            <div class="pos-panel-view" id="posCheckoutView" hidden>
+                <div class="checkout-header">
+                    <button type="button" class="btn btn-secondary btn-back-to-cart" onclick="closeCheckoutView()"
+                        title="Вернуться к списку товаров (Esc)">
+                        <i class="fa-solid fa-arrow-left"></i> <span>Назад к товарам</span> <span class="hk">Esc</span>
+                    </button>
+                    <span class="checkout-header-title">Оплата заказа</span>
                 </div>
 
-                <!-- Payment Methods -->
-                <div style="margin-top: 0.25rem;">
-                    <label
-                        style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; display: block;">Способ
-                        оплаты:</label>
-                    <div class="payment-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
-                        <button class="pay-method-btn active" onclick="setPaymentMethod('CASH', this)"><i
-                                class="fa-solid fa-money-bill-wave"></i> Наличные</button>
-                        <button class="pay-method-btn" onclick="setPaymentMethod('CARD', this)"><i
-                                class="fa-solid fa-credit-card"></i> Карта</button>
-                        <button class="pay-method-btn" onclick="setPaymentMethod('TRANSFER', this)"><i
-                                class="fa-solid fa-qrcode"></i> Kaspi QR</button>
-                        <button class="pay-method-btn" onclick="setPaymentMethod('MIXED', this)">Смешанная</button>
+                <div class="checkout-scroll-body">
+                    <!-- Amount card -->
+                    <div class="checkout-amount-card">
+                        <div class="checkout-amount-label">К ОПЛАТЕ</div>
+                        <div class="checkout-amount-val" id="checkoutAmountDisplay">0 ₸</div>
+                        <div class="checkout-amount-sub">
+                            Без скидки: <span id="summarySubtotal">0 ₸</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment methods -->
+                    <div class="checkout-methods-wrap">
+                        <label class="checkout-section-label">Способ оплаты:</label>
+                        <div class="payment-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+                            <button class="pay-method-btn active" data-method="CASH"
+                                onclick="setPaymentMethod('CASH', this)"><i class="fa-solid fa-money-bill-wave"></i>
+                                Наличные</button>
+                            <button class="pay-method-btn" data-method="CARD"
+                                onclick="setPaymentMethod('CARD', this)"><i class="fa-solid fa-credit-card"></i>
+                                Карта</button>
+                            <button class="pay-method-btn" data-method="TRANSFER"
+                                onclick="setPaymentMethod('TRANSFER', this)"><i class="fa-solid fa-qrcode"></i> Kaspi
+                                QR</button>
+                            <button class="pay-method-btn" data-method="MIXED"
+                                onclick="setPaymentMethod('MIXED', this)">Смешанная</button>
+                            <button class="pay-method-btn" data-method="GIFT" style="grid-column: span 2;"
+                                onclick="setPaymentMethod('GIFT', this)"><i class="fa-solid fa-gift"></i>
+                                Сертификат</button>
+                        </div>
+                    </div>
+
+                    <!-- Cash details -->
+                    <div class="cash-calc-row" id="cashDetailsRow">
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem;">Внесено
+                                (₸):</label>
+                            <input type="number" id="paidAmountInput" class="form-control"
+                                style="font-weight: 800; font-size: 1.15rem; color: var(--accent-green); height: 40px;"
+                                placeholder="0" oninput="calculateChange()">
+                        </div>
+                        <div style="flex: 1; text-align: right;">
+                            <label
+                                style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem;">Сдача
+                                (₸):</label>
+                            <div id="changeAmountDisplay"
+                                style="font-weight: 900; font-size: 1.3rem; color: var(--accent-orange); padding-top: 0.25rem;">
+                                0 ₸
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick cash buttons -->
+                    <div class="quick-cash-grid" id="quickCashContainer">
+                        <button type="button" class="btn btn-secondary" onclick="setExactCash()">Точно</button>
+                        <button type="button" class="btn btn-secondary" onclick="addCashPreset(1000)">1 000</button>
+                        <button type="button" class="btn btn-secondary" onclick="addCashPreset(2000)">2 000</button>
+                        <button type="button" class="btn btn-secondary" onclick="addCashPreset(5000)">5 000</button>
+                        <button type="button" class="btn btn-secondary" onclick="addCashPreset(10000)">10 000</button>
+                        <button type="button" class="btn btn-secondary" onclick="addCashPreset(20000)">20 000</button>
+                    </div>
+
+                    <!-- Gift card details -->
+                    <div class="gift-pay-box" id="giftPayBox" hidden>
+                        <div class="gift-pay-head"><span><i class="fa-solid fa-gift"></i> Оплата сертификатом</span><a
+                                href="{% url 'gift_cards' %}">Продать новую карту ↗</a></div>
+                        <div class="gift-pay-row"><input id="posGiftCode" type="text" autocomplete="off"
+                                spellcheck="false" placeholder="Сканируйте DKR-…"
+                                aria-label="Штрихкод сертификата"><button type="button"
+                                onclick="lookupPosGiftCard()">Проверить</button></div>
+                        <div class="gift-pay-status" id="giftPayStatus" role="status">Проверка карты не списывает
+                            деньги.</div>
+                    </div>
+
+                    <!-- Mixed payments -->
+                    <div id="mixedPayments" hidden>
+                        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem">
+                            <label>Сертификат<input id="mixedGIFT" type="number" class="form-control" value="0"
+                                    readonly></label>
+                            <label>Наличные<input id="mixedCASH" type="number" min="0" step="0.01" class="form-control"
+                                    value="0" oninput="updateMixedBalance()"></label>
+                            <label>Карта<input id="mixedCARD" type="number" min="0" step="0.01" class="form-control"
+                                    value="0" oninput="updateMixedBalance()"></label>
+                            <label>Kaspi QR<input id="mixedTRANSFER" type="number" min="0" step="0.01"
+                                    class="form-control" value="0" oninput="updateMixedBalance()"></label>
+                        </div>
+                        <small id="mixedBalance" role="status" aria-live="polite"></small>
+                        <small style="display:block">Укажите суммы в счёт оплаты, без сдачи. Минимум два
+                            способа.</small>
                     </div>
                 </div>
 
-                <!-- Paid & Change Section -->
-                <div id="mixedPayments" hidden>
-                    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem">
-                        <label>Наличные<input id="mixedCASH" type="number" min="0" step="0.01" class="form-control"
-                                value="0" oninput="updateMixedBalance()"></label>
-                        <label>Карта<input id="mixedCARD" type="number" min="0" step="0.01" class="form-control"
-                                value="0" oninput="updateMixedBalance()"></label>
-                        <label>Kaspi QR<input id="mixedTRANSFER" type="number" min="0" step="0.01" class="form-control"
-                                value="0" oninput="updateMixedBalance()"></label>
+                <!-- Pinned Checkout Footer -->
+                <div class="checkout-footer-pinned">
+                    <div class="checkout-actions-row">
+                        <button class="btn btn-primary btn-submit-pay" id="btnSubmitPayment" onclick="submitCheckout()">
+                            <i class="fa-solid fa-circle-check"></i> <span>ПРОВЕСТИ ОПЛАТУ</span> <span
+                                class="hk">F9</span>
+                        </button>
+                        <div class="pos-more-dropdown-wrap">
+                            <button type="button" class="pos-more-btn" id="btnPosMoreActions"
+                                onclick="togglePosMoreMenu(event)"
+                                title="Дополнительные действия (Счёт компании, продажа сертификата, возврат)"
+                                aria-haspopup="true" aria-expanded="false" aria-label="Дополнительные действия">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <div class="pos-more-menu" id="posMoreMenu" hidden role="menu">
+                                <div class="pos-more-menu-header">Дополнительно</div>
+                                <button type="button" class="pos-more-menu-item" role="menuitem"
+                                    onclick="openCompanyInvoice(); closePosMoreMenu();">
+                                    <i class="fa-solid fa-file-invoice"></i>
+                                    <div>
+                                        <strong>Счёт на оплату компании</strong>
+                                        <small>Сформировать счёт юрлицу</small>
+                                    </div>
+                                </button>
+                                <a class="pos-more-menu-item" href="{% url 'gift_cards' %}" role="menuitem"
+                                    onclick="closePosMoreMenu();">
+                                    <i class="fa-solid fa-gift"></i>
+                                    <div>
+                                        <strong>Продать сертификат</strong>
+                                        <small>Новая подарочная карта ↗</small>
+                                    </div>
+                                </a>
+                                <button type="button" class="pos-more-menu-item" role="menuitem"
+                                    onclick="openPosRefundModal(); closePosMoreMenu();">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                    <div>
+                                        <strong>Оформить возврат</strong>
+                                        <small>Возврат по номеру чека</small>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <small id="mixedBalance" role="status" aria-live="polite"></small>
-                    <small style="display:block">Укажите суммы в счёт оплаты, без сдачи. Минимум два способа.</small>
                 </div>
-                <div style="display: flex; gap: 0.5rem; align-items: center;" id="cashDetailsRow">
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.75rem; color: var(--text-muted);">Внесено (₸):</label>
-                        <input type="number" id="paidAmountInput" class="form-control"
-                            style="font-weight: 800; font-size: 1.1rem; color: var(--accent-green);" placeholder="0"
-                            oninput="calculateChange()">
-                    </div>
-                    <div style="flex: 1; text-align: right;">
-                        <label style="font-size: 0.75rem; color: var(--text-muted);">Сдача (₸):</label>
-                        <div id="changeAmountDisplay"
-                            style="font-weight: 800; font-size: 1.2rem; color: var(--accent-orange); padding-top: 0.2rem;">
-                            0
-                            ₸</div>
-                    </div>
-                </div>
-
-                <!-- Quick Cash Buttons -->
-                <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;" id="quickCashContainer">
-                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
-                        onclick="setExactCash()">Точно</button>
-                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
-                        onclick="addCashPreset(1000)">1 000</button>
-                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
-                        onclick="addCashPreset(2000)">2 000</button>
-                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
-                        onclick="addCashPreset(5000)">5 000</button>
-                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
-                        onclick="addCashPreset(10000)">10 000</button>
-                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
-                        onclick="addCashPreset(20000)">20 000</button>
-                </div>
-
-                <!-- Checkout Button -->
-                <button type="button" class="btn btn-secondary" onclick="openCompanyInvoice()">Счёт на оплату
-                    компании</button>
-                <button class="btn btn-primary"
-                    style="padding: 0.9rem; font-size: 1.1rem; width: 100%; margin-top: 0.5rem; font-weight: 800; letter-spacing: 0.02em; min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 0.5rem;"
-                    onclick="submitCheckout()">
-                    <i class="fa-solid fa-circle-check"></i> <span>ПРОВЕСТИ ОПЛАТУ</span> <span class="hk">F9</span>
-                </button>
             </div>
+
         </div>
     </div>
+    <footer class="pos-desktop-hints" aria-label="Горячие клавиши кассы">
+        <span><kbd>F2</kbd> Поиск</span>
+        <span><i class="fa-solid fa-barcode"></i> Сканер: просто отсканируйте штрихкод</span>
+        <span><kbd>F9</kbd> Оплата</span>
+        <span><kbd>Esc</kbd> Очистить корзину</span>
+    </footer>
 </div>
 
 <!-- FLOATING QUICK CART BAR FOR MOBILE -->
@@ -3024,8 +3929,41 @@
     </button>
 </div>
 
+<!-- GIFT CARD TOP-UP CONFIRMATION -->
+<div class="modal-overlay" id="giftOverageModal" aria-hidden="true"
+    onclick="if(event.target===this)closeGiftOverageModal()">
+    <section class="gift-overage-box" role="dialog" aria-modal="true" aria-labelledby="giftOverageTitle">
+        <div class="gift-overage-head">
+            <div class="gift-overage-icon"><i class="fa-solid fa-gift"></i></div>
+            <div>
+                <h3 id="giftOverageTitle">Нужна доплата</h3>
+                <p>Сумма покупки больше остатка сертификата. Проверьте цифры и выберите, как клиент оплатит разницу.</p>
+            </div>
+        </div>
+        <div class="gift-overage-summary">
+            <div><span>Покупка</span><strong id="giftOverageTotal">0 ₸</strong></div>
+            <div><span>Сертификат</span><strong id="giftOverageBalance">0 ₸</strong></div>
+            <div><span>Доплатить</span><strong id="giftOverageDue">0 ₸</strong></div>
+        </div>
+        <span class="gift-topup-label">Способ доплаты</span>
+        <div class="gift-topup-methods" role="radiogroup" aria-label="Способ доплаты">
+            <button class="gift-topup-method active" type="button" data-topup="CASH"
+                onclick="selectGiftTopup('CASH',this)"><i class="fa-solid fa-money-bill-wave"></i>Наличные</button>
+            <button class="gift-topup-method" type="button" data-topup="CARD" onclick="selectGiftTopup('CARD',this)"><i
+                    class="fa-solid fa-credit-card"></i>Карта</button>
+            <button class="gift-topup-method" type="button" data-topup="TRANSFER"
+                onclick="selectGiftTopup('TRANSFER',this)"><i class="fa-solid fa-qrcode"></i>Kaspi QR</button>
+        </div>
+        <div class="gift-overage-actions">
+            <button class="btn btn-secondary" type="button" onclick="closeGiftOverageModal()">Отмена</button>
+            <button class="btn btn-primary" type="button" onclick="confirmGiftTopup()">Продолжить с доплатой</button>
+        </div>
+    </section>
+</div>
+
 <!-- PRODUCT QUICK VIEW -->
-<div class="modal-overlay" id="productDetailsModal" aria-hidden="true" onclick="if(event.target === this) closeProductDetails()">
+<div class="modal-overlay" id="productDetailsModal" aria-hidden="true"
+    onclick="if(event.target === this) closeProductDetails()">
     <section class="product-details-box" role="dialog" aria-modal="true" aria-labelledby="productDetailsTitle">
         <div class="product-details-top">
             <div class="product-details-image" id="productDetailsImage"><i class="fa-solid fa-box"></i></div>
@@ -3044,11 +3982,14 @@
         </div>
         <div class="product-details-movements">
             <h4>Последние движения</h4>
-            <ul id="productDetailsMovements"><li>Загрузка истории…</li></ul>
+            <ul id="productDetailsMovements">
+                <li>Загрузка истории…</li>
+            </ul>
         </div>
         <div class="product-details-actions">
             <button type="button" class="btn btn-secondary" onclick="closeProductDetails()">Закрыть</button>
-            <button type="button" class="btn btn-primary" id="productDetailsAddBtn"><i class="fa-solid fa-plus"></i> В корзину</button>
+            <button type="button" class="btn btn-primary" id="productDetailsAddBtn"><i class="fa-solid fa-plus"></i> В
+                корзину</button>
         </div>
     </section>
 </div>
@@ -3147,17 +4088,21 @@
 <div class="modal-overlay" id="shiftOpenModal" onclick="if(event.target===this)closeShiftOpenModal()">
     <div class="shift-modal-box">
         <div class="shift-modal-header">
-            <h3 class="shift-modal-title"><i class="fa-solid fa-cash-register" style="color:var(--accent-cyan)"></i> Открытие кассовой смены</h3>
-            <button type="button" class="shift-modal-close" onclick="closeShiftOpenModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="shift-modal-title"><i class="fa-solid fa-cash-register" style="color:var(--accent-cyan)"></i>
+                Открытие кассовой смены</h3>
+            <button type="button" class="shift-modal-close" onclick="closeShiftOpenModal()"><i
+                    class="fa-solid fa-xmark"></i></button>
         </div>
         <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;">
-            Кассир: <strong style="color:var(--text-main)">{{ user.get_full_name|default:user.username }}</strong> · Текущее время: <span id="shiftOpenCurrentTime">--:--</span>
+            Кассир: <strong style="color:var(--text-main)">{{ user.get_full_name|default:user.username }}</strong> ·
+            Текущее время: <span id="shiftOpenCurrentTime">--:--</span>
         </div>
         <form id="shiftOpenForm" onsubmit="event.preventDefault();submitShiftOpen();">
             <label style="display:block;font-size:0.85rem;font-weight:700;margin-bottom:0.35rem;">
                 Сумма размена в кассе при открытии (₸):
             </label>
-            <input type="number" id="shiftOpeningCash" class="form-control" min="0" step="100" value="10000" style="font-size:1.15rem;font-weight:800;padding:0.6rem 0.8rem;" required>
+            <input type="number" id="shiftOpeningCash" class="form-control" min="0" step="100" value="10000"
+                style="font-size:1.15rem;font-weight:800;padding:0.6rem 0.8rem;" required>
             <div class="cash-presets">
                 <button type="button" class="cash-preset-btn" onclick="setOpeningCash(0)">0 ₸</button>
                 <button type="button" class="cash-preset-btn" onclick="setOpeningCash(5000)">5 000 ₸</button>
@@ -3169,11 +4114,13 @@
             <label style="display:block;font-size:0.85rem;font-weight:700;margin-bottom:0.35rem;">
                 Примечание (необязательно):
             </label>
-            <input type="text" id="shiftOpeningNote" class="form-control" placeholder="Например: размен купюрами по 1000 и 2000" maxlength="255" style="margin-bottom:1.25rem;">
+            <input type="text" id="shiftOpeningNote" class="form-control"
+                placeholder="Например: размен купюрами по 1000 и 2000" maxlength="255" style="margin-bottom:1.25rem;">
 
             <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
                 <button type="button" class="btn btn-secondary" onclick="closeShiftOpenModal()">Отмена</button>
-                <button type="submit" class="btn btn-success" id="btnShiftOpenSubmit" style="font-weight:800;padding:0.65rem 1.4rem;">
+                <button type="submit" class="btn btn-success" id="btnShiftOpenSubmit"
+                    style="font-weight:800;padding:0.65rem 1.4rem;">
                     <i class="fa-solid fa-lock-open"></i> Открыть смену
                 </button>
             </div>
@@ -3189,10 +4136,12 @@
                 <i class="fa-solid fa-vault" style="color:var(--accent-green)"></i>
                 <span>Кассовая смена #<span id="smShiftId">--</span></span>
             </h3>
-            <button type="button" class="shift-modal-close" onclick="closeShiftManagerModal()"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="shift-modal-close" onclick="closeShiftManagerModal()"><i
+                    class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;background:rgba(148,163,184,0.06);padding:0.6rem 0.8rem;border-radius:10px;">
+        <div
+            style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;background:rgba(148,163,184,0.06);padding:0.6rem 0.8rem;border-radius:10px;">
             <div>Кассир: <strong id="smCashier" style="color:var(--text-main)">--</strong></div>
             <div>Открыта: <strong id="smOpenedAt" style="color:var(--text-main)">--</strong></div>
         </div>
@@ -3212,7 +4161,8 @@
                 <div class="shift-kpi-val"><span id="smTotalRevenue">0</span> ₸</div>
             </div>
             <div class="shift-kpi-card">
-                <div class="shift-kpi-label"><i class="fa-solid fa-money-bill-wave" style="color:#16a34a"></i> Наличные</div>
+                <div class="shift-kpi-label"><i class="fa-solid fa-money-bill-wave" style="color:#16a34a"></i> Наличные
+                </div>
                 <div class="shift-kpi-val"><span id="smCashRevenue">0</span> ₸</div>
             </div>
             <div class="shift-kpi-card">
@@ -3223,10 +4173,13 @@
                 <div class="shift-kpi-label"><i class="fa-solid fa-qrcode" style="color:#9333ea"></i> Kaspi QR</div>
                 <div class="shift-kpi-val"><span id="smTransferRevenue">0</span> ₸</div>
             </div>
-            <div class="shift-kpi-card" style="grid-column: span 3; display:flex; justify-content:space-between; align-items:center;">
+            <div class="shift-kpi-card"
+                style="grid-column: span 3; display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <div class="shift-kpi-label"><i class="fa-solid fa-rotate-left" style="color:#dc2626"></i> Возвраты за смену</div>
-                    <div class="shift-kpi-val" style="color:#dc2626; font-size:0.95rem;"><span id="smRefundCount">0</span> шт. на сумму <span id="smRefundAmount">0</span> ₸</div>
+                    <div class="shift-kpi-label"><i class="fa-solid fa-rotate-left" style="color:#dc2626"></i> Возвраты
+                        за смену</div>
+                    <div class="shift-kpi-val" style="color:#dc2626; font-size:0.95rem;"><span
+                            id="smRefundCount">0</span> шт. на сумму <span id="smRefundAmount">0</span> ₸</div>
                 </div>
                 <div style="text-align:right;">
                     <div style="font-size:0.72rem; color:var(--text-muted);">Выдано наличными по возвратам</div>
@@ -3234,7 +4187,8 @@
                 </div>
             </div>
             <div class="shift-kpi-card cash-expected">
-                <div class="shift-kpi-label"><i class="fa-solid fa-calculator"></i> Расчетная наличка в кассе (Размен + Наличные - Возвраты)</div>
+                <div class="shift-kpi-label"><i class="fa-solid fa-calculator"></i> Расчетная наличка в кассе (Размен +
+                    Наличные - Возвраты)</div>
                 <div class="shift-kpi-val"><span id="smExpectedCash">0</span> ₸</div>
             </div>
         </div>
@@ -3242,14 +4196,18 @@
         <!-- CLOSING SECTION (Z-REPORT) -->
         <div style="border-top:1px solid var(--card-border);padding-top:1rem;margin-top:0.75rem;">
             <h4 style="margin:0 0 0.6rem;font-size:0.92rem;font-weight:800;color:var(--text-main);">
-                <i class="fa-solid fa-calculator" style="color:var(--accent-orange)"></i> Пересчет кассы для закрытия смены
+                <i class="fa-solid fa-calculator" style="color:var(--accent-orange)"></i> Пересчет кассы для закрытия
+                смены
             </h4>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;align-items:end;">
                 <div>
-                    <label style="display:block;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:0.25rem;">
+                    <label
+                        style="display:block;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:0.25rem;">
                         Фактическая сумма наличных в ящике (₸):
                     </label>
-                    <input type="number" id="shiftCountedCash" class="form-control" min="0" step="10" placeholder="Пересчитайте наличные" style="font-size:1.1rem;font-weight:800;padding:0.5rem 0.75rem;" oninput="recalcShiftDiff()">
+                    <input type="number" id="shiftCountedCash" class="form-control" min="0" step="10"
+                        placeholder="Пересчитайте наличные"
+                        style="font-size:1.1rem;font-weight:800;padding:0.5rem 0.75rem;" oninput="recalcShiftDiff()">
                 </div>
                 <div>
                     <div class="shift-diff-box even" id="shiftDiffBox">
@@ -3259,18 +4217,23 @@
                 </div>
             </div>
 
-            <label style="display:block;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-top:0.6rem;margin-bottom:0.25rem;">
+            <label
+                style="display:block;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-top:0.6rem;margin-bottom:0.25rem;">
                 Комментарий при закрытии (обязательно при расхождении):
             </label>
-            <input type="text" id="shiftClosingNote" class="form-control" placeholder="Заметки по кассе..." maxlength="255">
+            <input type="text" id="shiftClosingNote" class="form-control" placeholder="Заметки по кассе..."
+                maxlength="255">
 
             <div style="display:flex;gap:0.6rem;justify-content:space-between;margin-top:1.15rem;flex-wrap:wrap;">
-                <button type="button" class="btn btn-secondary" onclick="printShiftXReport()" style="display:inline-flex;align-items:center;gap:0.4rem;">
+                <button type="button" class="btn btn-secondary" onclick="printShiftXReport()"
+                    style="display:inline-flex;align-items:center;gap:0.4rem;">
                     <i class="fa-solid fa-print"></i> Печать X-отчета
                 </button>
                 <div style="display:flex;gap:0.5rem;">
-                    <button type="button" class="btn btn-secondary" onclick="closeShiftManagerModal()">Закрыть окно</button>
-                    <button type="button" class="btn btn-danger" id="btnShiftCloseSubmit" onclick="submitShiftClose()" style="font-weight:800;display:inline-flex;align-items:center;gap:0.4rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeShiftManagerModal()">Закрыть
+                        окно</button>
+                    <button type="button" class="btn btn-danger" id="btnShiftCloseSubmit" onclick="submitShiftClose()"
+                        style="font-weight:800;display:inline-flex;align-items:center;gap:0.4rem;">
                         <i class="fa-solid fa-lock"></i> Закрыть смену (Z-отчет)
                     </button>
                 </div>
@@ -3283,39 +4246,54 @@
 <div class="modal-overlay" id="posRefundModal" onclick="if(event.target===this)closePosRefundModal()">
     <div class="shift-modal-box" style="max-width:560px;">
         <div class="shift-modal-header">
-            <h3 class="shift-modal-title"><i class="fa-solid fa-rotate-left" style="color:var(--accent-red)"></i> Возврат товара по чеку</h3>
-            <button type="button" class="shift-modal-close" onclick="closePosRefundModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="shift-modal-title"><i class="fa-solid fa-rotate-left" style="color:var(--accent-red)"></i>
+                Возврат товара по чеку</h3>
+            <button type="button" class="shift-modal-close" onclick="closePosRefundModal()"><i
+                    class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <form id="posRefundSearchForm" onsubmit="event.preventDefault();searchOrderForRefund();" style="display:flex;gap:0.5rem;margin-bottom:1rem;">
-            <input type="search" id="refundSearchOrderNum" class="form-control" placeholder="Номер чека (например DACAR-20260928-0001)..." required style="flex:1;">
-            <button type="submit" class="btn btn-primary" id="btnSearchRefundOrder"><i class="fa-solid fa-magnifying-glass"></i> Найти</button>
+        <form id="posRefundSearchForm" onsubmit="event.preventDefault();searchOrderForRefund();"
+            style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+            <input type="search" id="refundSearchOrderNum" class="form-control"
+                placeholder="Номер чека (например DACAR-20260928-0001)..." required style="flex:1;">
+            <button type="submit" class="btn btn-primary" id="btnSearchRefundOrder"><i
+                    class="fa-solid fa-magnifying-glass"></i> Найти</button>
         </form>
 
-        <div id="refundOrderDetails" style="display:none;background:rgba(148,163,184,0.06);border:1px solid var(--card-border);border-radius:12px;padding:0.9rem;margin-bottom:1rem;">
+        <div id="refundOrderDetails"
+            style="display:none;background:rgba(148,163,184,0.06);border:1px solid var(--card-border);border-radius:12px;padding:0.9rem;margin-bottom:1rem;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
                 <div>Чек: <strong id="roNum" style="color:var(--accent-cyan);font-size:0.95rem;"></strong></div>
                 <div id="roStatusBadge" class="badge"></div>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;">
+            <div
+                style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;">
                 <div>Дата: <span id="roDate" style="color:var(--text-main)"></span></div>
                 <div>Кассир: <span id="roCashier" style="color:var(--text-main)"></span></div>
                 <div>Оплата: <span id="roPayment" style="color:var(--text-main)"></span></div>
-                <div>Сумма чека: <strong id="roTotal" style="color:var(--text-main);font-size:0.95rem;"></strong> ₸</div>
+                <div>Сумма чека: <strong id="roTotal" style="color:var(--text-main);font-size:0.95rem;"></strong> ₸
+                </div>
             </div>
 
-            <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:0.35rem;">Состав чека:</div>
-            <div id="roItemsList" style="max-height:160px;overflow-y:auto;border-top:1px solid var(--card-border);margin-bottom:0.75rem;"></div>
+            <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:0.35rem;">Состав чека:
+            </div>
+            <div id="roItemsList"
+                style="max-height:160px;overflow-y:auto;border-top:1px solid var(--card-border);margin-bottom:0.75rem;">
+            </div>
 
             <div id="refundActionSection">
-                <label style="display:block;font-size:0.82rem;font-weight:700;margin-bottom:0.35rem;color:var(--text-main);">
+                <label
+                    style="display:block;font-size:0.82rem;font-weight:700;margin-bottom:0.35rem;color:var(--text-main);">
                     Причина возврата (от 4 символов) *:
                 </label>
-                <input type="text" id="refundReasonInput" class="form-control" minlength="4" maxlength="255" placeholder="Например: брак, ошибочная покупка, клиент передумал" required style="margin-bottom:1rem;">
+                <input type="text" id="refundReasonInput" class="form-control" minlength="4" maxlength="255"
+                    placeholder="Например: брак, ошибочная покупка, клиент передумал" required
+                    style="margin-bottom:1rem;">
 
                 <div style="display:flex;gap:0.6rem;justify-content:flex-end;">
                     <button type="button" class="btn btn-secondary" onclick="closePosRefundModal()">Отмена</button>
-                    <button type="button" class="btn btn-danger" id="btnConfirmRefund" onclick="submitPosRefund()" style="font-weight:800;">
+                    <button type="button" class="btn btn-danger" id="btnConfirmRefund" onclick="submitPosRefund()"
+                        style="font-weight:800;">
                         <i class="fa-solid fa-rotate-left"></i> Оформить полный возврат
                     </button>
                 </div>
@@ -3329,36 +4307,82 @@
     <div class="receipt-modal-box">
         <div class="receipt-header">
             <h3>{{ SHOP_NAME }}</h3>
-            <p id="slipReportTypeTitle" style="font-weight:800;font-size:1.05rem;margin:0.25rem 0;color:#000;">Z-ОТЧЕТ КАССОВОЙ СМЕНЫ</p>
+            <p id="slipReportTypeTitle" style="font-weight:800;font-size:1.05rem;margin:0.25rem 0;color:#000;">Z-ОТЧЕТ
+                КАССОВОЙ СМЕНЫ</p>
             <p>{{ SHOP_ADDRESS }} · {{ SHOP_PHONE }}</p>
         </div>
 
         <table class="receipt-meta-table">
-            <tr><td>Смена №</td><td style="text-align:right;"><strong id="slipShiftId"></strong></td></tr>
-            <tr><td>Кассир</td><td style="text-align:right;" id="slipCashier"></td></tr>
-            <tr><td>Открыта</td><td style="text-align:right;" id="slipOpenedAt"></td></tr>
-            <tr><td>Закрыта</td><td style="text-align:right;" id="slipClosedAt"></td></tr>
+            <tr>
+                <td>Смена №</td>
+                <td style="text-align:right;"><strong id="slipShiftId"></strong></td>
+            </tr>
+            <tr>
+                <td>Кассир</td>
+                <td style="text-align:right;" id="slipCashier"></td>
+            </tr>
+            <tr>
+                <td>Открыта</td>
+                <td style="text-align:right;" id="slipOpenedAt"></td>
+            </tr>
+            <tr>
+                <td>Закрыта</td>
+                <td style="text-align:right;" id="slipClosedAt"></td>
+            </tr>
         </table>
 
         <div style="border-top:1px dashed #475569;margin:0.6rem 0;"></div>
 
         <table class="receipt-meta-table" style="font-size:0.88rem;">
-            <tr><td>Размен при открытии:</td><td style="text-align:right;"><span id="slipOpeningCash"></span> ₸</td></tr>
-            <tr><td>Чеков продаж:</td><td style="text-align:right;"><strong id="slipCheckCount"></strong></td></tr>
-            <tr><td><strong>ВЫРУЧКА ОБЩАЯ:</strong></td><td style="text-align:right;"><strong id="slipTotalRevenue"></strong> ₸</td></tr>
-            <tr><td style="padding-left:0.6rem;">• Наличные:</td><td style="text-align:right;"><span id="slipCashRevenue"></span> ₸</td></tr>
-            <tr><td style="padding-left:0.6rem;">• Карты:</td><td style="text-align:right;"><span id="slipCardRevenue"></span> ₸</td></tr>
-            <tr><td style="padding-left:0.6rem;">• Kaspi QR:</td><td style="text-align:right;"><span id="slipTransferRevenue"></span> ₸</td></tr>
-            <tr><td>Возвраты:</td><td style="text-align:right;"><span id="slipRefundInfo"></span></td></tr>
-            <tr><td style="padding-left:0.6rem;">• Выдано наличными:</td><td style="text-align:right;">-<span id="slipCashRefunds"></span> ₸</td></tr>
+            <tr>
+                <td>Размен при открытии:</td>
+                <td style="text-align:right;"><span id="slipOpeningCash"></span> ₸</td>
+            </tr>
+            <tr>
+                <td>Чеков продаж:</td>
+                <td style="text-align:right;"><strong id="slipCheckCount"></strong></td>
+            </tr>
+            <tr>
+                <td><strong>ВЫРУЧКА ОБЩАЯ:</strong></td>
+                <td style="text-align:right;"><strong id="slipTotalRevenue"></strong> ₸</td>
+            </tr>
+            <tr>
+                <td style="padding-left:0.6rem;">• Наличные:</td>
+                <td style="text-align:right;"><span id="slipCashRevenue"></span> ₸</td>
+            </tr>
+            <tr>
+                <td style="padding-left:0.6rem;">• Карты:</td>
+                <td style="text-align:right;"><span id="slipCardRevenue"></span> ₸</td>
+            </tr>
+            <tr>
+                <td style="padding-left:0.6rem;">• Kaspi QR:</td>
+                <td style="text-align:right;"><span id="slipTransferRevenue"></span> ₸</td>
+            </tr>
+            <tr>
+                <td>Возвраты:</td>
+                <td style="text-align:right;"><span id="slipRefundInfo"></span></td>
+            </tr>
+            <tr>
+                <td style="padding-left:0.6rem;">• Выдано наличными:</td>
+                <td style="text-align:right;">-<span id="slipCashRefunds"></span> ₸</td>
+            </tr>
         </table>
 
         <div style="border-top:1px dashed #475569;margin:0.6rem 0;"></div>
 
         <table class="receipt-meta-table" style="font-size:0.92rem;font-weight:800;">
-            <tr><td>Ожидалось в кассе:</td><td style="text-align:right;"><span id="slipExpectedCash"></span> ₸</td></tr>
-            <tr id="slipCountedRow"><td>Фактически в кассе:</td><td style="text-align:right;"><span id="slipCountedCash"></span> ₸</td></tr>
-            <tr id="slipDiffRow"><td>Расхождение:</td><td style="text-align:right;"><span id="slipDifference"></span> ₸</td></tr>
+            <tr>
+                <td>Ожидалось в кассе:</td>
+                <td style="text-align:right;"><span id="slipExpectedCash"></span> ₸</td>
+            </tr>
+            <tr id="slipCountedRow">
+                <td>Фактически в кассе:</td>
+                <td style="text-align:right;"><span id="slipCountedCash"></span> ₸</td>
+            </tr>
+            <tr id="slipDiffRow">
+                <td>Расхождение:</td>
+                <td style="text-align:right;"><span id="slipDifference"></span> ₸</td>
+            </tr>
         </table>
 
         <div class="receipt-footer" style="margin-top:0.8rem;">
@@ -3456,6 +4480,9 @@
     let currentCategory = 'all';
     let cart = [];
     let selectedPaymentMethod = 'CASH';
+    let giftCard = null;
+    let giftCode = '';
+    let giftTopupMethod = 'CASH';
 
     // Russian layout to English layout converter helper
     function convertRuToEnLayout(str) {
@@ -3704,14 +4731,20 @@
         }
         if (e.key === 'F9') {
             e.preventDefault();
-            submitCheckout();
+            handlePayShortcut();
             return;
         }
         if (e.key === 'Escape') {
-            if (document.getElementById('productDetailsModal').classList.contains('active')) {
+            if (document.getElementById('cartMoreMenu') && !document.getElementById('cartMoreMenu').hidden) {
+                closeCartMoreMenu();
+            } else if (document.getElementById('posMoreMenu') && !document.getElementById('posMoreMenu').hidden) {
+                closePosMoreMenu();
+            } else if (document.getElementById('productDetailsModal') && document.getElementById('productDetailsModal').classList.contains('active')) {
                 closeProductDetails();
-            } else if (document.getElementById('receiptModal').classList.contains('active')) {
+            } else if (document.getElementById('receiptModal') && document.getElementById('receiptModal').classList.contains('active')) {
                 closeReceiptModal();
+            } else if (isCheckoutViewOpen()) {
+                closeCheckoutView();
             } else {
                 clearCart();
             }
@@ -3729,6 +4762,17 @@
             const activeEl = document.activeElement;
             if (activeEl === posSearchInput) {
                 const val = posSearchInput.value.trim();
+                if (/^DKR-[0-9A-F]{5}-[0-9A-F]{5}$/i.test(val)) {
+                    e.preventDefault();
+                    posSearchInput.value = '';
+                    renderProducts();
+                    openCheckoutView();
+                    const giftBtn = document.querySelector('.pay-method-btn[data-method="GIFT"]');
+                    if (giftBtn) setPaymentMethod('GIFT', giftBtn);
+                    document.getElementById('posGiftCode').value = val;
+                    lookupPosGiftCard();
+                    return;
+                }
                 const valEn = convertRuToEnLayout(val).trim();
                 if (val.length >= 1) {
                     const productsList = getAllProducts();
@@ -3806,6 +4850,11 @@
 
     async function processScannedBarcode(code) {
         if (!code) return;
+        if (/^DKR-[0-9A-F]{5}-[0-9A-F]{5}$/i.test(code)) {
+            document.getElementById('posGiftCode').value = code;
+            lookupPosGiftCard();
+            return;
+        }
         const codeEn = convertRuToEnLayout(code);
 
         // Flash scanner badge
@@ -3925,6 +4974,8 @@
     function clearCart() {
         if (cart.length > 0 && confirm('Очистить корзину?')) {
             cart = [];
+            resetGiftCard();
+            closeCheckoutView();
             globalDiscountInput.value = 0;
             paidAmountInput.value = '';
             renderCart();
@@ -3952,8 +5003,8 @@
             div.innerHTML = `
                 <div class="cart-item-photo">
                     ${item.image_url
-                        ? `<img src="${item.image_url}" alt="">`
-                        : '<i class="fa-solid fa-box"></i>'}
+                    ? `<img src="${item.image_url}" alt="">`
+                    : '<i class="fa-solid fa-box"></i>'}
                 </div>
                 <div class="cart-item-header">
                     <div class="cart-item-name">${item.name}</div>
@@ -3990,6 +5041,14 @@
 
         summarySubtotal.innerText = `${formatMoney(subtotal)} ₸`;
         summaryFinalTotal.innerText = `${formatMoney(finalTotal)} ₸`;
+        const checkoutDisplay = document.getElementById('checkoutAmountDisplay');
+        if (checkoutDisplay) {
+            checkoutDisplay.innerText = `${formatMoney(finalTotal)} ₸`;
+        }
+        const cartCountText = document.getElementById('cartItemsCountText');
+        if (cartCountText) {
+            cartCountText.textContent = `${totalItems} поз.`;
+        }
 
         // Update mobile cart tab badge
         const cartBadge = document.getElementById('cartTabBadge');
@@ -4059,6 +5118,118 @@
     }
 
 
+    // ===== TWO-STATE CHECKOUT VIEW CONTROLLER =====
+    function isCheckoutViewOpen() {
+        const v = document.getElementById('posCheckoutView');
+        return v && !v.hidden;
+    }
+
+    function openCheckoutView() {
+        if (!cart || cart.length === 0) {
+            showPosToast('Корзина пока пуста! Добавьте товары перед переходом к оплате.', 'warning');
+            return;
+        }
+        updateCartTotals();
+        const cartView = document.getElementById('posCartView');
+        const checkoutView = document.getElementById('posCheckoutView');
+        if (cartView) cartView.hidden = true;
+        if (checkoutView) {
+            checkoutView.hidden = false;
+            const scrollBody = checkoutView.querySelector('.checkout-scroll-body');
+            if (scrollBody) scrollBody.scrollTop = 0;
+        }
+        if (selectedPaymentMethod === 'CASH') {
+            calculateChange();
+            setTimeout(() => {
+                const paidInput = document.getElementById('paidAmountInput');
+                if (paidInput) {
+                    paidInput.focus();
+                    paidInput.select();
+                }
+            }, 50);
+        } else if (selectedPaymentMethod === 'GIFT') {
+            setTimeout(() => {
+                const giftInput = document.getElementById('posGiftCode');
+                if (giftInput) giftInput.focus();
+            }, 50);
+        }
+    }
+
+    function closeCheckoutView() {
+        const cartView = document.getElementById('posCartView');
+        const checkoutView = document.getElementById('posCheckoutView');
+        if (checkoutView) checkoutView.hidden = true;
+        if (cartView) cartView.hidden = false;
+        closePosMoreMenu();
+    }
+
+    function handlePayShortcut() {
+        if (isCheckoutViewOpen()) {
+            submitCheckout();
+        } else {
+            openCheckoutView();
+        }
+    }
+
+    function togglePosMoreMenu(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        const menu = document.getElementById('posMoreMenu');
+        const btn = document.getElementById('btnPosMoreActions');
+        if (!menu) return;
+        const willOpen = menu.hidden;
+        menu.hidden = !willOpen;
+        if (btn) {
+            btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            btn.classList.toggle('active', willOpen);
+        }
+    }
+
+    function closePosMoreMenu() {
+        const menu = document.getElementById('posMoreMenu');
+        const btn = document.getElementById('btnPosMoreActions');
+        if (menu) menu.hidden = true;
+        if (btn) {
+            btn.setAttribute('aria-expanded', 'false');
+            btn.classList.remove('active');
+        }
+    }
+
+    document.addEventListener('click', event => {
+        const wraps = document.querySelectorAll('.pos-more-dropdown-wrap');
+        wraps.forEach(wrap => {
+            if (!wrap.contains(event.target)) {
+                // Close whichever menu belongs to this wrap
+                const menu = wrap.querySelector('.pos-more-menu');
+                const btn = wrap.querySelector('button[aria-haspopup]');
+                if (menu) menu.hidden = true;
+                if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.classList.remove('active'); }
+            }
+        });
+    });
+
+    function toggleCartMoreMenu(event) {
+        if (event) { event.preventDefault(); event.stopPropagation(); }
+        const menu = document.getElementById('cartMoreMenu');
+        const btn = document.getElementById('btnCartMoreActions');
+        if (!menu) return;
+        const willOpen = menu.hidden;
+        menu.hidden = !willOpen;
+        if (btn) {
+            btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            btn.classList.toggle('active', willOpen);
+        }
+    }
+
+    function closeCartMoreMenu() {
+        const menu = document.getElementById('cartMoreMenu');
+        const btn = document.getElementById('btnCartMoreActions');
+        if (menu) menu.hidden = true;
+        if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.classList.remove('active'); }
+    }
+
     // Payment Selection
     function openCompanyInvoice() {
         sessionStorage.setItem('dacarInvoiceCart', JSON.stringify({
@@ -4069,11 +5240,118 @@
         window.location.href = '{% url "company_invoices" %}';
     }
 
+    function resetGiftCard() {
+        closeGiftOverageModal();
+        giftCard = null;
+        giftCode = '';
+        const input = document.getElementById('posGiftCode');
+        if (input) input.value = '';
+        const status = document.getElementById('giftPayStatus');
+        if (status) status.textContent = 'Проверка карты не списывает деньги.';
+        const part = document.getElementById('mixedGIFT');
+        if (part) part.value = '0';
+        updateMixedBalance();
+    }
+
+    async function lookupPosGiftCard() {
+        const input = document.getElementById('posGiftCode');
+        const status = document.getElementById('giftPayStatus');
+        const code = input.value.trim().toUpperCase();
+        if (window.matchMedia('(max-width: 900px)').matches) switchPosTab('cart');
+        giftCard = null;
+        giftCode = '';
+        document.getElementById('giftPayBox').hidden = false;
+        status.textContent = 'Проверяем сертификат…';
+        try {
+            const response = await fetch('{% url "gift_card_lookup" %}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({ code })
+            });
+            const data = await response.json();
+            if (!response.ok || data.state !== 'ACTIVE') {
+                status.textContent = data.error || 'Карта не активна или срок действия истёк.';
+                updateMixedBalance();
+                return;
+            }
+            giftCode = code;
+            giftCard = data;
+            status.textContent = `Подлинность подтверждена · Карта •••• ${data.last4} · Доступно ${formatMoney(data.balance)} ₸ · До ${data.expires_at}`;
+            if (Number(data.balance) >= getFinalTotal()) {
+                const button = document.querySelector('.pay-method-btn[data-method="GIFT"]');
+                if (button) setPaymentMethod('GIFT', button);
+            } else {
+                openGiftOverageModal();
+            }
+            updateMixedBalance();
+        } catch (_) {
+            status.textContent = 'Не удалось проверить карту. Повторите попытку.';
+            updateMixedBalance();
+        }
+    }
+
+    document.getElementById('posGiftCode').addEventListener('input', () => {
+        giftCard = null;
+        giftCode = '';
+        document.getElementById('giftPayStatus').textContent = 'Нажмите «Проверить» перед оплатой.';
+        updateMixedBalance();
+    });
+
+    function openGiftOverageModal() {
+        if (!giftCard) return;
+        const total = getFinalTotal();
+        const balance = Math.min(total, Number(giftCard.balance));
+        const due = Math.max(0, total - balance);
+        document.getElementById('giftOverageTotal').textContent = `${formatMoney(total)} ₸`;
+        document.getElementById('giftOverageBalance').textContent = `${formatMoney(balance)} ₸`;
+        document.getElementById('giftOverageDue').textContent = `${formatMoney(due)} ₸`;
+        selectGiftTopup(giftTopupMethod, document.querySelector(`.gift-topup-method[data-topup="${giftTopupMethod}"]`));
+        const modal = document.getElementById('giftOverageModal');
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeGiftOverageModal() {
+        const modal = document.getElementById('giftOverageModal');
+        if (!modal) return;
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+
+    function selectGiftTopup(method, button) {
+        giftTopupMethod = method;
+        document.querySelectorAll('.gift-topup-method').forEach(item => item.classList.remove('active'));
+        if (button) button.classList.add('active');
+    }
+
+    function confirmGiftTopup() {
+        if (!giftCard) return;
+        const total = getFinalTotal();
+        const giftAmount = Math.min(total, Number(giftCard.balance));
+        const due = Math.max(0, total - giftAmount);
+        ['CASH', 'CARD', 'TRANSFER'].forEach(method => {
+            document.getElementById('mixed' + method).value = method === giftTopupMethod ? due.toFixed(2) : '0';
+        });
+        const mixedButton = document.querySelector('.pay-method-btn[data-method="MIXED"]');
+        setPaymentMethod('MIXED', mixedButton);
+        closeGiftOverageModal();
+        showPosToast(`Сертификат ${formatMoney(giftAmount)} ₸ + доплата ${formatMoney(due)} ₸.`, 'info');
+    }
+    document.getElementById('posGiftCode').addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            event.stopPropagation();
+            lookupPosGiftCard();
+        }
+    });
+
     function setPaymentMethod(method, btn) {
         selectedPaymentMethod = method;
         document.querySelectorAll('.pay-method-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        if (btn) btn.classList.add('active');
         document.getElementById('mixedPayments').hidden = method !== 'MIXED';
+        document.getElementById('giftPayBox').hidden = method !== 'GIFT';
+        if (method !== 'GIFT' && method !== 'MIXED' && giftCard) resetGiftCard();
         updateMixedBalance();
 
         const cashRow = document.getElementById('cashDetailsRow');
@@ -4121,15 +5399,16 @@
 
     // 4. Submit Checkout to Django REST API
     function mixedParts() {
-        return ['CASH', 'CARD', 'TRANSFER'].map(method => ({
+        return ['CASH', 'CARD', 'TRANSFER', 'GIFT'].map(method => ({
             method,
-            amount: document.getElementById('mixed' + method).value || '0'
+            amount: method === 'GIFT' ? (giftCard && selectedPaymentMethod === 'MIXED' ? Math.min(getFinalTotal(), Number(giftCard.balance)).toFixed(2) : '0') : (document.getElementById('mixed' + method).value || '0')
         }));
     }
 
     function updateMixedBalance() {
         const el = document.getElementById('mixedBalance');
         if (!el) return;
+        document.getElementById('mixedGIFT').value = giftCard && selectedPaymentMethod === 'MIXED' ? Math.min(getFinalTotal(), Number(giftCard.balance)).toFixed(2) : '0';
         const remaining = Math.round(getFinalTotal() * 100) - mixedParts().reduce((sum, part) => sum + Math.round(Number(part.amount) * 100), 0);
         el.textContent = remaining === 0 ? 'Суммы совпадают с итогом' : `Осталось распределить: ${formatMoney(remaining / 100)} ₸`;
     }
@@ -4141,6 +5420,11 @@
         }
 
         const finalTotal = getFinalTotal();
+        if (selectedPaymentMethod === 'GIFT' && (!giftCard || Number(giftCard.balance) < finalTotal)) {
+            if (giftCard) openGiftOverageModal();
+            else showPosToast('Сначала отсканируйте и проверьте сертификат.', 'warning');
+            return;
+        }
         let paid = parseFloat(paidAmountInput.value);
 
         if (selectedPaymentMethod === 'CASH' && (isNaN(paid) || paid < finalTotal)) {
@@ -4171,6 +5455,7 @@
             })),
             payment_method: selectedPaymentMethod,
             ...(payments ? { payments } : {}),
+            ...((selectedPaymentMethod === 'GIFT' || (payments && payments.some(part => part.method === 'GIFT'))) ? { gift_code: giftCode } : {}),
             paid_amount: paid,
             discount_amount: parseFloat(globalDiscountInput.value) || 0,
             notes: 'Продажа через POS Терминал'
@@ -4189,10 +5474,16 @@
             const data = await response.json();
             if (response.ok && data.success) {
                 showThermalReceipt(data.order);
+                if (data.gift_card) {
+                    showPosToast(`С сертификата ••••${data.gift_card.last4} списано ${formatMoney(data.gift_card.used)} ₸. Остаток ${formatMoney(data.gift_card.balance_after)} ₸.`, 'success');
+                }
                 // Reset Cart
                 cart = [];
                 window.checkoutSyncId = null;
                 ['CASH', 'CARD', 'TRANSFER'].forEach(method => document.getElementById('mixed' + method).value = '0');
+                resetGiftCard();
+                closeCheckoutView();
+                setPaymentMethod('CASH', document.querySelector('.pay-method-btn[data-method="CASH"]'));
                 globalDiscountInput.value = 0;
                 paidAmountInput.value = '';
                 renderCart();
@@ -4304,7 +5595,7 @@
     window.setInterval(updatePosClock, 30000);
 
     // ===== CASH SHIFT & RETURN MANAGEMENT =====
-    let currentShiftId = {% if current_shift %}{{ current_shift.id }}{% else %}null{% endif %};
+    let currentShiftId = {% if current_shift %}{ { current_shift.id } } {% else %} null{% endif %};
     let currentShiftData = null;
 
     function updateShiftWidgetUI(shift) {
@@ -4312,7 +5603,7 @@
         if (!widget) return;
         if (shift && shift.status === 'OPEN') {
             currentShiftId = shift.id;
-            const openTime = shift.opened_at ? new Date(shift.opened_at).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'}) : '--:--';
+            const openTime = shift.opened_at ? new Date(shift.opened_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '--:--';
             widget.innerHTML = `
                 <button type="button" class="pos-shift-btn open" id="posShiftBtn" onclick="openShiftManagerModal()" title="Управление сменой и кассой (X/Z-отчет)">
                     <span class="pos-shift-indicator-dot"></span>
@@ -4430,7 +5721,7 @@
 
         document.getElementById('smShiftId').textContent = shift.id;
         document.getElementById('smCashier').textContent = shift.cashier_name || 'Кассир';
-        const openDate = shift.opened_at ? new Date(shift.opened_at).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '—';
+        const openDate = shift.opened_at ? new Date(shift.opened_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
         document.getElementById('smOpenedAt').textContent = openDate;
 
         document.getElementById('smOpeningCash').textContent = formatMoney(shift.opening_cash);

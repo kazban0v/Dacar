@@ -1,6 +1,7 @@
 from django.urls import path
 from sales import views
 from sales import document_views
+from sales import gift_views
 
 urlpatterns = [
     path('reports/shine/', document_views.shine_report, name='shine_report'),
@@ -8,6 +9,8 @@ urlpatterns = [
     path('invoices/<int:pk>/pdf/', document_views.invoice_download, name='invoice_pdf'),
     path('api/invoices/', document_views.InvoiceCreateAPIView.as_view(), name='invoice_create'),
     path('pos/', views.pos_interface_view, name='pos'),
+    path('gift-cards/', gift_views.gift_cards_page, name='gift_cards'),
+    path('api/gift-cards/lookup/', gift_views.gift_card_lookup, name='gift_card_lookup'),
     path('api/products/<int:pk>/quick-detail/', views.product_quick_detail, name='product_quick_detail'),
     path('orders/', views.sales_orders_list_view, name='sales_orders_list'),
     path('orders/<int:pk>/print/', views.order_detail_print_view, name='order_print'),

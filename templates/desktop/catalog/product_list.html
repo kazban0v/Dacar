@@ -36,9 +36,9 @@
     .catalog-quality-zero { color:var(--accent-green); font-size:.72rem; font-weight:700; }
 
     .stock-table-card { overflow:hidden; border:1px solid var(--card-border); border-radius:16px; background:var(--card-bg); box-shadow:var(--shadow-xs); }
-    .stock-table-scroll { overflow-x:auto; }
+    .stock-table-scroll { max-height:min(680px,calc(100vh - 250px)); overflow:auto; }
     .stock-table { width:100%; min-width:880px; border-collapse:collapse; }
-    .stock-table th { padding:.58rem .9rem; text-align:left; color:var(--text-muted); font-size:.64rem; font-weight:800; letter-spacing:.075em; text-transform:uppercase; border-bottom:1px solid var(--card-border); white-space:nowrap; }
+    .stock-table th { position:sticky; top:0; z-index:2; padding:.58rem .9rem; text-align:left; color:var(--text-muted); font-size:.64rem; font-weight:800; letter-spacing:.075em; text-transform:uppercase; border-bottom:1px solid var(--card-border); background:var(--card-bg); box-shadow:0 1px 0 var(--card-border); white-space:nowrap; }
     .stock-table td { padding:.55rem .9rem; border-bottom:1px solid var(--card-border); vertical-align:middle; }
     .stock-table tbody tr { position:relative; transition:background .15s ease; }
     .stock-table tbody tr:hover { background:color-mix(in srgb,var(--accent-cyan) 5%,var(--card-bg)); }
@@ -84,7 +84,7 @@
     html[data-theme="dark"] .stock-controls .btn.btn-secondary:hover { background:#1D2C43; border-color:#0789C9; color:#FFF; }
     @keyframes refillModalIn { from { opacity:0; transform:scale(.96) translateY(8px); } to { opacity:1; transform:scale(1) translateY(0); } }
     @media (max-width:980px) { .stock-controls { align-items:stretch; flex-direction:column; } .stock-pills { justify-content:flex-end; } }
-    @media (max-width:680px) { .stock-v2-header { flex-direction:column; } .stock-v2-add { width:100%; justify-content:center; } .stock-filter-form { flex-wrap:wrap; } .stock-filter-form input,.stock-filter-form select { width:100%; } .stock-filter-form .btn { flex:1; } .stock-pills { overflow-x:auto; justify-content:flex-start; padding-bottom:.1rem; } .stock-pagination { align-items:flex-start; flex-direction:column; } }
+    @media (max-width:680px) { .stock-v2-header { flex-direction:column; } .stock-v2-add { width:100%; justify-content:center; } .stock-filter-form { flex-wrap:wrap; } .stock-filter-form input,.stock-filter-form select { width:100%; } .stock-filter-form .btn { flex:1; } .stock-category-row,.stock-pills { overflow-x:auto; justify-content:flex-start; padding-right:1.8rem; padding-bottom:.1rem; -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 2rem),transparent); mask-image:linear-gradient(to right,#000 calc(100% - 2rem),transparent); } .stock-table-scroll { max-height:none; } .stock-pagination { align-items:flex-start; flex-direction:column; } }
 </style>
 {% endblock %}
 
@@ -120,6 +120,8 @@
             <a href="{% url 'product_list' %}" class="stock-pill {% if not low_stock_filter and not out_of_stock_filter and not selected_category and not selected_brand and not search and not quality_filter %}is-active{% endif %}">Все</a>
             <a href="?out_of_stock=1" class="stock-pill {% if out_of_stock_filter == '1' %}is-active{% endif %}">Нет в наличии · {{ out_of_stock_count }}</a>
             <a href="?low_stock=1" class="stock-pill {% if low_stock_filter == '1' %}is-active{% endif %}">Мало на складе</a>
+            <a href="?quality=missing_image" class="stock-pill {% if quality_filter == 'missing_image' %}is-active{% endif %}">Без фото · {{ quality_counts.missing_image }}</a>
+            <a href="?quality=missing_barcode" class="stock-pill {% if quality_filter == 'missing_barcode' %}is-active{% endif %}">Без штрихкода · {{ quality_counts.missing_barcode }}</a>
             <a href="{% url 'product_list' %}" class="stock-pill">Активные</a>
         </div>
     </section>
@@ -131,6 +133,7 @@
         {% if quality_counts.missing_category %}<a class="catalog-quality-link {% if quality_filter == 'missing_category' %}is-active{% endif %}" href="?quality=missing_category">Без категории · {{ quality_counts.missing_category }}</a>{% else %}<span class="catalog-quality-zero">Категории заполнены</span>{% endif %}
         {% if quality_counts.missing_barcode %}<a class="catalog-quality-link {% if quality_filter == 'missing_barcode' %}is-active{% endif %}" href="?quality=missing_barcode">Без штрихкода · {{ quality_counts.missing_barcode }}</a>{% else %}<span class="catalog-quality-zero">Штрихкоды заполнены</span>{% endif %}
         {% if quality_counts.missing_purchase %}<a class="catalog-quality-link {% if quality_filter == 'missing_purchase' %}is-active{% endif %}" href="?quality=missing_purchase">Без закупки · {{ quality_counts.missing_purchase }}</a>{% else %}<span class="catalog-quality-zero">Закупка заполнена</span>{% endif %}
+        {% if quality_counts.missing_image %}<a class="catalog-quality-link {% if quality_filter == 'missing_image' %}is-active{% endif %}" href="?quality=missing_image">Без фото · {{ quality_counts.missing_image }}</a>{% else %}<span class="catalog-quality-zero">Фото заполнены</span>{% endif %}
         {% if quality_filter %}<a class="catalog-quality-link" href="{% url 'product_list' %}">Сбросить проверку</a>{% endif %}
     </section>
     {% endif %}

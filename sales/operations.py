@@ -114,11 +114,21 @@ def checkout(request, data):
         else:
             parts = [{'method': data['payment_method'], 'amount': total}]
 
+        gift_part = next((part for part in parts if part['method'] == 'GIFT'), None)
+        gift_card = None
+        if gift_part:
+            from sales.gift_cards import find_card, validate_redemption
+            gift_card = find_card(data['gift_code'])
+            validate_redemption(gift_card, gift_part['amount'])
+
         order = SaleOrder.objects.create(order_number=SaleOrder.generate_order_number(),
             cashier=request.user, payment_method=data['payment_method'], subtotal_amount=subtotal,
             discount_amount=discount, total_amount=total, paid_amount=paid,
             change_amount=money(paid - total), notes=data['notes'])
         SalePayment.objects.bulk_create([SalePayment(order=order, **part) for part in parts])
+        if gift_card:
+            from sales.gift_cards import redeem
+            redeem(gift_card, gift_part['amount'], order, request.user)
         for row in rows:
             SaleOrderItem.objects.create(order=order, **row)
             StockMovement.objects.create(product=row['product'], movement_type='SALE',
@@ -135,6 +145,15 @@ def checkout(request, data):
                 'order_number': order.order_number,
                 'total_amount': str(order.total_amount),
                 'payment_method': order.payment_method,
+                'payments': [
+                    {'method': part['method'], 'amount': str(part['amount'])}
+                    for part in parts
+                ],
+                'gift_card': ({
+                    'last4': gift_card.code_last4,
+                    'amount': str(gift_part['amount']),
+                    'balance_after': str(gift_card.balance - gift_part['amount']),
+                } if gift_card else None),
             },
         )
         OperationReceipt.objects.create(key=data['client_sync_id'], actor=request.user,
@@ -162,6 +181,8 @@ def refund(request, order_id, reason):
             StockMovement.objects.create(product_id=item.product_id, movement_type='RETURN',
                 quantity=item.quantity, cost_price=item.purchase_price_snapshot,
                 comment=f'Возврат {order.order_number}: {reason}'[:255], created_by=request.user)
+        from sales.gift_cards import restore_for_refund
+        restore_for_refund(order, request.user)
         order.status = SaleOrder.Status.REFUNDED
         order.refund_reason = reason
         order.refunded_by = request.user

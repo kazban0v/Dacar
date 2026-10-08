@@ -94,6 +94,8 @@ def product_list_view(request):
         products = products.filter(purchase_price__lte=0)
     elif quality_filter == 'missing_category':
         products = products.filter(category__isnull=True)
+    elif quality_filter == 'missing_image':
+        products = products.filter(Q(image__isnull=True) | Q(image=''))
 
     from django.core.paginator import Paginator
 
@@ -134,6 +136,7 @@ def product_list_view(request):
             'missing_barcode': all_active_products.filter(Q(barcode__isnull=True) | Q(barcode='')).count(),
             'missing_purchase': all_active_products.filter(purchase_price__lte=0).count(),
             'missing_category': all_active_products.filter(category__isnull=True).count(),
+            'missing_image': all_active_products.filter(Q(image__isnull=True) | Q(image='')).count(),
         },
         'total_products': products.count(),
         'all_products_count': all_active_products.count(),

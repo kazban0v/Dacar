@@ -1,7 +1,8 @@
 {% load dacar_format %}
-{% if order.payment_method == 'MIXED' %}
+{% if order.payment_method == 'MIXED' or order.payment_method == 'GIFT' %}
 <div style="font-size:.78rem;line-height:1.5;margin-top:6px">
 {% for payment in order.payments.all %}<div>{{ payment.get_method_display }}: {{ payment.amount|tenge }} ₸</div>
 {% empty %}<div>Разбивка старого чека не сохранена</div>{% endfor %}
+{% for event in order.gift_events.all %}{% if event.kind == 'REDEEM' %}<div>Карта ••••{{ event.card.code_last4 }} · остаток {{ event.balance_after|tenge }} ₸</div>{% endif %}{% endfor %}
 </div>
 {% endif %}

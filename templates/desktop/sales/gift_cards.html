@@ -1,0 +1,133 @@
+{% extends 'desktop/base.html' %}
+{% load dacar_format %}
+{% block title %}Подарочные сертификаты — DAKAR{% endblock %}
+{% block extra_head %}
+<style>
+  .gift-page{max-width:1320px;margin:0 auto;padding:1rem 0 2.5rem;color:var(--text-main)}
+  .gift-eyebrow{color:#b48741;font-size:.69rem;font-weight:850;letter-spacing:.18em;text-transform:uppercase}
+  .gift-head{display:flex;justify-content:space-between;align-items:end;gap:1rem;margin-bottom:1.3rem}
+  .gift-head h1{margin:.25rem 0;color:var(--text-main);font:850 clamp(1.6rem,2.5vw,2.35rem)/1.05 'Outfit',sans-serif;letter-spacing:-.035em}
+  .gift-head p{margin:0;color:var(--text-muted);font-size:.83rem}
+  .gift-back{display:inline-flex;align-items:center;gap:.45rem;padding:.7rem 1rem;border:1px solid var(--card-border);border-radius:10px;background:var(--card-bg);color:var(--text-main);font-size:.77rem;font-weight:750;text-decoration:none}
+  .gift-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(340px,.95fr);gap:1rem;align-items:start}
+  .gift-hero{position:relative;min-height:310px;overflow:hidden;border:1px solid #30425b;border-radius:22px;background:radial-gradient(circle at 75% 20%,#26394e 0,#0c1b2c 53%,#071220 100%);box-shadow:0 18px 42px rgba(6,17,30,.22);color:#f7f4ee}
+  .gift-hero:after{position:absolute;top:-50px;right:16%;width:1.5px;height:470px;transform:rotate(-34deg);background:linear-gradient(transparent,#d4a557 25%,#e6c184 65%,transparent);content:''}
+  .gift-hero-content{position:relative;z-index:1;padding:2rem 2.3rem}
+  .gift-brand{display:flex;align-items:center;gap:.8rem;color:#e6bf77}
+  .gift-mark{width:55px;height:45px;flex:none;fill:none;stroke:#e6bf77;stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
+  .gift-brand-name{font:750 1.25rem/1 'Outfit',sans-serif;letter-spacing:.28em}
+  .gift-brand-name small{display:block;margin-top:.4rem;font:650 .45rem/1 'Inter',sans-serif;letter-spacing:.36em}
+  .gift-hero-label{margin:3.4rem 0 .3rem;font-size:.78rem;font-weight:700;letter-spacing:.23em;text-transform:uppercase}
+  .gift-hero-value{color:#e5bb70;font:850 clamp(2rem,5vw,3.7rem)/1 'Outfit',sans-serif;letter-spacing:-.045em}
+  .gift-hero-status{position:absolute;z-index:2;top:1.7rem;right:2rem;padding:.38rem .65rem;border:1px solid rgba(230,191,119,.42);border-radius:999px;background:rgba(7,18,32,.55);color:#e7c685;font-size:.61rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;backdrop-filter:blur(8px)}
+  .gift-hero-status[data-state='ACTIVE']{border-color:rgba(52,211,153,.45);color:#6ee7b7}.gift-hero-status[data-state='SPENT'],.gift-hero-status[data-state='EXPIRED'],.gift-hero-status[data-state='BLOCKED']{border-color:rgba(248,113,113,.4);color:#fca5a5}
+  .gift-card-data{display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem;max-width:520px;margin-top:1rem}
+  .gift-card-data.is-visible{display:grid}.gift-card-data span{display:block;padding:.55rem .65rem;border:1px solid rgba(184,200,218,.16);border-radius:9px;background:rgba(6,16,28,.34);color:#aab9ca;font-size:.57rem;text-transform:uppercase;letter-spacing:.08em}.gift-card-data strong{display:block;margin-top:.26rem;color:#f5f1e9;font-size:.72rem;letter-spacing:0;text-transform:none}
+  .gift-hero-foot{margin-top:1rem;color:#b7c5d5;font-size:.69rem}
+  .gift-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;margin-top:.8rem}
+  .gift-stat{padding:1rem;border:1px solid var(--card-border);border-radius:13px;background:var(--card-bg)}
+  .gift-stat span{display:block;color:var(--text-muted);font-size:.72rem}
+  .gift-stat strong{display:block;margin-top:.4rem;color:var(--text-main);font:850 1.4rem/1 'Outfit',sans-serif}
+  .gift-panel{padding:1.35rem;border:1px solid var(--card-border);border-radius:18px;background:var(--card-bg);box-shadow:var(--shadow-xs)}
+  .gift-panel h2{margin:0;color:var(--text-main);font:800 1.08rem 'Outfit',sans-serif}
+  .gift-panel-sub{margin:.35rem 0 1.2rem;color:var(--text-muted);font-size:.75rem;line-height:1.5}
+  .gift-step{display:flex;align-items:center;gap:.55rem;margin:1rem 0 .6rem;color:var(--text-main);font-size:.76rem;font-weight:800}
+  .gift-step b{display:grid;width:22px;height:22px;place-items:center;border-radius:7px;background:#f7ead2;color:#865b22}
+  .gift-field{display:block;margin:.8rem 0;color:var(--text-main);font-size:.72rem;font-weight:750}
+  .gift-field input,.gift-field select{display:block;width:100%;min-height:46px;margin-top:.4rem;padding:.65rem .75rem;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text-main);font:700 .85rem 'Inter',sans-serif}
+  .gift-field input:focus,.gift-field select:focus{outline:2px solid #cf9e4f;outline-offset:1px}
+  .gift-input-row{display:flex;align-items:flex-end;gap:.5rem}
+  .gift-input-row .gift-field{flex:1;min-width:0;margin-bottom:0}
+  .gift-check{min-height:46px;padding:0 1.1rem;border:1px solid #a17636;border-radius:10px;background:#142536;color:#f0d197;font-size:.75rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0}
+  .gift-preview{min-height:70px;margin:.75rem 0;padding:.75rem;border:1px dashed var(--card-border);border-radius:11px;color:var(--text-muted);font-size:.78rem;line-height:1.6}
+  .gift-preview.is-active{border-style:solid;border-color:#d5a75b;background:color-mix(in srgb,#d5a75b 7%,var(--card-bg));color:var(--text-main)}
+  .gift-preview strong{color:var(--text-main);font-weight:800}
+  .gift-preview-history{display:grid;gap:.3rem;margin:.7rem 0 0;padding:.65rem 0 0;border-top:1px solid var(--card-border);list-style:none}
+  .gift-preview-history li{display:flex;justify-content:space-between;gap:.5rem;font-size:.7rem}
+  .gift-confirm{display:flex;gap:.5rem;align-items:flex-start;margin:.9rem 0;color:var(--text-muted);font-size:.74rem;line-height:1.45}
+  .gift-confirm input{margin:.16rem 0 0;accent-color:#b58542}
+  .gift-submit{width:100%;min-height:48px;border:0;border-radius:10px;background:linear-gradient(120deg,#b88842,#e0b878);color:#101b28;font:850 .85rem 'Inter',sans-serif;cursor:pointer}
+  .gift-submit:hover{filter:brightness(1.06)}.gift-submit:disabled{opacity:.48;cursor:not-allowed;filter:none}
+  .gift-history{margin-top:1rem;padding:1.3rem;border:1px solid var(--card-border);border-radius:18px;background:var(--card-bg)}
+  .gift-history h2{margin:0 0 .8rem;color:var(--text-main);font:800 1rem 'Outfit',sans-serif}
+  .gift-history-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.7rem;padding:.65rem 0;border-top:1px solid var(--card-border)}
+  .gift-history-row span{display:block;color:var(--text-muted);font-size:.68rem}.gift-history-row strong{color:var(--text-main);font-size:.75rem}.gift-history-row em{color:var(--text-muted);font-size:.68rem;font-style:normal;text-align:right}
+  .gift-empty{margin:0;color:var(--text-muted);font-size:.77rem}
+  html[data-theme='dark'] .gift-step b{background:#3d3020;color:#e3bd7c}
+  @media(max-width:860px){.gift-layout{grid-template-columns:1fr}.gift-head{align-items:start}.gift-hero{min-height:260px}.gift-hero-label{margin-top:2.5rem}}
+  @media(max-width:530px){.gift-page{padding:.5rem 0 2rem}.gift-head{flex-direction:column}.gift-head h1{font-size:1.7rem}.gift-hero-content{padding:1.6rem}.gift-hero{min-height:275px}.gift-hero-status{top:1.15rem;right:1.2rem}.gift-card-data{grid-template-columns:1fr 1fr}.gift-card-data span:last-child{grid-column:1/-1}.gift-stats{gap:.4rem}.gift-stat{padding:.7rem}.gift-stat strong{font-size:1.15rem}.gift-input-row{grid-template-columns:1fr}.gift-check{width:100%}}
+</style>
+{% endblock %}
+{% block content %}
+<main class="gift-page">
+  <header class="gift-head"><div><span class="gift-eyebrow">DAKAR · КАССА</span><h1>Подарочные сертификаты</h1><p>Проверьте карту, получите оплату и активируйте её одним действием.</p></div><a class="gift-back" href="{% url 'pos' %}">← Вернуться в кассу</a></header>
+  <div class="gift-layout">
+    <div>
+      <section class="gift-hero" aria-label="Данные подарочного сертификата"><span class="gift-hero-status" id="giftHeroStatus" data-state="EMPTY">Ожидает сканирования</span><div class="gift-hero-content"><div class="gift-brand"><svg class="gift-mark" viewBox="0 0 100 72" aria-hidden="true"><path d="M58 17H23L9 53H45L82 5"/></svg><span class="gift-brand-name">DAKAR<small>AUTO COSMETICS</small></span></div><div class="gift-hero-label">Подарочный сертификат</div><div class="gift-hero-value" id="giftHeroValue">Ваша карта</div><div class="gift-card-data" id="giftCardData"><span>Номинал<strong id="giftHeroNominal">—</strong></span><span>Остаток<strong id="giftHeroBalance">—</strong></span><span>Номер карты<strong id="giftHeroNumber">—</strong></span></div><div class="gift-hero-foot" id="giftHeroFoot">Штрихкод на обороте · действует 45 дней после активации</div></div></section>
+      <div class="gift-stats"><div class="gift-stat"><span>В реестре</span><strong>{{ cards_total }}</strong></div><div class="gift-stat"><span>Не активированы</span><strong>{{ cards_unissued }}</strong></div><div class="gift-stat"><span>Доступны к оплате</span><strong>{{ cards_active }}</strong></div></div>
+      <section class="gift-history"><h2>Последние действия</h2>{% for event in recent_events %}<div class="gift-history-row"><div><strong>{{ event.get_kind_display }} · ••••{{ event.card.code_last4 }}</strong><span>{{ event.actor.get_full_name|default:event.actor.username }}{% if event.order %} · чек {{ event.order.order_number }}{% endif %}</span></div><em>{{ event.amount|tenge }} ₸<br>{{ event.created_at|date:'d.m H:i' }}</em></div>{% empty %}<p class="gift-empty">После первой активации здесь появится история карт.</p>{% endfor %}</section>
+    </div>
+    <section class="gift-panel"><h2>Активировать карту</h2><p class="gift-panel-sub">Сканируйте штрихкод с оборота. Проверка ничего не списывает и не запускает срок.</p>
+      <form method="post" id="giftActivationForm">{% csrf_token %}<div class="gift-step"><b>1</b> Проверьте сертификат</div><div class="gift-input-row"><label class="gift-field" for="giftCode">Штрихкод<input id="giftCode" name="code" type="text" required autocomplete="off" spellcheck="false" placeholder="Сканируйте или введите DKR-…" value="{{ request.POST.code|default:'' }}"></label><button class="gift-check" id="giftLookupBtn" type="button">Проверить</button></div><div class="gift-preview" id="giftPreview" role="status" aria-live="polite">Данные карты появятся здесь после сканирования.</div><div class="gift-step"><b>2</b> Получите оплату</div><label class="gift-field" for="giftPaymentMethod">Способ оплаты<select id="giftPaymentMethod" name="payment_method" required><option value="">Выберите способ</option><option value="CASH">Наличные</option><option value="CARD">Карта</option><option value="TRANSFER">Kaspi QR</option></select></label><label class="gift-confirm"><input type="checkbox" name="payment_received" value="yes" required><span id="giftConfirmText">Подтверждаю, что покупатель оплатил полный номинал карты.</span></label><button class="gift-submit" id="giftActivateButton" type="submit" disabled>Активировать на 45 дней →</button></form>
+    </section>
+  </div>
+</main>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+(() => {
+  const code = document.getElementById('giftCode');
+  const preview = document.getElementById('giftPreview');
+  const button = document.getElementById('giftLookupBtn');
+  const activateButton = document.getElementById('giftActivateButton');
+  const confirmText = document.getElementById('giftConfirmText');
+  const heroValue = document.getElementById('giftHeroValue');
+  const heroFoot = document.getElementById('giftHeroFoot');
+  const heroStatus = document.getElementById('giftHeroStatus');
+  const heroData = document.getElementById('giftCardData');
+  const heroNominal = document.getElementById('giftHeroNominal');
+  const heroBalance = document.getElementById('giftHeroBalance');
+  const heroNumber = document.getElementById('giftHeroNumber');
+  function resetHero() {
+    heroValue.textContent = 'Ваша карта'; heroFoot.textContent = 'Штрихкод на обороте · действует 45 дней после активации';
+    heroStatus.textContent = 'Ожидает сканирования'; heroStatus.dataset.state = 'EMPTY'; heroData.classList.remove('is-visible');
+  }
+  async function checkCard() {
+    activateButton.disabled = true;
+    preview.classList.remove('is-active');
+    preview.textContent = 'Проверяем карту…';
+    try {
+      const response = await fetch('{% url "gift_card_lookup" %}', {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':document.querySelector('#giftActivationForm [name=csrfmiddlewaretoken]').value}, body:JSON.stringify({code:code.value})});
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Не удалось проверить карту.');
+      preview.replaceChildren();
+      const title = document.createElement('strong'); title.textContent = `Карта ••••${data.last4} · ${Number(data.nominal).toLocaleString('ru-RU')} ₸`;
+      preview.append(title, document.createElement('br'), document.createTextNode(data.state_label));
+      if (data.expires_at) preview.append(document.createElement('br'), document.createTextNode(`Действует до ${data.expires_at}`));
+      heroValue.textContent = `${Number(data.nominal).toLocaleString('ru-RU')} ₸`;
+      heroNominal.textContent = `${Number(data.nominal).toLocaleString('ru-RU')} ₸`;
+      heroBalance.textContent = `${Number(data.balance).toLocaleString('ru-RU')} ₸`;
+      heroNumber.textContent = `•••• ${data.last4}`;
+      heroStatus.textContent = data.state_label; heroStatus.dataset.state = data.state; heroData.classList.add('is-visible');
+      heroFoot.textContent = data.expires_at ? `Действует до ${data.expires_at}` : 'Срок 45 дней начнётся после активации';
+      if (data.history && data.history.length) {
+        const history = document.createElement('ul'); history.className = 'gift-preview-history';
+        data.history.forEach(event => {
+          const line = document.createElement('li');
+          const left = document.createElement('span'); left.textContent = `${event.kind} · ${event.created_at}${event.order_number ? ' · '+event.order_number : ''}`;
+          const right = document.createElement('strong'); right.textContent = `${Number(event.amount).toLocaleString('ru-RU')} ₸`;
+          line.append(left, right); history.append(line);
+        });
+        preview.append(history);
+      }
+      activateButton.disabled = data.state !== 'UNISSUED';
+      confirmText.textContent = data.state === 'UNISSUED' ? `Подтверждаю получение ${Number(data.nominal).toLocaleString('ru-RU')} ₸ за эту карту.` : 'Эта карта уже активирована или недоступна для активации.';
+      preview.classList.add('is-active');
+    } catch (error) { preview.textContent = error.message; resetHero(); heroStatus.textContent = 'Карта не найдена'; heroStatus.dataset.state = 'BLOCKED'; }
+  }
+  button.addEventListener('click', checkCard);
+  code.addEventListener('input', () => { activateButton.disabled = true; resetHero(); preview.classList.remove('is-active'); preview.textContent = 'Нажмите «Проверить», чтобы увидеть номинал и статус.'; });
+  code.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); checkCard(); } });
+})();
+</script>
+{% endblock %}

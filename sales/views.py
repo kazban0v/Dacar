@@ -83,11 +83,15 @@ class CheckoutAPIView(APIView):
             cache.delete('dacar_live_kpi')
 
             order_serializer = SaleOrderSerializer(order, context={'request': request})
+            gift_event = order.gift_events.filter(kind='REDEEM').first()
             return Response({
                 'success': True,
                 'message': f'Чек № {order.order_number} успешно проведен!',
                 'print_status': print_status,
                 'replayed': serializer.replayed,
+                'gift_card': ({'last4': gift_event.card.code_last4,
+                               'used': str(gift_event.amount),
+                               'balance_after': str(gift_event.balance_after)} if gift_event else None),
                 'order': order_serializer.data
             }, status=status.HTTP_200_OK if serializer.replayed else status.HTTP_201_CREATED)
         return Response({
@@ -137,7 +141,8 @@ def sales_orders_list_view(request):
     if cashier_period not in {'today', 'yesterday', 'week'}:
         cashier_period = 'today'
 
-    orders = SaleOrder.objects.select_related('cashier', 'refunded_by').prefetch_related('items__product', 'payments').all()
+    orders = SaleOrder.objects.select_related('cashier', 'refunded_by').prefetch_related(
+        'items__product', 'payments', 'gift_events__card').all()
 
     cashier_period_label = 'сегодня'
     cashier_stats_label = 'Чеков сегодня'

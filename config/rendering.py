@@ -43,6 +43,7 @@ _DESKTOP_ONLY_TEMPLATES = {
     'sales/pos_terminal.html',
     'sales/print_receipt.html',
     'sales/refund_confirm.html',
+    'sales/gift_cards.html',
     'catalog/stock_movement.html',
     'analytics/audit_log.html',
 }

@@ -99,6 +99,7 @@ button { min-height:44px; padding:10px 18px; border:0; border-radius:10px; backg
         {% if order.payment_method == 'MIXED' %}{% for payment in order.payments.all %}
         <div class="pair"><span>{{ payment.get_method_display }}</span><span>{{ payment.amount|tenge }} ₸</span></div>
         {% empty %}<div>Разбивка старого чека не сохранена</div>{% endfor %}{% endif %}
+        {% for event in order.gift_events.all %}{% if event.kind == 'REDEEM' %}<div class="pair"><span>Сертификат ••••{{ event.card.code_last4 }}</span><span>Остаток {{ event.balance_after|tenge }} ₸</span></div>{% endif %}{% endfor %}
         {% if order.status == 'COMPLETED' and order.payment_method == 'CASH' %}
         <div class="pair"><span>Получено</span><span class="money">{{ order.paid_amount|tenge }} ₸</span></div>
         <div class="pair"><span>Сдача</span><span class="money">{{ order.change_amount|tenge }} ₸</span></div>

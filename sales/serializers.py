@@ -5,7 +5,7 @@ from sales.models import SaleOrder, SaleOrderItem, SalePayment
 
 
 class PaymentPartSerializer(serializers.Serializer):
-    method = serializers.ChoiceField(choices=['CASH', 'CARD', 'TRANSFER'])
+    method = serializers.ChoiceField(choices=['CASH', 'CARD', 'TRANSFER', 'GIFT'])
     amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal('0.01'))
 
 
@@ -25,7 +25,8 @@ class SaleCheckoutSerializer(serializers.Serializer):
     discount_amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=0,
         required=False, default=Decimal('0.00'))
     notes = serializers.CharField(required=False, allow_blank=True, default='', max_length=2000)
-    payments = PaymentPartSerializer(many=True, required=False, max_length=3)
+    payments = PaymentPartSerializer(many=True, required=False, max_length=4)
+    gift_code = serializers.CharField(required=False, allow_blank=True, default='', max_length=32, write_only=True)
 
     def validate(self, attrs):
         parts = attrs.get('payments', [])
@@ -34,6 +35,11 @@ class SaleCheckoutSerializer(serializers.Serializer):
                 raise serializers.ValidationError('Укажите минимум два разных способа оплаты.')
         elif parts:
             raise serializers.ValidationError('Разбивка доступна только для смешанной оплаты.')
+        has_gift = attrs['payment_method'] == 'GIFT' or any(part['method'] == 'GIFT' for part in parts)
+        if has_gift != bool(attrs.get('gift_code')):
+            raise serializers.ValidationError('Для оплаты сертификатом отсканируйте карту.')
+        if attrs.get('gift_code') and attrs['payment_method'] not in ('GIFT', 'MIXED'):
+            raise serializers.ValidationError('Сертификат можно использовать только как способ оплаты.')
         return attrs
 
     def validate_items(self, value):

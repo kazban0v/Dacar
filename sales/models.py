@@ -31,6 +31,7 @@ class SaleOrder(models.Model):
         CASH = 'CASH', 'Наличные'
         CARD = 'CARD', 'Карта'
         TRANSFER = 'TRANSFER', 'Kaspi QR'
+        GIFT = 'GIFT', 'Сертификат'
         MIXED = 'MIXED', 'Смешанная'
 
     order_number = models.CharField(max_length=50, unique=True, db_index=True, verbose_name="Номер чека")
@@ -133,14 +134,76 @@ class SalePayment(models.Model):
     """Applied payment amounts, excluding cash change. Refund retains original split."""
     order = models.ForeignKey(SaleOrder, on_delete=models.CASCADE, related_name='payments')
     method = models.CharField(max_length=20, choices=[
-        ('CASH', 'Наличные'), ('CARD', 'Карта'), ('TRANSFER', 'Kaspi QR')])
+        ('CASH', 'Наличные'), ('CARD', 'Карта'), ('TRANSFER', 'Kaspi QR'),
+        ('GIFT', 'Сертификат')])
     amount = models.DecimalField(max_digits=12, decimal_places=2)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['order', 'method'], name='sale_payment_unique_method'),
             models.CheckConstraint(check=models.Q(amount__gte=0), name='sale_payment_nonnegative'),
-            models.CheckConstraint(check=models.Q(method__in=['CASH', 'CARD', 'TRANSFER']), name='sale_payment_method_valid'),
+            models.CheckConstraint(check=models.Q(method__in=['CASH', 'CARD', 'TRANSFER', 'GIFT']), name='sale_payment_method_valid'),
+        ]
+
+
+class GiftCard(models.Model):
+    """One printed bearer card. Only the hash and last four characters are stored."""
+
+    code_hash = models.CharField(max_length=64, unique=True, db_index=True)
+    code_last4 = models.CharField(max_length=4)
+    nominal = models.DecimalField(max_digits=12, decimal_places=2)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    activated_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    activated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    activation_payment_method = models.CharField(max_length=20, blank=True, choices=[
+        ('CASH', 'Наличные'), ('CARD', 'Карта'), ('TRANSFER', 'Kaspi QR')])
+    is_blocked = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(check=models.Q(nominal__gt=0), name='gift_card_nominal_positive'),
+            models.CheckConstraint(check=models.Q(balance__gte=0), name='gift_card_balance_nonnegative'),
+            models.CheckConstraint(check=models.Q(balance__lte=models.F('nominal')), name='gift_card_balance_not_above_nominal'),
+        ]
+
+    @property
+    def state(self):
+        from django.utils import timezone
+        if self.is_blocked:
+            return 'BLOCKED'
+        if self.activated_at is None:
+            return 'UNISSUED'
+        if self.expires_at and self.expires_at <= timezone.now():
+            return 'EXPIRED'
+        if self.balance <= 0:
+            return 'SPENT'
+        return 'ACTIVE'
+
+    def __str__(self):
+        return f'Сертификат ••••{self.code_last4}'
+
+
+class GiftCardEvent(models.Model):
+    class Kind(models.TextChoices):
+        ACTIVATE = 'ACTIVATE', 'Активация'
+        REDEEM = 'REDEEM', 'Оплата'
+        REFUND = 'REFUND', 'Возврат'
+
+    card = models.ForeignKey(GiftCard, on_delete=models.PROTECT, related_name='events')
+    kind = models.CharField(max_length=12, choices=Kind.choices)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    balance_after = models.DecimalField(max_digits=12, decimal_places=2)
+    order = models.ForeignKey(SaleOrder, on_delete=models.PROTECT, null=True, blank=True, related_name='gift_events')
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at', '-pk']
+        constraints = [
+            models.UniqueConstraint(fields=['order', 'kind'], condition=models.Q(order__isnull=False), name='gift_event_unique_order_kind'),
+            models.CheckConstraint(check=models.Q(amount__gt=0), name='gift_event_positive_amount'),
         ]
 
 
