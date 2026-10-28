@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+{% load l10n admin_urls static %}
+
+{% block extrahead %}{{ block.super }}<script src="{% static 'admin/js/cancel.js' %}" async></script>{% endblock %}
+{% block bodyclass %}{{ block.super }} delete-confirmation dc-workspace{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="breadcrumbs dc-breadcrumbs">
+    <a href="{% url 'admin:index' %}">Панель</a><span>/</span>
+    <a href="{% url opts|admin_urlname:'changelist' %}">Товары</a><span>/</span>
+    <strong>Удаление</strong>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="dc-danger-card">
+    <span class="dc-danger-icon" aria-hidden="true">!</span>
+    <div class="dc-danger-copy">
+      <span class="dc-kicker">Проверка перед удалением</span>
+      <h1>Удалить товары без истории продаж?</h1>
+      <p>Будет удалено: <strong>{{ allowed_count }}</strong>. Товаров с историей продаж защищено: <strong>{{ protected_count }}</strong>.</p>
+      {% if allowed_count %}
+        <details class="dc-delete-details">
+          <summary>Показать выбранные товары</summary>
+          <ul>{% for object in queryset %}<li>{{ object }}</li>{% endfor %}</ul>
+        </details>
+        <form method="post">{% csrf_token %}
+          {% for object in queryset %}<input type="hidden" name="{{ action_checkbox_name }}" value="{{ object.pk|unlocalize }}">{% endfor %}
+          <input type="hidden" name="action" value="delete_unused_products">
+          <input type="hidden" name="confirm" value="yes">
+          <div class="dc-confirm-actions">
+            <input type="submit" value="Удалить {{ allowed_count }}">
+            <a href="#" class="button cancel-link">Отмена</a>
+          </div>
+        </form>
+      {% else %}
+        <p>Все выбранные товары используются в чеках. Их можно только снять с продажи.</p>
+        <div class="dc-confirm-actions"><a href="#" class="button cancel-link">Вернуться</a></div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

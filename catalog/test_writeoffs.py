@@ -100,6 +100,35 @@ class WriteOffTests(TestCase):
         self.assertEqual(self.product.stock_qty, Decimal('10.000'))
         self.assertIsNone(movement.reversed_at)
 
+    def test_cashier_can_record_receipt_but_not_other_stock_actions(self):
+        self.client.force_login(self.cashier)
+        response = self.write_off(
+            action='IN',
+            quantity='3',
+            writeoff_reason='',
+            client_sync_id='cashier-receipt-key-0001',
+            comment='Поставка в магазин',
+            cost_price='1.00',
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.stock_qty, Decimal('13.000'))
+        movement = StockMovement.objects.get(movement_type='IN')
+        self.assertEqual(movement.created_by, self.cashier)
+        self.assertEqual(movement.comment, 'Поставка в магазин')
+        self.assertEqual(movement.cost_price, self.product.purchase_price)
+        self.assertTrue(AuditLog.objects.filter(action_type='STOCK_IN', user=self.cashier).exists())
+
+        forbidden = self.write_off(
+            action='ADJUSTMENT',
+            quantity='99',
+            writeoff_reason='',
+            client_sync_id='cashier-adjust-key-0001',
+        )
+        self.assertEqual(forbidden.status_code, 403)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.stock_qty, Decimal('13.000'))
+
     def test_desktop_form_shows_writeoff_reasons_and_reversal_status(self):
         self.client.force_login(self.admin)
         response = self.client.get('/catalog/stock/movements/?product=%s&action=OUT' % self.product.pk)

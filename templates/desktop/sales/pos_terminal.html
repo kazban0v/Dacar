@@ -2242,6 +2242,19 @@
         color: var(--text-muted);
     }
 
+    .checkout-surcharge {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        margin-top: .4rem;
+        padding: .28rem .6rem;
+        border-radius: 999px;
+        background: rgba(245, 158, 11, .14);
+        color: #b45309;
+        font-size: .76rem;
+        font-weight: 800;
+    }
+
     .checkout-section-label {
         font-size: 0.78rem;
         font-weight: 750;
@@ -3686,6 +3699,13 @@
                             </button>
                             <div class="pos-more-menu" id="cartMoreMenu" hidden role="menu">
                                 <div class="pos-more-menu-header">Дополнительно</div>
+                                <button type="button" class="pos-more-menu-item" role="menuitem" onclick="openStockReceiptModal(); closeCartMoreMenu();">
+                                    <i class="fa-solid fa-boxes-stacked"></i>
+                                    <div>
+                                        <strong>Приход товара</strong>
+                                        <small>Добавить количество на склад</small>
+                                    </div>
+                                </button>
                                 <button type="button" class="pos-more-menu-item" role="menuitem" onclick="openCompanyInvoice(); closeCartMoreMenu();">
                                     <i class="fa-solid fa-file-invoice"></i>
                                     <div>
@@ -3771,6 +3791,10 @@
                         <div class="checkout-amount-sub">
                             Без скидки: <span id="summarySubtotal">0 ₸</span>
                         </div>
+                        <div class="checkout-surcharge" id="kaspiSurchargeRow" hidden>
+                            <i class="fa-solid fa-circle-plus"></i>
+                            Наценка 15%: <span id="kaspiSurchargeAmount">0 ₸</span>
+                        </div>
                     </div>
 
                     <!-- Payment methods -->
@@ -3786,9 +3810,13 @@
                             <button class="pay-method-btn" data-method="TRANSFER"
                                 onclick="setPaymentMethod('TRANSFER', this)"><i class="fa-solid fa-qrcode"></i> Kaspi
                                 QR</button>
+                            <button class="pay-method-btn" data-method="KASPI_RED"
+                                onclick="setPaymentMethod('KASPI_RED', this)">Kaspi Red <small>+15%</small></button>
+                            <button class="pay-method-btn" data-method="KASPI_INSTALLMENT"
+                                onclick="setPaymentMethod('KASPI_INSTALLMENT', this)">Kaspi Рассрочка <small>+15%</small></button>
                             <button class="pay-method-btn" data-method="MIXED"
                                 onclick="setPaymentMethod('MIXED', this)">Смешанная</button>
-                            <button class="pay-method-btn" data-method="GIFT" style="grid-column: span 2;"
+                            <button class="pay-method-btn" data-method="GIFT" style="grid-column: span 3;"
                                 onclick="setPaymentMethod('GIFT', this)"><i class="fa-solid fa-gift"></i>
                                 Сертификат</button>
                         </div>
@@ -3872,6 +3900,14 @@
                             <div class="pos-more-menu" id="posMoreMenu" hidden role="menu">
                                 <div class="pos-more-menu-header">Дополнительно</div>
                                 <button type="button" class="pos-more-menu-item" role="menuitem"
+                                    onclick="openStockReceiptModal(); closePosMoreMenu();">
+                                    <i class="fa-solid fa-boxes-stacked"></i>
+                                    <div>
+                                        <strong>Приход товара</strong>
+                                        <small>Добавить количество на склад</small>
+                                    </div>
+                                </button>
+                                <button type="button" class="pos-more-menu-item" role="menuitem"
                                     onclick="openCompanyInvoice(); closePosMoreMenu();">
                                     <i class="fa-solid fa-file-invoice"></i>
                                     <div>
@@ -3909,6 +3945,38 @@
         <span><kbd>F9</kbd> Оплата</span>
         <span><kbd>Esc</kbd> Очистить корзину</span>
     </footer>
+</div>
+
+<div class="modal-overlay" id="stockReceiptModal" aria-hidden="true"
+    onclick="if(event.target===this)closeStockReceiptModal()">
+    <div class="gift-overage-box" role="dialog" aria-modal="true" aria-labelledby="stockReceiptTitle">
+        <div class="gift-overage-head">
+            <div class="gift-overage-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <div>
+                <h3 id="stockReceiptTitle">Приход товара</h3>
+                <p>Отсканируйте штрихкод или выберите товар, затем укажите количество.</p>
+            </div>
+        </div>
+        <div style="display:grid;gap:.75rem;margin-top:1rem">
+            <label class="checkout-section-label">Товар</label>
+            <input id="stockReceiptProduct" class="form-control" list="stockReceiptProductList"
+                autocomplete="off" placeholder="Штрихкод, артикул или название">
+            <datalist id="stockReceiptProductList"></datalist>
+            <label class="checkout-section-label">Количество</label>
+            <input id="stockReceiptQuantity" class="form-control" type="number" min="0.001" step="0.001"
+                inputmode="decimal" placeholder="Например: 10">
+            <label class="checkout-section-label">Комментарий (необязательно)</label>
+            <input id="stockReceiptComment" class="form-control" maxlength="255"
+                placeholder="Например: поставка по накладной">
+            <div id="stockReceiptStatus" role="status" style="min-height:1.2rem;color:var(--text-muted);font-size:.82rem"></div>
+        </div>
+        <div style="display:flex;gap:.65rem;justify-content:flex-end;margin-top:1rem">
+            <button type="button" class="btn btn-secondary" onclick="closeStockReceiptModal()">Отмена</button>
+            <button type="button" class="btn btn-primary" id="stockReceiptSubmit" onclick="submitStockReceipt()">
+                <i class="fa-solid fa-check"></i> Добавить на склад
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- FLOATING QUICK CART BAR FOR MOBILE -->
@@ -4044,6 +4112,10 @@
             <tr>
                 <td>Скидка</td>
                 <td style="text-align: right;"><span id="rDiscount">0</span> ₸</td>
+            </tr>
+            <tr id="rSurchargeRow" hidden>
+                <td>Наценка Kaspi 15%</td>
+                <td style="text-align: right;">+<span id="rSurcharge">0</span> ₸</td>
             </tr>
             <tr class="receipt-grand-total-row">
                 <td style="font-weight: 900; font-size: 13px;">ИТОГО К ОПЛАТЕ</td>
@@ -4535,6 +4607,103 @@
         }));
     }
 
+    function openStockReceiptModal() {
+        const modal = document.getElementById('stockReceiptModal');
+        const list = document.getElementById('stockReceiptProductList');
+        list.innerHTML = '';
+        getAllProducts().forEach(product => {
+            const option = document.createElement('option');
+            option.value = product.barcode || product.sku || product.name;
+            option.label = `${product.name} · остаток ${formatQty(product.stock_qty)} ${product.unit}`;
+            list.appendChild(option);
+        });
+        document.getElementById('stockReceiptProduct').value = '';
+        document.getElementById('stockReceiptQuantity').value = '';
+        document.getElementById('stockReceiptComment').value = '';
+        document.getElementById('stockReceiptStatus').textContent = '';
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        setTimeout(() => document.getElementById('stockReceiptProduct').focus(), 60);
+    }
+
+    function closeStockReceiptModal() {
+        const modal = document.getElementById('stockReceiptModal');
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+
+    function formatQty(value) {
+        const number = Number(value || 0);
+        return Number.isInteger(number) ? String(number) : number.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+    }
+
+    function findStockReceiptProduct(value) {
+        const query = String(value || '').trim().toLowerCase();
+        return getAllProducts().find(product =>
+            [product.barcode, product.sku, product.name].some(field => String(field || '').trim().toLowerCase() === query)
+        );
+    }
+
+    async function submitStockReceipt() {
+        const productInput = document.getElementById('stockReceiptProduct');
+        const quantityInput = document.getElementById('stockReceiptQuantity');
+        const status = document.getElementById('stockReceiptStatus');
+        const submit = document.getElementById('stockReceiptSubmit');
+        const product = findStockReceiptProduct(productInput.value);
+        const quantity = Number(quantityInput.value);
+        if (!product) {
+            status.textContent = 'Выберите товар из списка или отсканируйте его штрихкод.';
+            status.style.color = 'var(--accent-red, #dc2626)';
+            productInput.focus();
+            return;
+        }
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+            status.textContent = 'Введите количество больше нуля.';
+            status.style.color = 'var(--accent-red, #dc2626)';
+            quantityInput.focus();
+            return;
+        }
+        submit.disabled = true;
+        status.textContent = 'Сохраняем приход…';
+        status.style.color = 'var(--text-muted)';
+        try {
+            const response = await fetch('{% url "api_stock_action" %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+                body: JSON.stringify({
+                    client_sync_id: `stock-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+                    product_id: product.id,
+                    action: 'IN',
+                    quantity: quantity.toFixed(3),
+                    comment: document.getElementById('stockReceiptComment').value.trim()
+                })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.error || 'Не удалось сохранить приход.');
+            document.querySelectorAll(`.product-card[data-id="${product.id}"]`).forEach(card => {
+                card.dataset.stock = data.stock_qty;
+                card.classList.toggle('out-of-stock', Number(data.stock_qty) <= 0);
+                const cell = card.querySelector('.product-stock-cell');
+                if (cell) {
+                    cell.textContent = `${formatQty(data.stock_qty)} ${data.unit}`;
+                    cell.classList.remove('zero-stock', 'low-stock', 'in-stock');
+                    cell.classList.add(data.stock_qty <= 0 ? 'zero-stock' : (data.stock_qty <= 2 ? 'low-stock' : 'in-stock'));
+                }
+                const mobileStock = card.querySelector('.product-mobile-stock');
+                if (mobileStock) {
+                    mobileStock.textContent = `Ост: ${formatQty(data.stock_qty)} ${data.unit} · ${formatMoney(product.retail_price)} ₸`;
+                }
+            });
+            closeStockReceiptModal();
+            showPosToast(`Приход сохранён: ${product.name} +${formatQty(quantity)} ${product.unit}.`, 'success');
+        } catch (error) {
+            status.textContent = error.message;
+            status.style.color = 'var(--accent-red, #dc2626)';
+        } finally {
+            submit.disabled = false;
+        }
+    }
+
     // 1. Filter Catalog Products in DOM
     function renderProducts(query = '') {
         const queryVal = (query || (posSearchInput ? posSearchInput.value : '')).toLowerCase().trim();
@@ -4722,6 +4891,33 @@
     let lastKeyTime = 0;
 
     document.addEventListener('keydown', (e) => {
+        const stockModal = document.getElementById('stockReceiptModal');
+        if (stockModal && stockModal.classList.contains('active')) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeStockReceiptModal();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const active = document.activeElement;
+                if (active === document.getElementById('stockReceiptProduct')) {
+                    const product = findStockReceiptProduct(active.value);
+                    const status = document.getElementById('stockReceiptStatus');
+                    if (product) {
+                        active.value = product.barcode || product.sku || product.name;
+                        status.textContent = `${product.name} · остаток ${formatQty(product.stock_qty)} ${product.unit}`;
+                        status.style.color = 'var(--accent-green, #059669)';
+                        document.getElementById('stockReceiptQuantity').focus();
+                    } else {
+                        status.textContent = 'Товар с таким штрихкодом не найден.';
+                        status.style.color = 'var(--accent-red, #dc2626)';
+                    }
+                } else {
+                    submitStockReceipt();
+                }
+                barcodeBuffer = '';
+            }
+            return;
+        }
         // Hotkeys handling
         if (e.key === 'F2') {
             e.preventDefault();
@@ -5028,22 +5224,25 @@
 
     function updateCartTotals() {
         let subtotal = 0;
-        let itemDiscounts = 0;
         let totalItems = 0;
         cart.forEach(item => {
             subtotal += (item.quantity * item.unit_price);
-            itemDiscounts += item.discount || 0;
             totalItems += item.quantity;
         });
 
-        const globalDiscount = parseFloat(globalDiscountInput.value) || 0;
-        const finalTotal = Math.max(0, subtotal - itemDiscounts - globalDiscount);
+        const surcharge = getSurchargeAmount();
+        const finalTotal = getFinalTotal();
 
         summarySubtotal.innerText = `${formatMoney(subtotal)} ₸`;
         summaryFinalTotal.innerText = `${formatMoney(finalTotal)} ₸`;
         const checkoutDisplay = document.getElementById('checkoutAmountDisplay');
         if (checkoutDisplay) {
             checkoutDisplay.innerText = `${formatMoney(finalTotal)} ₸`;
+        }
+        const surchargeRow = document.getElementById('kaspiSurchargeRow');
+        if (surchargeRow) {
+            surchargeRow.hidden = surcharge <= 0;
+            document.getElementById('kaspiSurchargeAmount').textContent = `${formatMoney(surcharge)} ₸`;
         }
         const cartCountText = document.getElementById('cartItemsCountText');
         if (cartCountText) {
@@ -5352,6 +5551,7 @@
         document.getElementById('mixedPayments').hidden = method !== 'MIXED';
         document.getElementById('giftPayBox').hidden = method !== 'GIFT';
         if (method !== 'GIFT' && method !== 'MIXED' && giftCard) resetGiftCard();
+        updateCartTotals();
         updateMixedBalance();
 
         const cashRow = document.getElementById('cashDetailsRow');
@@ -5369,7 +5569,7 @@
         }
     }
 
-    function getFinalTotal() {
+    function getBaseTotal() {
         let subtotal = 0;
         cart.forEach(item => {
             subtotal += Math.round(item.quantity * item.unit_price * 100);
@@ -5377,6 +5577,15 @@
         });
         const globalDiscount = parseFloat(globalDiscountInput.value) || 0;
         return Math.max(0, subtotal - Math.round(globalDiscount * 100)) / 100;
+    }
+
+    function getSurchargeAmount() {
+        if (!['KASPI_RED', 'KASPI_INSTALLMENT'].includes(selectedPaymentMethod)) return 0;
+        return Math.round(getBaseTotal() * 15) / 100;
+    }
+
+    function getFinalTotal() {
+        return Math.round((getBaseTotal() + getSurchargeAmount()) * 100) / 100;
     }
 
     function calculateChange() {
@@ -5525,6 +5734,9 @@
 
         document.getElementById('rSubtotal').innerText = formatMoney(order.subtotal_amount);
         document.getElementById('rDiscount').innerText = formatMoney(order.discount_amount);
+        const surcharge = Number(order.surcharge_amount || 0);
+        document.getElementById('rSurchargeRow').hidden = surcharge <= 0;
+        document.getElementById('rSurcharge').innerText = formatMoney(surcharge);
         document.getElementById('rTotal').innerText = formatMoney(order.total_amount);
         document.getElementById('rPaid').innerText = formatMoney(order.paid_amount);
         document.getElementById('rChange').innerText = formatMoney(order.change_amount);

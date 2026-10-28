@@ -23,7 +23,7 @@
 
     <section class="dc-insight-grid" aria-label="Быстрый обзор">
       <article class="dc-insight-card dc-insight-blue"><span class="dc-insight-icon">◈</span><div><small>Режим доступа</small><strong>{% if user.is_superuser %}Полный администратор{% else %}Администратор{% endif %}</strong><span>Права применяются автоматически</span></div></article>
-      <article class="dc-insight-card dc-insight-green"><span class="dc-insight-icon">✓</span><div><small>Рабочая среда</small><strong>DACAR POS v1.1</strong><span>Каталог и продажи доступны</span></div></article>
+      <article class="dc-insight-card dc-insight-green"><span class="dc-insight-icon">✓</span><div><small>Рабочая среда</small><strong>DACAR POS v1.2</strong><span>Каталог и продажи доступны</span></div></article>
       <article class="dc-insight-card dc-insight-orange"><span class="dc-insight-icon">↗</span><div><small>Последний вход</small><strong>{{ user.last_login|date:"d.m.Y H:i"|default:"Сейчас" }}</strong><span>{{ user.get_username }}</span></div></article>
     </section>
 
@@ -35,7 +35,7 @@
       </a>
     {% endif %}
 
-    <section class="dc-section-heading"><div><span class="dc-kicker">WORKSPACE</span><h2>Разделы управления</h2></div><span class="dc-section-note">{{ app_list|length }} раздела</span></section>
+    <section class="dc-section-heading"><div><span class="dc-kicker">УПРАВЛЕНИЕ</span><h2>Разделы системы</h2></div><span class="dc-section-note">Доступно: {{ app_list|length }}</span></section>
 
     <div id="content-main" class="dc-app-grid">
       {% for app in app_list %}
@@ -62,7 +62,7 @@
 
 {% block sidebar %}
   <aside id="content-related" class="dc-recent-card">
-    <div class="dc-section-heading"><div><span class="dc-kicker">ACTIVITY</span><h2>Последние действия</h2></div></div>
+    <div class="dc-section-heading"><div><span class="dc-kicker">ИСТОРИЯ</span><h2>Последние действия</h2></div></div>
     {% load log %}{% get_admin_log 8 as admin_log for_user user %}
     {% if not admin_log %}
       <div class="dc-recent-empty"><span>◌</span><p>История действий появится здесь</p><small>Добавления и изменения будут отображаться автоматически.</small></div>

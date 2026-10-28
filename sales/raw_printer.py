@@ -120,6 +120,8 @@ def build_escpos_bytes_for_order(order, shop_info=None):
     pair('Без скидки', money(order.subtotal_amount))
     if order.discount_amount:
         pair('Скидка на чек', money(order.discount_amount))
+    if order.surcharge_amount:
+        pair('Наценка Kaspi 15%', money(order.surcharge_amount))
     pair('ВОЗВРАТ' if refunded else 'ИТОГО', money(order.total_amount), bold=True, large=True)
     pair('Оплата продажи' if refunded else 'Оплата', order.get_payment_method_display())
     if order.payment_method == 'MIXED':

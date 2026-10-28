@@ -1,0 +1,44 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}{{ block.super }}{{ media }}<script src="{% static 'admin/js/cancel.js' %}" async></script>{% endblock %}
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} delete-confirmation dc-workspace{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="breadcrumbs dc-breadcrumbs">
+    <a href="{% url 'admin:index' %}">Панель</a><span>/</span>
+    <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a><span>/</span>
+    <strong>Удаление</strong>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="dc-danger-card">
+    <span class="dc-danger-icon" aria-hidden="true">!</span>
+    <div class="dc-danger-copy">
+      <span class="dc-kicker">Опасное действие</span>
+      <h1>Удалить «{{ object|truncatewords:"12" }}»?</h1>
+      {% if perms_lacking %}
+        <p>У вашей учётной записи нет прав на удаление связанных данных.</p>
+        <ul id="deleted-objects">{{ perms_lacking|unordered_list }}</ul>
+      {% elif protected %}
+        <p>Запись связана с историей, которую нельзя удалять.</p>
+        <ul id="deleted-objects">{{ protected|unordered_list }}</ul>
+      {% else %}
+        <p>Это действие нельзя отменить. Проверьте запись перед подтверждением.</p>
+        {% include "admin/includes/object_delete_summary.html" %}
+        <details class="dc-delete-details"><summary>Что будет удалено</summary><ul id="deleted-objects">{{ deleted_objects|unordered_list }}</ul></details>
+        <form method="post">{% csrf_token %}
+          <input type="hidden" name="post" value="yes">
+          {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1">{% endif %}
+          {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">{% endif %}
+          <div class="dc-confirm-actions">
+            <input type="submit" value="Да, удалить">
+            <a href="#" class="button cancel-link">Отмена</a>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

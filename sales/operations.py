@@ -15,6 +15,11 @@ from sales.models import FinancialLock, OperationReceipt, SaleOrder, SaleOrderIt
 
 CENT = Decimal('0.01')
 MAX_MONEY = Decimal('9999999999.99')
+KASPI_SURCHARGE_RATE = Decimal('0.15')
+KASPI_SURCHARGE_METHODS = {
+    SaleOrder.PaymentMethod.KASPI_RED,
+    SaleOrder.PaymentMethod.KASPI_INSTALLMENT,
+}
 
 
 class OperationConflict(APIException):
@@ -100,7 +105,13 @@ def checkout(request, data):
         discount = money(item_discounts + data['discount_amount'])
         if discount > subtotal:
             raise ValidationError('Общая скидка больше стоимости товаров.')
-        total = money(subtotal - discount)
+        base_total = money(subtotal - discount)
+        surcharge = (
+            money(base_total * KASPI_SURCHARGE_RATE)
+            if data['payment_method'] in KASPI_SURCHARGE_METHODS
+            else Decimal('0.00')
+        )
+        total = money(base_total + surcharge)
         paid = data['paid_amount']
         if paid < total:
             raise ValidationError('Внесённая сумма меньше итога чека.')
@@ -123,7 +134,7 @@ def checkout(request, data):
 
         order = SaleOrder.objects.create(order_number=SaleOrder.generate_order_number(),
             cashier=request.user, payment_method=data['payment_method'], subtotal_amount=subtotal,
-            discount_amount=discount, total_amount=total, paid_amount=paid,
+            discount_amount=discount, surcharge_amount=surcharge, total_amount=total, paid_amount=paid,
             change_amount=money(paid - total), notes=data['notes'])
         SalePayment.objects.bulk_create([SalePayment(order=order, **part) for part in parts])
         if gift_card:
@@ -144,6 +155,9 @@ def checkout(request, data):
                 'order_id': order.pk,
                 'order_number': order.order_number,
                 'total_amount': str(order.total_amount),
+                'base_total': str(base_total),
+                'surcharge_rate': ('15%' if surcharge else '0%'),
+                'surcharge_amount': str(surcharge),
                 'payment_method': order.payment_method,
                 'payments': [
                     {'method': part['method'], 'amount': str(part['amount'])}

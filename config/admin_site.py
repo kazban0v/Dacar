@@ -14,6 +14,11 @@ logger = logging.getLogger(__name__)
 class DacarAdminSite(AdminSite):
     # Preserve model registrations and Django's individual model permissions.
     index_template = 'admin/dacar_index.html'
+    site_header = 'DACAR MARKET · Управление'
+    site_title = 'DACAR Admin'
+    index_title = 'Панель управления'
+    enable_nav_sidebar = False
+    empty_value_display = '—'
 
     def has_permission(self, request):
         return super().has_permission(request) and request.user.is_admin_user

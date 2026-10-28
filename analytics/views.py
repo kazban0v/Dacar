@@ -106,6 +106,7 @@ def _sales_summary(start, end):
     gross_profit = net_revenue - net_cost
     subtotal = _money_sum(sales, 'subtotal_amount')
     discounts = _money_sum(sales, 'discount_amount')
+    surcharges = _money_sum(sales, 'surcharge_amount')
     checks = sales.count()
     refund_count = refunds.count()
     cohort_refund_count = cohort_refunds.count()
@@ -126,6 +127,7 @@ def _sales_summary(start, end):
         'gross_profit': gross_profit,
         'subtotal': subtotal,
         'discounts': discounts,
+        'surcharges': surcharges,
         'discount_rate': (discounts / subtotal * 100) if subtotal else ZERO,
         'check_count': checks,
         'refund_count': refund_count,
@@ -597,7 +599,10 @@ def _legacy_dashboard_view(request):
         total=Sum('total_amount'),
         cnt=Count('id')
     )
-    pm_sums = {'TRANSFER': 0.0, 'QR': 0.0, 'CASH': 0.0, 'CARD': 0.0, 'MIXED': 0.0}
+    pm_sums = {
+        'TRANSFER': 0.0, 'QR': 0.0, 'CASH': 0.0, 'CARD': 0.0, 'MIXED': 0.0,
+        'KASPI_RED': 0.0, 'KASPI_INSTALLMENT': 0.0,
+    }
     total_pm_sum = 0.0
     for p in payment_stats:
         m = p['payment_method']
@@ -607,7 +612,10 @@ def _legacy_dashboard_view(request):
 
     qr_total = pm_sums.get('TRANSFER', 0.0) + pm_sums.get('QR', 0.0)
     cash_total = pm_sums.get('CASH', 0.0)
-    card_total = pm_sums.get('CARD', 0.0) + pm_sums.get('MIXED', 0.0)
+    card_total = (
+        pm_sums.get('CARD', 0.0) + pm_sums.get('MIXED', 0.0)
+        + pm_sums.get('KASPI_RED', 0.0) + pm_sums.get('KASPI_INSTALLMENT', 0.0)
+    )
 
     if total_pm_sum > 0:
         qr_pct = int(round((qr_total / total_pm_sum) * 100))
@@ -720,6 +728,8 @@ def dashboard_view(request):
     qr_sum = payment_by_code.get(SaleOrder.PaymentMethod.TRANSFER, {}).get('amount', ZERO)
     cash_sum = payment_by_code.get(SaleOrder.PaymentMethod.CASH, {}).get('amount', ZERO)
     card_sum = payment_by_code.get(SaleOrder.PaymentMethod.CARD, {}).get('amount', ZERO)
+    red_sum = payment_by_code.get(SaleOrder.PaymentMethod.KASPI_RED, {}).get('amount', ZERO)
+    installment_sum = payment_by_code.get(SaleOrder.PaymentMethod.KASPI_INSTALLMENT, {}).get('amount', ZERO)
     mixed_sum = payment_by_code.get(SaleOrder.PaymentMethod.MIXED, {}).get('amount', ZERO)
     payment_total = report['gross_revenue']
 
@@ -769,10 +779,10 @@ def dashboard_view(request):
         'payment_breakdown': {
             'qr_sum': qr_sum,
             'cash_sum': cash_sum,
-            'card_sum': card_sum + mixed_sum,
+            'card_sum': card_sum + red_sum + installment_sum + mixed_sum,
             'qr_pct': int(qr_sum / payment_total * 100) if payment_total else 0,
             'cash_pct': int(cash_sum / payment_total * 100) if payment_total else 0,
-            'card_pct': int((card_sum + mixed_sum) / payment_total * 100) if payment_total else 0,
+            'card_pct': int((card_sum + red_sum + installment_sum + mixed_sum) / payment_total * 100) if payment_total else 0,
             'total_sum': payment_total,
         },
         'dashboard_period': selected['period'],
@@ -849,6 +859,7 @@ def analytics_export_csv(request):
         ['Сумма возвратов по более ранним чекам, ₸', report['prior_period_refund_amount']],
         ['Чистая выручка, ₸', report['net_revenue']],
         ['Скидки, ₸', report['discounts']],
+        ['Наценки Kaspi Red / Рассрочка, ₸', report['surcharges']],
         ['Себестоимость реализованного, ₸', report['net_cost']],
         ['Валовая прибыль, ₸', report['gross_profit']],
         ['Валовая маржа, %', report['margin'].quantize(Decimal('0.01')) if report['margin_available'] else 'Не рассчитывается'],
@@ -895,7 +906,7 @@ def analytics_export_csv(request):
     ])
     orders = report['sales'].select_related('cashier').prefetch_related('payments', 'gift_events__card').order_by('-created_at')
     section('Чеки периода', ['Номер', 'Дата', 'Кассир', 'Оплата', 'Расшифровка оплаты',
-                             'Сертификат', 'Статус', 'Сумма, ₸', 'Скидка, ₸'], [
+                             'Сертификат', 'Статус', 'Сумма, ₸', 'Скидка, ₸', 'Наценка, ₸'], [
         [
             order.order_number,
             timezone.localtime(order.created_at).strftime('%d.%m.%Y %H:%M'),
@@ -910,6 +921,7 @@ def analytics_export_csv(request):
             order.get_status_display(),
             order.total_amount,
             order.discount_amount,
+            order.surcharge_amount,
         ] for order in orders
     ])
     return response
@@ -1308,7 +1320,12 @@ def live_kpi_api(request):
     payment_total = report['gross_revenue']
     qr_sum = payments.get(SaleOrder.PaymentMethod.TRANSFER, ZERO)
     cash_sum = payments.get(SaleOrder.PaymentMethod.CASH, ZERO)
-    card_sum = payments.get(SaleOrder.PaymentMethod.CARD, ZERO) + payments.get(SaleOrder.PaymentMethod.MIXED, ZERO)
+    card_sum = (
+        payments.get(SaleOrder.PaymentMethod.CARD, ZERO)
+        + payments.get(SaleOrder.PaymentMethod.KASPI_RED, ZERO)
+        + payments.get(SaleOrder.PaymentMethod.KASPI_INSTALLMENT, ZERO)
+        + payments.get(SaleOrder.PaymentMethod.MIXED, ZERO)
+    )
     last_order = report['recent_orders'][0] if report['recent_orders'] else None
 
     response_payload = {

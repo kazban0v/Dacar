@@ -100,7 +100,8 @@ class SaleOrderSerializer(serializers.ModelSerializer):
         model = SaleOrder
         fields = [
             'id', 'order_number', 'cashier', 'cashier_name', 'status',
-            'payment_method', 'payment_method_display', 'subtotal_amount', 'discount_amount', 'total_amount',
+            'payment_method', 'payment_method_display', 'subtotal_amount', 'discount_amount',
+            'surcharge_amount', 'total_amount',
             'paid_amount', 'change_amount', 'gross_profit', 'notes',
             'created_at', 'items', 'payments'
         ]

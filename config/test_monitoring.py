@@ -160,8 +160,9 @@ class MonitorAdminTests(TestCase):
         self.assertContains(response, reverse('admin:server_monitor'))
         for name in ('analytics_auditlog', 'catalog_brand', 'catalog_stockmovement', 'catalog_category', 'catalog_product', 'sales_saleorderitem', 'sales_saleorder', 'users_user', 'auth_group'):
             self.assertContains(response, reverse(f'admin:{name}_changelist'))
-        for name in ('catalog_product', 'catalog_brand', 'sales_saleorder', 'users_user', 'auth_group'):
+        for name in ('catalog_product', 'catalog_brand', 'users_user', 'auth_group'):
             self.assertContains(response, reverse(f'admin:{name}_add'))
+        self.assertNotContains(response, reverse('admin:sales_saleorder_add'))
         self.assertContains(response, 'Последние действия')
         self.assertContains(self.client.get(reverse('admin:server_monitor')), 'resources-chart')
 

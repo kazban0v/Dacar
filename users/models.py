@@ -44,7 +44,10 @@ class CashShift(models.Model):
     cashier = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name='cash_shifts', verbose_name='Кассир'
     )
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN, db_index=True)
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.OPEN,
+        db_index=True, verbose_name='Статус',
+    )
     opened_at = models.DateTimeField(default=timezone.now, verbose_name='Открыта')
     closed_at = models.DateTimeField(null=True, blank=True, verbose_name='Закрыта')
     opening_cash = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name='Размен при открытии')

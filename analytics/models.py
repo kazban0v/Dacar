@@ -21,7 +21,7 @@ class AuditLog(models.Model):
 
     class Meta:
         verbose_name = "Запись аудита"
-        verbose_name_plural = "Журнал аудита (Audit Log)"
+        verbose_name_plural = "Журнал аудита"
         ordering = ['-created_at']
 
     @classmethod

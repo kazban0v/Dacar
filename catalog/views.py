@@ -528,8 +528,6 @@ def create_category_api(request):
 
 @login_required
 def stock_action_api(request):
-    if not request.user.is_admin_user:
-        return JsonResponse({'success': False, 'error': 'Доступ разрешен только администраторам.'}, status=403)
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Метод не поддерживается'}, status=405)
     import json
@@ -538,6 +536,13 @@ def stock_action_api(request):
     from django.core.cache import cache
     try:
         data = json.loads(request.body) if request.content_type == 'application/json' else request.POST
+        if not request.user.is_admin_user and not (
+            request.user.is_cashier_user and data.get('action') == 'IN'
+        ):
+            return JsonResponse({
+                'success': False,
+                'error': 'Кассиру разрешено только добавлять приход товара.',
+            }, status=403)
         serializer = StockActionSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         result = stock_action(request, serializer.validated_data)

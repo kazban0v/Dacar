@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.test import TestCase
 
 from catalog.models import Product, StockMovement
-from sales.models import SaleOrder
+from sales.models import SaleOrder, SalePayment
 from users.models import User
 
 
@@ -69,3 +69,32 @@ class FinancialOperationTests(TestCase):
         self.assertFalse(SaleOrder.objects.exists())
         self.product.refresh_from_db()
         self.assertEqual(self.product.stock_qty, Decimal('10.000'))
+
+    def test_kaspi_red_adds_fifteen_percent_after_discounts(self):
+        payload = {
+            **self.payload,
+            'client_sync_id': 'operation-kaspi-red-1234',
+            'payment_method': 'KASPI_RED',
+            'paid_amount': '212.75',
+        }
+        response = self.client.post('/sales/api/checkout/', payload, content_type='application/json')
+        self.assertEqual(response.status_code, 201, response.content)
+        order = SaleOrder.objects.get()
+        self.assertEqual(order.subtotal_amount, Decimal('200.00'))
+        self.assertEqual(order.discount_amount, Decimal('15.00'))
+        self.assertEqual(order.surcharge_amount, Decimal('27.75'))
+        self.assertEqual(order.total_amount, Decimal('212.75'))
+        self.assertEqual(order.payments.get().method, 'KASPI_RED')
+        self.assertEqual(order.payments.get().amount, Decimal('212.75'))
+        self.assertEqual(response.json()['order']['surcharge_amount'], '27.75')
+
+    def test_kaspi_installment_rejects_total_without_surcharge(self):
+        payload = {
+            **self.payload,
+            'client_sync_id': 'operation-kaspi-install-1',
+            'payment_method': 'KASPI_INSTALLMENT',
+            'paid_amount': '185.00',
+        }
+        response = self.client.post('/sales/api/checkout/', payload, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(SalePayment.objects.exists())

@@ -5,7 +5,7 @@
 
 {% block responsive %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static 'css/admin-dacar.css' %}?v=20260913-2">
+  <link rel="stylesheet" href="{% static 'css/admin-dacar.css' %}?v=20261009-1">
 {% endblock %}
 
 {% block branding %}
@@ -38,10 +38,14 @@
 {% block nav-global %}
   {% if has_permission %}
     <nav class="dc-global-nav" aria-label="Быстрые разделы">
-      <a href="{% url 'admin:index' %}"{% if request.resolver_match.url_name == 'index' %} aria-current="page"{% endif %}>Панель</a>
-      {% if user.is_superuser %}<a href="{% url 'admin:server_monitor' %}"{% if request.resolver_match.url_name == 'server_monitor' %} aria-current="page"{% endif %}>Мониторинг</a>{% endif %}
-      <a href="{% url 'pos' %}">Касса</a>
-      <a href="{% url 'sales_orders_list' %}">Чеки</a>
+      <a href="{% url 'admin:index' %}"{% if request.resolver_match.url_name == 'index' %} aria-current="page"{% endif %}>Обзор</a>
+      <a href="{% url 'admin:catalog_product_changelist' %}">Товары</a>
+      <a href="{% url 'admin:catalog_stockmovement_changelist' %}">Склад</a>
+      <a href="{% url 'admin:sales_saleorder_changelist' %}">Чеки</a>
+      <a href="{% url 'admin:sales_giftcard_changelist' %}">Сертификаты</a>
+      <a href="{% url 'admin:users_user_changelist' %}">Персонал</a>
+      <a href="{% url 'admin:analytics_auditlog_changelist' %}">Аудит</a>
+      {% if user.is_superuser %}<a href="{% url 'admin:server_monitor' %}"{% if request.resolver_match.url_name == 'server_monitor' %} aria-current="page"{% endif %}>Сервер</a>{% endif %}
     </nav>
   {% endif %}
 {% endblock %}

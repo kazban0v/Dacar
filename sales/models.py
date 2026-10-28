@@ -31,6 +31,8 @@ class SaleOrder(models.Model):
         CASH = 'CASH', 'Наличные'
         CARD = 'CARD', 'Карта'
         TRANSFER = 'TRANSFER', 'Kaspi QR'
+        KASPI_RED = 'KASPI_RED', 'Kaspi Red'
+        KASPI_INSTALLMENT = 'KASPI_INSTALLMENT', 'Kaspi Рассрочка'
         GIFT = 'GIFT', 'Сертификат'
         MIXED = 'MIXED', 'Смешанная'
 
@@ -50,6 +52,7 @@ class SaleOrder(models.Model):
     # Financial breakdown
     subtotal_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Сумма без скидки (₸)")
     discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Скидка (₸)")
+    surcharge_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Наценка Kaspi (₸)")
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Итого к оплате (₸)")
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Внесено (₸)")
     change_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name="Сдача (₸)")
@@ -132,36 +135,51 @@ class SaleOrderItem(models.Model):
 
 class SalePayment(models.Model):
     """Applied payment amounts, excluding cash change. Refund retains original split."""
-    order = models.ForeignKey(SaleOrder, on_delete=models.CASCADE, related_name='payments')
-    method = models.CharField(max_length=20, choices=[
+    order = models.ForeignKey(
+        SaleOrder, on_delete=models.CASCADE, related_name='payments', verbose_name='Чек'
+    )
+    method = models.CharField(max_length=20, verbose_name='Способ оплаты', choices=[
         ('CASH', 'Наличные'), ('CARD', 'Карта'), ('TRANSFER', 'Kaspi QR'),
+        ('KASPI_RED', 'Kaspi Red'), ('KASPI_INSTALLMENT', 'Kaspi Рассрочка'),
         ('GIFT', 'Сертификат')])
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name='Сумма')
 
     class Meta:
+        verbose_name = 'Часть оплаты'
+        verbose_name_plural = 'Разбивка оплаты'
         constraints = [
             models.UniqueConstraint(fields=['order', 'method'], name='sale_payment_unique_method'),
             models.CheckConstraint(check=models.Q(amount__gte=0), name='sale_payment_nonnegative'),
-            models.CheckConstraint(check=models.Q(method__in=['CASH', 'CARD', 'TRANSFER', 'GIFT']), name='sale_payment_method_valid'),
+            models.CheckConstraint(check=models.Q(method__in=[
+                'CASH', 'CARD', 'TRANSFER', 'KASPI_RED', 'KASPI_INSTALLMENT', 'GIFT'
+            ]), name='sale_payment_method_valid'),
         ]
 
 
 class GiftCard(models.Model):
     """One printed bearer card. Only the hash and last four characters are stored."""
 
-    code_hash = models.CharField(max_length=64, unique=True, db_index=True)
-    code_last4 = models.CharField(max_length=4)
-    nominal = models.DecimalField(max_digits=12, decimal_places=2)
-    balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
-    activated_at = models.DateTimeField(null=True, blank=True)
-    expires_at = models.DateTimeField(null=True, blank=True)
-    activated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
-    activation_payment_method = models.CharField(max_length=20, blank=True, choices=[
+    code_hash = models.CharField(max_length=64, unique=True, db_index=True, verbose_name='Хэш кода')
+    code_last4 = models.CharField(max_length=4, verbose_name='Последние 4 символа')
+    nominal = models.DecimalField(max_digits=12, decimal_places=2, verbose_name='Номинал')
+    balance = models.DecimalField(
+        max_digits=12, decimal_places=2, default=Decimal('0.00'), verbose_name='Остаток'
+    )
+    activated_at = models.DateTimeField(null=True, blank=True, verbose_name='Активирован')
+    expires_at = models.DateTimeField(null=True, blank=True, verbose_name='Действует до')
+    activated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name='Активировал',
+    )
+    activation_payment_method = models.CharField(
+        max_length=20, blank=True, verbose_name='Оплата при активации', choices=[
         ('CASH', 'Наличные'), ('CARD', 'Карта'), ('TRANSFER', 'Kaspi QR')])
-    is_blocked = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    is_blocked = models.BooleanField(default=False, verbose_name='Заблокирован')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Добавлен')
 
     class Meta:
+        verbose_name = 'Подарочный сертификат'
+        verbose_name_plural = 'Подарочные сертификаты'
         constraints = [
             models.CheckConstraint(check=models.Q(nominal__gt=0), name='gift_card_nominal_positive'),
             models.CheckConstraint(check=models.Q(balance__gte=0), name='gift_card_balance_nonnegative'),
@@ -191,15 +209,22 @@ class GiftCardEvent(models.Model):
         REDEEM = 'REDEEM', 'Оплата'
         REFUND = 'REFUND', 'Возврат'
 
-    card = models.ForeignKey(GiftCard, on_delete=models.PROTECT, related_name='events')
-    kind = models.CharField(max_length=12, choices=Kind.choices)
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    balance_after = models.DecimalField(max_digits=12, decimal_places=2)
-    order = models.ForeignKey(SaleOrder, on_delete=models.PROTECT, null=True, blank=True, related_name='gift_events')
-    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
-    created_at = models.DateTimeField(auto_now_add=True)
+    card = models.ForeignKey(
+        GiftCard, on_delete=models.PROTECT, related_name='events', verbose_name='Сертификат'
+    )
+    kind = models.CharField(max_length=12, choices=Kind.choices, verbose_name='Событие')
+    amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name='Сумма')
+    balance_after = models.DecimalField(max_digits=12, decimal_places=2, verbose_name='Остаток после операции')
+    order = models.ForeignKey(
+        SaleOrder, on_delete=models.PROTECT, null=True, blank=True,
+        related_name='gift_events', verbose_name='Чек',
+    )
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, verbose_name='Сотрудник')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время')
 
     class Meta:
+        verbose_name = 'Операция по сертификату'
+        verbose_name_plural = 'Операции по сертификатам'
         ordering = ['-created_at', '-pk']
         constraints = [
             models.UniqueConstraint(fields=['order', 'kind'], condition=models.Q(order__isnull=False), name='gift_event_unique_order_kind'),
@@ -209,17 +234,21 @@ class GiftCardEvent(models.Model):
 
 class CompanyInvoice(models.Model):
     """A payment request only; does not post a sale or move inventory."""
-    key = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    fingerprint = models.CharField(max_length=64)
-    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
-    buyer_name = models.CharField(max_length=255)
-    buyer_bin = models.CharField(max_length=12)
-    buyer_address = models.CharField(max_length=500)
-    contract = models.CharField(max_length=255, blank=True)
-    seller = models.JSONField(default=dict)
-    lines = models.JSONField(default=list)
-    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
+    key = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, verbose_name='Идентификатор')
+    fingerprint = models.CharField(max_length=64, verbose_name='Контрольная сумма')
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, verbose_name='Создал')
+    buyer_name = models.CharField(max_length=255, verbose_name='Покупатель')
+    buyer_bin = models.CharField(max_length=12, verbose_name='БИН покупателя')
+    buyer_address = models.CharField(max_length=500, verbose_name='Адрес покупателя')
+    contract = models.CharField(max_length=255, blank=True, verbose_name='Договор')
+    seller = models.JSONField(default=dict, verbose_name='Данные продавца')
+    lines = models.JSONField(default=list, verbose_name='Позиции счёта')
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name='Сумма')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+
+    class Meta:
+        verbose_name = 'Счёт для компании'
+        verbose_name_plural = 'Счета для компаний'
 
     @property
     def number(self):

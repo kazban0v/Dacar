@@ -56,7 +56,8 @@ class DashboardAnalyticsTests(TestCase):
             refunded_at=timezone.now(),
         )
 
-    def _order(self, number, status, payment, *, subtotal, discount, total, cost, refunded_at=None):
+    def _order(self, number, status, payment, *, subtotal, discount, total, cost,
+               surcharge='0.00', refunded_at=None):
         order = SaleOrder.objects.create(
             order_number=number,
             cashier=self.cashier,
@@ -64,6 +65,7 @@ class DashboardAnalyticsTests(TestCase):
             payment_method=payment,
             subtotal_amount=Decimal(subtotal),
             discount_amount=Decimal(discount),
+            surcharge_amount=Decimal(surcharge),
             total_amount=Decimal(total),
             paid_amount=Decimal(total),
             refunded_at=refunded_at,
@@ -77,6 +79,23 @@ class DashboardAnalyticsTests(TestCase):
             total_amount=Decimal(total),
         )
         return order
+
+    def test_report_tracks_kaspi_surcharge_and_payment_method(self):
+        self._order(
+            'DACAR-KASPI-RED-0001',
+            SaleOrder.Status.COMPLETED,
+            SaleOrder.PaymentMethod.KASPI_RED,
+            subtotal='10000.00',
+            discount='0.00',
+            surcharge='1500.00',
+            total='11500.00',
+            cost='5000.00',
+        )
+        report = _analytics_report(timezone.localdate(), timezone.localdate())
+        self.assertEqual(report['surcharges'], Decimal('1500.00'))
+        row = next(item for item in report['payment_rows'] if item['payment_method'] == 'KASPI_RED')
+        self.assertEqual(row['name'], 'Kaspi Red')
+        self.assertEqual(row['amount'], Decimal('11500.00'))
 
     def test_report_uses_gross_sales_and_refunds_as_separate_events(self):
         today = timezone.localdate()

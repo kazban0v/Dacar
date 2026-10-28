@@ -1,0 +1,92 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/changelists.css' %}">
+  {% if cl.formset %}<link rel="stylesheet" href="{% static 'admin/css/forms.css' %}">{% endif %}
+  {% if cl.formset or action_form %}<script src="{% url 'admin:jsi18n' %}"></script>{% endif %}
+  {{ media.css }}
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {{ media.js }}
+  <script src="{% static 'admin/js/filters.js' %}" defer></script>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list dc-workspace{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% if not is_popup %}
+  {% block breadcrumbs %}
+    <div class="breadcrumbs dc-breadcrumbs">
+      <a href="{% url 'admin:index' %}">Панель</a><span>/</span>
+      <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a><span>/</span>
+      <strong>{{ cl.opts.verbose_name_plural|capfirst }}</strong>
+    </div>
+  {% endblock %}
+{% endif %}
+
+{% block coltype %}{% endblock %}
+
+{% block content %}
+  <div id="content-main" class="dc-admin-page">
+    <header class="dc-page-header">
+      <div class="dc-page-heading">
+        <span class="dc-kicker">DACAR · {{ cl.opts.app_config.verbose_name }}</span>
+        <h1>{{ cl.opts.verbose_name_plural|capfirst }}</h1>
+        <p>{{ admin_description|default:"Поиск, фильтры и управление записями в одном месте." }}</p>
+      </div>
+      {% block object-tools %}
+        <ul class="object-tools dc-page-actions">
+          {% block object-tools-items %}{% change_list_object_tools %}{% endblock %}
+        </ul>
+      {% endblock %}
+    </header>
+
+    {% if cl.formset and cl.formset.errors %}
+      <p class="errornote">
+        {% blocktranslate count counter=cl.formset.total_error_count %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
+      </p>
+      {{ cl.formset.non_form_errors }}
+    {% endif %}
+
+    <div class="dc-list-shell{% if cl.has_filters %} has-filters{% endif %}" id="changelist">
+      <div class="changelist-form-container dc-list-main">
+        <div class="dc-list-toolbar">
+          {% block search %}{% search_form cl %}{% endblock %}
+          <span class="dc-result-summary">{{ cl.result_count }} {{ cl.opts.verbose_name_plural|lower }}</span>
+        </div>
+
+        <form id="changelist-form" method="post"{% if cl.formset and cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>
+          {% csrf_token %}
+          {% if cl.formset %}<div>{{ cl.formset.management_form }}</div>{% endif %}
+          {% block result_list %}
+            {% if action_form and actions_on_top and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+            <div class="dc-results-scroll">{% result_list cl %}</div>
+            {% if action_form and actions_on_bottom and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+          {% endblock %}
+          {% block pagination %}{% pagination cl %}{% endblock %}
+        </form>
+      </div>
+
+      {% block filters %}
+        {% if cl.has_filters %}
+          <aside id="changelist-filter" class="dc-filter-sidebar" aria-label="Фильтры">
+            <div class="dc-filter-title">
+              <div><span aria-hidden="true">≡</span><strong>Фильтры</strong></div>
+              {% if cl.has_active_filters %}<a href="{{ cl.clear_all_filters_qs }}">Сбросить</a>{% endif %}
+            </div>
+            {% for spec in cl.filter_specs %}
+              <details class="dc-filter-group" open>
+                <summary>{{ spec.title|capfirst }}</summary>
+                {% admin_list_filter cl spec %}
+              </details>
+            {% endfor %}
+          </aside>
+        {% endif %}
+      {% endblock %}
+    </div>
+  </div>
+{% endblock %}

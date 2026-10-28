@@ -3,6 +3,7 @@ import uuid
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import PermissionDenied
 
 from analytics.models import AuditLog
 from catalog.models import Product, StockMovement
@@ -33,6 +34,14 @@ class StockActionSerializer(serializers.Serializer):
 
 
 def stock_action(request, data):
+    is_admin = request.user.is_active and request.user.is_admin_user
+    cashier_receipt = (
+        request.user.is_active
+        and request.user.is_cashier_user
+        and data['action'] == StockMovement.MovementType.IN
+    )
+    if not (is_admin or cashier_receipt):
+        raise PermissionDenied('Кассиру разрешено только добавлять приход товара.')
     with financial_transaction():
         existing = replay(request, 'stock', data)
         if existing:
@@ -53,8 +62,13 @@ def stock_action(request, data):
         Product.objects.filter(pk=product.pk).update(stock_qty=after, updated_at=timezone.now())
         label = dict(StockMovement.MovementType.choices)[action]
         reason = data.get('writeoff_reason', '')
+        movement_cost = (
+            product.purchase_price
+            if cashier_receipt or data['cost_price'] is None
+            else data['cost_price']
+        )
         StockMovement.objects.create(product=product, movement_type=action, quantity=qty,
-            cost_price=data['cost_price'] if data['cost_price'] is not None else product.purchase_price,
+            cost_price=movement_cost,
             writeoff_reason=reason, comment=data['comment'], created_by=request.user,
             client_sync_id=data['client_sync_id'])
         audit_type = 'STOCK_ADJUST' if action == 'ADJUSTMENT' else ('STOCK_IN' if action == 'IN' else 'STOCK_OUT')

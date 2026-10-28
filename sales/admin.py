@@ -1,15 +1,25 @@
-from django.contrib import admin
 from django import forms
+from django.contrib import admin
+from django.db.models import Exists, OuterRef
 from django.urls import reverse
 from django.utils.html import format_html
-from sales.models import SaleOrder, SaleOrderItem, SalePayment, GiftCard, GiftCardEvent
+
+from config.admin_ui import DacarAdminMixin, money, quantity, status_badge
 from sales.gift_cards import code_digest, normalize_code
+from sales.models import (
+    CompanyInvoice,
+    GiftCard,
+    GiftCardEvent,
+    SaleOrder,
+    SaleOrderItem,
+    SalePayment,
+)
 
 
 class GiftCardAdminForm(forms.ModelForm):
     barcode = forms.CharField(
         label='Штрихкод сертификата',
-        help_text='Формат DKR-XXXXX-XXXXX. Код хэшируется и после сохранения больше не показывается.',
+        help_text='Формат DKR-XXXXX-XXXXX. После сохранения полный код не отображается.',
         required=False,
     )
 
@@ -45,74 +55,182 @@ class GiftCardAdminForm(forms.ModelForm):
         return card
 
 
-class SalePaymentInline(admin.TabularInline):
-    model = SalePayment
+class ReadOnlyInlineMixin:
     extra = 0
-    fields = ('method', 'amount')
-    readonly_fields = fields
     can_delete = False
+    show_change_link = False
 
     def has_add_permission(self, request, obj=None):
         return False
 
-class SaleOrderItemInline(admin.TabularInline):
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class SalePaymentInline(ReadOnlyInlineMixin, admin.TabularInline):
+    model = SalePayment
+    fields = ('method', 'amount')
+    readonly_fields = fields
+    verbose_name = 'Оплата'
+    verbose_name_plural = 'Разбивка оплаты'
+
+
+class SaleOrderItemInline(ReadOnlyInlineMixin, admin.TabularInline):
     model = SaleOrderItem
-    extra = 0
-    fields = ('product', 'quantity', 'unit_price', 'purchase_price_snapshot', 'discount_amount', 'total_amount')
-    readonly_fields = ('total_amount',)
+    fields = ('product', 'product_name_snapshot', 'quantity', 'unit_price', 'discount_amount', 'total_amount')
+    readonly_fields = fields
+    verbose_name = 'Товар в чеке'
+    verbose_name_plural = 'Состав чека'
+
+
+class FinancialHistoryAdmin(DacarAdminMixin, admin.ModelAdmin):
+    actions = None
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(SaleOrder)
-class SaleOrderAdmin(admin.ModelAdmin):
+class SaleOrderAdmin(FinancialHistoryAdmin):
+    admin_description = 'Чеки доступны для просмотра. Финансовая история не редактируется и не удаляется.'
     list_display = (
-        'order_number', 'cashier', 'total_amount', 'discount_amount',
-        'paid_amount', 'change_amount', 'payment_method', 'status', 'created_at'
+        'order_display', 'cashier', 'payment_display', 'total_display',
+        'status_display', 'created_at', 'open_action',
     )
+    list_display_links = ('order_display',)
     list_filter = ('status', 'payment_method', 'created_at', 'cashier')
-    search_fields = ('order_number', 'cashier__username', 'cashier__first_name', 'cashier__last_name', 'notes', 'refund_reason')
-    date_hierarchy = 'created_at'
+    search_fields = (
+        'order_number', 'cashier__username', 'cashier__first_name',
+        'cashier__last_name', 'notes', 'refund_reason',
+    )
     ordering = ('-created_at',)
     inlines = [SaleOrderItemInline, SalePaymentInline]
+    readonly_fields = (
+        'order_number', 'cashier', 'shift', 'refund_shift', 'status', 'payment_method',
+        'subtotal_amount', 'discount_amount', 'surcharge_amount', 'total_amount',
+        'paid_amount', 'change_amount',
+        'notes', 'refund_reason', 'refunded_by', 'refunded_at', 'created_at', 'updated_at',
+    )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('cashier')
+
+    @admin.display(description='Чек', ordering='order_number')
+    def order_display(self, obj):
+        return format_html('<strong>{}</strong>', obj.order_number)
+
+    @admin.display(description='Оплата', ordering='payment_method')
+    def payment_display(self, obj):
+        return status_badge(obj.get_payment_method_display(), 'info')
+
+    @admin.display(description='Сумма', ordering='total_amount')
+    def total_display(self, obj):
+        return format_html('<strong class="dc-money">{}</strong>', money(obj.total_amount))
+
+    @admin.display(description='Статус', ordering='status')
+    def status_display(self, obj):
+        tones = {
+            SaleOrder.Status.COMPLETED: 'success',
+            SaleOrder.Status.REFUNDED: 'warning',
+            SaleOrder.Status.CANCELLED: 'danger',
+        }
+        return status_badge(obj.get_status_display(), tones.get(obj.status, 'neutral'))
+
+    @admin.display(description='Действия')
+    def open_action(self, obj):
+        url = reverse('admin:sales_saleorder_change', args=[obj.pk])
+        return format_html('<a class="dc-row-link" href="{}">Открыть чек</a>', url)
 
 
 @admin.register(SaleOrderItem)
-class SaleOrderItemAdmin(admin.ModelAdmin):
-    list_display = ('order', 'product', 'quantity', 'unit_price', 'discount_amount', 'total_amount')
+class SaleOrderItemAdmin(FinancialHistoryAdmin):
+    admin_description = 'Снимки товарных позиций на момент проведения чека.'
+    list_display = ('order', 'product_display', 'quantity_display', 'unit_price_display', 'total_display')
     list_filter = ('order__created_at', 'order__payment_method')
-    search_fields = ('order__order_number', 'product__name', 'product__sku', 'product__barcode')
+    search_fields = (
+        'order__order_number', 'product__name', 'product__sku', 'product__barcode',
+        'product_name_snapshot', 'sku_snapshot',
+    )
+    readonly_fields = (
+        'order', 'product', 'quantity', 'product_name_snapshot', 'brand_name_snapshot',
+        'sku_snapshot', 'unit_snapshot', 'purchase_price_snapshot', 'unit_price',
+        'discount_amount', 'total_amount',
+    )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('order', 'product')
+
+    @admin.display(description='Товар')
+    def product_display(self, obj):
+        return obj.display_name
+
+    @admin.display(description='Количество', ordering='quantity')
+    def quantity_display(self, obj):
+        return quantity(obj.quantity, obj.unit_snapshot or 'шт')
+
+    @admin.display(description='Цена', ordering='unit_price')
+    def unit_price_display(self, obj):
+        return money(obj.unit_price)
+
+    @admin.display(description='Итого', ordering='total_amount')
+    def total_display(self, obj):
+        return money(obj.total_amount)
 
 
 @admin.register(GiftCard)
-class GiftCardAdmin(admin.ModelAdmin):
+class GiftCardAdmin(DacarAdminMixin, admin.ModelAdmin):
+    admin_description = (
+        'Реестр физических подарочных сертификатов. Удалить можно только ошибочно добавленную '
+        'карту, которую ещё не активировали.'
+    )
     form = GiftCardAdminForm
-    list_display = ('last4_display', 'nominal_display', 'balance_display', 'state_display',
-                    'activated_display', 'expires_display', 'blocked_display', 'actions_display')
+    list_display = (
+        'last4_display', 'nominal_display', 'balance_display', 'state_display',
+        'activated_display', 'expires_display', 'actions_display',
+    )
     list_display_links = ('last4_display',)
-    list_filter = ('is_blocked', 'activated_at')
+    list_filter = ('is_blocked', 'activated_at', 'expires_at')
     search_fields = ('code_last4',)
     ordering = ('-created_at',)
+    actions = None
 
-    @admin.display(description='Последние 4', ordering='code_last4')
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            _has_events=Exists(GiftCardEvent.objects.filter(card_id=OuterRef('pk')))
+        )
+
+    @admin.display(description='Карта', ordering='code_last4')
     def last4_display(self, obj):
-        return obj.code_last4
+        return format_html('<strong>•••• {}</strong>', obj.code_last4)
 
     @admin.display(description='Номинал', ordering='nominal')
     def nominal_display(self, obj):
-        return obj.nominal
+        return money(obj.nominal)
 
     @admin.display(description='Остаток', ordering='balance')
     def balance_display(self, obj):
-        return obj.balance
+        return money(obj.balance)
 
     @admin.display(description='Статус')
     def state_display(self, obj):
-        return {
-            'UNISSUED': 'Не активирован',
-            'ACTIVE': 'Активен',
-            'SPENT': 'Использован',
-            'EXPIRED': 'Срок истёк',
-            'BLOCKED': 'Заблокирован',
-        }[obj.state]
+        labels = {
+            'UNISSUED': ('Не активирован', 'neutral'),
+            'ACTIVE': ('Активен', 'success'),
+            'SPENT': ('Использован', 'info'),
+            'EXPIRED': ('Срок истёк', 'warning'),
+            'BLOCKED': ('Заблокирован', 'danger'),
+        }
+        label, tone = labels[obj.state]
+        return status_badge(label, tone)
 
     @admin.display(description='Активирован', ordering='activated_at')
     def activated_display(self, obj):
@@ -122,67 +240,94 @@ class GiftCardAdmin(admin.ModelAdmin):
     def expires_display(self, obj):
         return obj.expires_at or '—'
 
-    @admin.display(description='Заблокирован', boolean=True, ordering='is_blocked')
-    def blocked_display(self, obj):
-        return obj.is_blocked
-
     @admin.display(description='Действия')
     def actions_display(self, obj):
         change_url = reverse('admin:sales_giftcard_change', args=[obj.pk])
-        if obj.activated_at is None and not obj.events.exists():
+        has_events = getattr(obj, '_has_events', None)
+        if has_events is None:
+            has_events = obj.events.exists()
+        if obj.activated_at is None and not has_events:
             delete_url = reverse('admin:sales_giftcard_delete', args=[obj.pk])
             return format_html(
-                '<a class="button" href="{}">Управлять</a> '
-                '<a class="button" style="color:#b91c1c" href="{}">Удалить</a>',
-                change_url, delete_url,
+                '<span class="dc-row-actions"><a class="dc-row-link" href="{}">Управлять</a>'
+                '<a class="dc-row-link dc-row-link-danger" href="{}">Удалить</a></span>',
+                change_url,
+                delete_url,
             )
         return format_html(
-            '<a class="button" href="{}">Управлять</a> '
-            '<span title="Активированные карты сохраняются вместе с чеками и аудитом">История защищена</span>',
+            '<span class="dc-row-actions"><a class="dc-row-link" href="{}">Управлять</a>'
+            '<span class="dc-history-lock">История защищена</span></span>',
             change_url,
         )
 
     def get_fields(self, request, obj=None):
         if obj is None:
             return ('barcode', 'nominal')
-        return ('code_last4', 'nominal', 'balance', 'activated_at', 'expires_at',
-                'activated_by', 'activation_payment_method', 'is_blocked', 'created_at')
+        return (
+            'code_last4', 'nominal', 'balance', 'activated_at', 'expires_at',
+            'activated_by', 'activation_payment_method', 'is_blocked', 'created_at',
+        )
 
     def get_readonly_fields(self, request, obj=None):
         if obj is None:
             return ()
-        return ('code_last4', 'nominal', 'balance', 'activated_at', 'expires_at',
-                'activated_by', 'activation_payment_method', 'created_at')
-
-    def has_add_permission(self, request):
-        return super().has_add_permission(request)
-
-    def has_change_permission(self, request, obj=None):
-        return super().has_change_permission(request, obj)
+        return (
+            'code_last4', 'nominal', 'balance', 'activated_at', 'expires_at',
+            'activated_by', 'activation_payment_method', 'created_at',
+        )
 
     def has_delete_permission(self, request, obj=None):
-        # Keep financial history immutable. Only never-activated cards without
-        # events may be removed (for example, a typo or local demo card).
         if obj is None:
             return False
-        return (
-            super().has_delete_permission(request, obj)
-            and obj.activated_at is None
-            and not obj.events.exists()
-        )
+        has_events = getattr(obj, '_has_events', None)
+        if has_events is None:
+            has_events = obj.events.exists()
+        return super().has_delete_permission(request, obj) and obj.activated_at is None and not has_events
 
 
 @admin.register(GiftCardEvent)
-class GiftCardEventAdmin(admin.ModelAdmin):
-    list_display = ('card', 'kind', 'amount', 'balance_after', 'order', 'actor', 'created_at')
+class GiftCardEventAdmin(FinancialHistoryAdmin):
+    admin_description = 'Неизменяемая история активаций, оплат и возвратов по сертификатам.'
+    list_display = ('created_at', 'card', 'kind_display', 'amount_display', 'balance_display', 'order', 'actor')
     list_filter = ('kind', 'created_at')
+    search_fields = ('card__code_last4', 'order__order_number', 'actor__username')
+    ordering = ('-created_at', '-pk')
     readonly_fields = ('card', 'kind', 'amount', 'balance_after', 'order', 'actor', 'created_at')
 
-    def has_add_permission(self, request):
-        return False
+    @admin.display(description='Событие', ordering='kind')
+    def kind_display(self, obj):
+        tones = {
+            GiftCardEvent.Kind.ACTIVATE: 'success',
+            GiftCardEvent.Kind.REDEEM: 'info',
+            GiftCardEvent.Kind.REFUND: 'warning',
+        }
+        return status_badge(obj.get_kind_display(), tones.get(obj.kind, 'neutral'))
 
-    def has_change_permission(self, request, obj=None):
-        return False
+    @admin.display(description='Сумма', ordering='amount')
+    def amount_display(self, obj):
+        return money(obj.amount)
 
-    def has_delete_permission(self, request, obj=None):
-        return False
+    @admin.display(description='Остаток', ordering='balance_after')
+    def balance_display(self, obj):
+        return money(obj.balance_after)
+
+
+@admin.register(CompanyInvoice)
+class CompanyInvoiceAdmin(FinancialHistoryAdmin):
+    admin_description = 'Сформированные счета для компаний. Документы сохранены без возможности изменения.'
+    list_display = ('number_display', 'buyer_name', 'buyer_bin', 'total_display', 'creator', 'created_at')
+    list_filter = ('created_at', 'creator')
+    search_fields = ('buyer_name', 'buyer_bin', 'buyer_address', 'creator__username')
+    ordering = ('-created_at',)
+    readonly_fields = (
+        'key', 'fingerprint', 'creator', 'buyer_name', 'buyer_bin', 'buyer_address',
+        'contract', 'seller', 'lines', 'total_amount', 'created_at',
+    )
+
+    @admin.display(description='Счёт')
+    def number_display(self, obj):
+        return obj.number
+
+    @admin.display(description='Сумма', ordering='total_amount')
+    def total_display(self, obj):
+        return money(obj.total_amount)

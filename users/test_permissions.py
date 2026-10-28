@@ -27,18 +27,19 @@ class RolePermissionTests(TestCase):
             status='COMPLETED', payment_method='CASH', subtotal_amount=200,
             total_amount=200, paid_amount=200)
 
-    def test_cashier_cannot_change_stock_even_with_replay_key(self):
+    def test_cashier_can_receive_stock_but_cannot_reduce_or_transfer_it(self):
         self.client.force_login(self.cashier)
-        for prefix in ('', '/m'):
-            for action in ('IN', 'OUT', 'TRANSFER_TO_SHOP'):
+        for prefix_index, prefix in enumerate(('', '/m')):
+            for action_index, action in enumerate(('IN', 'OUT', 'TRANSFER_TO_SHOP')):
                 response = self.client.post(f'{prefix}/catalog/api/stock-action/', {
                     'product_id': self.product.pk, 'action': action, 'quantity': 1,
-                    'client_sync_id': 'forged-id'}, content_type='application/json')
-                self.assertEqual(response.status_code, 403)
+                    'client_sync_id': f'cashier-stock-{prefix_index}-{action_index}-key'},
+                    content_type='application/json')
+                self.assertEqual(response.status_code, 200 if action == 'IN' else 403)
         self.product.refresh_from_db()
-        self.assertEqual(self.product.stock_qty, 20)
-        self.assertFalse(StockMovement.objects.exists())
-        self.assertFalse(AuditLog.objects.exists())
+        self.assertEqual(self.product.stock_qty, 22)
+        self.assertEqual(StockMovement.objects.filter(movement_type='IN').count(), 2)
+        self.assertEqual(AuditLog.objects.filter(action_type='STOCK_IN').count(), 2)
 
     def test_cashier_cannot_create_edit_products_or_categories(self):
         self.client.force_login(self.cashier)
