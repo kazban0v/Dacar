@@ -1,4 +1,5 @@
 {% extends 'desktop/base.html' %}
+{% load static %}
 {% load dacar_format %}
 
 {% block title %}Аналитика продаж — DACAR Market{% endblock %}
@@ -23,6 +24,7 @@
     @media(max-width:1150px){.an-primary{grid-column:span 6}.an-kpi{grid-column:span 3}.an-chart,.an-side{grid-column:span 12}.inv-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:820px){.an-head{flex-direction:column}.an-actions{width:100%;flex-wrap:wrap}.an-range{max-width:100%;overflow:auto}.period-popover{position:fixed;top:auto;right:1rem;bottom:1rem;left:1rem;width:auto}.period-fields{grid-template-columns:1fr}.period-arrow{display:none}.an-primary,.an-kpi,.an-table-card{grid-column:span 12}.an-kpi{min-height:125px}.inv-grid{grid-template-columns:repeat(2,1fr)}.an-ticker{height:auto;min-height:38px;flex-wrap:wrap;gap:.35rem .9rem;margin:0 -1.25rem;padding:.48rem 1.25rem;white-space:normal;line-height:1.3}.an-ticker span{font-size:.7rem}}
     .gift-analytics{padding:1rem}.gift-analytics .an-section-head{margin-bottom:.85rem}.gift-analytics-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.65rem}.gift-analytics-stat{min-width:0;padding:.85rem;border:1px solid var(--card-border);border-radius:12px;background:color-mix(in srgb,var(--accent-cyan) 4%,var(--card-bg))}.gift-analytics-stat span{display:block;color:var(--text-muted);font-size:.7rem;font-weight:750}.gift-analytics-stat strong{display:block;margin-top:.25rem;color:var(--text-main);font:800 1.05rem/1.2 'Outfit',sans-serif}.gift-analytics-stat small{display:block;margin-top:.25rem;color:var(--text-muted);font-size:.65rem}@media(max-width:820px){.gift-analytics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
+<link rel="stylesheet" href="{% static 'css/analytics-dashboard-refresh.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -76,7 +78,16 @@
     </section>
 
     <section class="an-section an-grid">
-        <article class="an-chart an-card"><div class="an-section-head"><h2>Чистая выручка и прибыль</h2><span>{{ period_title }}</span></div><canvas id="analyticsTrend"></canvas></article>
+        <article class="an-chart an-card">
+            <div class="an-section-head">
+                <div class="an-chart-heading">
+                    <h2>Чистая выручка и прибыль</h2>
+                    <p>Динамика за выбранный период</p>
+                </div>
+                <span class="an-chart-period"><i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ period_title }}</span>
+            </div>
+            <div class="an-chart-plot"><canvas id="analyticsTrend" role="img" aria-label="График чистой выручки и валовой прибыли"></canvas></div>
+        </article>
         <article class="an-side an-card"><div class="an-section-head"><h2>Способы оплаты</h2><span>по валовой выручке</span></div>
             {% if report.payment_rows %}<div class="an-list">{% for row in report.payment_rows %}<a class="an-row an-row-link" href="{{ row.drilldown_url }}" aria-label="Открыть чеки: {{ row.name }}"><div><div class="an-row-title">{{ row.name }}</div><div class="an-row-meta">{{ row.checks }} чеков · {{ row.share|floatformat:1 }}%</div><div class="an-bar"><i style="width:{{ row.share|floatformat:0 }}%"></i></div></div><div class="an-row-value">{{ row.amount|tenge }} ₸</div></a>{% endfor %}</div>{% else %}<div class="an-empty"><div><i class="fa-solid fa-wallet"></i>Нет оплат за выбранный период</div></div>{% endif %}
         </article>
@@ -258,19 +269,55 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     const canvas = document.getElementById('analyticsTrend');
-    if (!canvas || typeof Chart === 'undefined') return;
+    if (!canvas) return;
+    const chartStatus = document.createElement('div');
+    chartStatus.className = 'an-chart-status';
+    chartStatus.setAttribute('role', 'status');
+    chartStatus.textContent = 'Загружаем данные графика…';
+    canvas.insertAdjacentElement('afterend', chartStatus);
+    if (typeof Chart === 'undefined') {
+        chartStatus.textContent = 'Не удалось загрузить график. Проверьте подключение и обновите страницу.';
+        return;
+    }
     const query = new URLSearchParams({period:'{{ dashboard_period }}'});
     {% if dashboard_period == 'custom' %}query.set('date_from','{{ period_start|date:"Y-m-d" }}');query.set('date_to','{{ period_end|date:"Y-m-d" }}');{% endif %}
     try {
         const response = await fetch('{% url "api_analytics_data" %}?' + query.toString());
         if (!response.ok) throw new Error('HTTP ' + response.status);
         const data = await response.json();
-        const css = getComputedStyle(document.documentElement);
+        const hasActivity = [...data.sales_trend.revenues, ...data.sales_trend.profits].some(value => Number(value) !== 0);
+        if (!hasActivity) {
+            canvas.hidden = true;
+            chartStatus.replaceChildren();
+            const state = document.createElement('div');
+            const icon = document.createElement('i');
+            icon.className = 'fa-solid fa-chart-line';
+            icon.setAttribute('aria-hidden', 'true');
+            const message = document.createElement('span');
+            message.textContent = 'За выбранный период нет данных о продажах';
+            state.append(icon, message);
+            chartStatus.replaceChildren(state);
+            return;
+        }
+        chartStatus.hidden = true;
+        const css = getComputedStyle(document.querySelector('.analytics-page'));
+        const darkTheme = document.documentElement.dataset.theme === 'dark';
+        const revenueColor = darkTheme ? '#3291ff' : '#0070f3';
+        const profitColor = darkTheme ? '#50e3c2' : '#008a63';
+        const revenueFill = canvas.getContext('2d').createLinearGradient(0, 0, 0, 300);
+        revenueFill.addColorStop(0, darkTheme ? 'rgba(50,145,255,.22)' : 'rgba(0,112,243,.16)');
+        revenueFill.addColorStop(1, darkTheme ? 'rgba(50,145,255,0)' : 'rgba(0,112,243,0)');
+        const profitFill = canvas.getContext('2d').createLinearGradient(0, 0, 0, 300);
+        profitFill.addColorStop(0, darkTheme ? 'rgba(80,227,194,.12)' : 'rgba(0,138,99,.10)');
+        profitFill.addColorStop(1, darkTheme ? 'rgba(80,227,194,0)' : 'rgba(0,138,99,0)');
         new Chart(canvas.getContext('2d'), {type:'line',data:{labels:data.sales_trend.labels,datasets:[
-            {label:'Чистая выручка',data:data.sales_trend.revenues,borderColor:'#0284C7',backgroundColor:'rgba(2,132,199,.12)',fill:true,tension:.32,borderWidth:3,pointRadius:0,pointHoverRadius:4},
-            {label:'Валовая прибыль',data:data.sales_trend.profits,borderColor:'#10B981',backgroundColor:'transparent',fill:false,tension:.32,borderWidth:2,pointRadius:0,pointHoverRadius:4}
-        ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'bottom',labels:{usePointStyle:true,boxWidth:8,color:css.getPropertyValue('--text-muted').trim()||'#64748B',font:{size:11,weight:'600'}}},tooltip:{callbacks:{label:item=>item.dataset.label+': '+new Intl.NumberFormat('ru-RU').format(item.raw)+' ₸'}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#94A3B8',font:{size:10,weight:'600'},maxTicksLimit:12}},y:{beginAtZero:true,grid:{color:'rgba(148,163,184,.15)'},border:{display:false},ticks:{color:'#94A3B8',callback:value=>new Intl.NumberFormat('ru-RU',{notation:'compact'}).format(value)+' ₸'}}}}});
-    } catch (error) { console.error('Не удалось загрузить аналитику:', error); }
+            {label:'Чистая выручка',data:data.sales_trend.revenues,borderColor:revenueColor,backgroundColor:revenueFill,fill:true,tension:.3,borderWidth:2.5,pointRadius:0,pointHoverRadius:5,pointHoverBorderWidth:3,pointHoverBackgroundColor:darkTheme?'#111':'#fff'},
+            {label:'Валовая прибыль',data:data.sales_trend.profits,borderColor:profitColor,backgroundColor:profitFill,fill:true,tension:.3,borderWidth:2.25,pointRadius:0,pointHoverRadius:5,pointHoverBorderWidth:3,pointHoverBackgroundColor:darkTheme?'#111':'#fff'}
+        ]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:8,right:10,bottom:2,left:4}},interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'bottom',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:7,boxHeight:7,padding:22,color:css.getPropertyValue('--dash-muted').trim()||'#737373',font:{family:'Geist, Inter, system-ui, sans-serif',size:11,weight:'500'}}},tooltip:{displayColors:true,backgroundColor:darkTheme?'#171717':'#fff',titleColor:darkTheme?'#ededed':'#171717',bodyColor:darkTheme?'#c4c4c4':'#4d4d4d',borderColor:darkTheme?'#303030':'#e5e5e5',borderWidth:1,padding:11,cornerRadius:8,titleFont:{family:'Geist, Inter, system-ui, sans-serif',size:12,weight:'600'},bodyFont:{family:'Geist, Inter, system-ui, sans-serif',size:12,weight:'500'},callbacks:{label:item=>item.dataset.label+': '+new Intl.NumberFormat('ru-RU').format(item.raw)+' ₸'}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{color:darkTheme?'#8c8c8c':'#737373',font:{family:'Geist, Inter, system-ui, sans-serif',size:10,weight:'500'},maxTicksLimit:12,maxRotation:0}},y:{beginAtZero:true,grid:{color:darkTheme?'rgba(255,255,255,.075)':'rgba(23,23,23,.07)',drawTicks:false},border:{display:false,dash:[3,4]},ticks:{padding:10,color:darkTheme?'#8c8c8c':'#737373',font:{family:'Geist, Inter, system-ui, sans-serif',size:10,weight:'500'},callback:value=>new Intl.NumberFormat('ru-RU',{notation:'compact',maximumFractionDigits:1}).format(value)+' ₸'}}}}});
+    } catch (error) {
+        chartStatus.textContent = 'Не удалось загрузить график. Обновите страницу или попробуйте позже.';
+        console.error('Не удалось загрузить аналитику:', error);
+    }
 });
 </script>
 <script>

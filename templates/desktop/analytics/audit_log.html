@@ -1,5 +1,5 @@
 {% extends 'desktop/base.html' %}
-{% load dacar_format %}
+{% load static dacar_format %}
 
 {% block title %}Журнал аудита — DACAR{% endblock %}
 
@@ -209,20 +209,6 @@
     .audit-diff-card.refund-card { background:rgba(239,68,68,.05); border-color:rgba(239,68,68,.25); }
     .audit-diff-items { margin-top:.3rem; color:var(--text-muted); font-size:.72rem; }
 
-    /* Dark theme overrides */
-    html[data-theme="dark"] .audit-diff-card { background:#1E293B; border-color:#334155; }
-    html[data-theme="dark"] .audit-diff-chips span { background:#121C2E; border-color:#334155; }
-    html[data-theme="dark"] .audit-filter-bar { background: #0F172A; border-color: #1E293B; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35); }
-    html[data-theme="dark"] .audit-divider { background: #1E293B; }
-    html[data-theme="dark"] .audit-date { background: #0F172A; border-color: #1E293B; color: #CBD5E1; }
-    html[data-theme="dark"] .audit-search-form .form-control { background: #0A0F1D; border-color: #1E293B; color: #F8FAFC; }
-    html[data-theme="dark"] .audit-search-form .form-control::placeholder { color: #64748B; }
-    html[data-theme="dark"] .audit-search-form select option { background: #0A0F1D; color: #F8FAFC; }
-    html[data-theme="dark"] .audit-reset-btn { background: #1E293B; border-color: #334155; color: #94A3B8; }
-    html[data-theme="dark"] .audit-tab { background: #1E293B; border-color: #334155; color: #94A3B8; }
-    html[data-theme="dark"] .audit-tab:hover { background: #253349; border-color: var(--accent-cyan); color: #F1F5F9; }
-    html[data-theme="dark"] .audit-tab.is-active { background: #0284C7 !important; border-color: #0284C7 !important; color: #FFFFFF !important; }
-
     @media (max-width: 980px) {
         .audit-search-form { flex-wrap: wrap; }
         .audit-field-group { flex: 1 1 calc(50% - 0.5rem); }
@@ -246,11 +232,18 @@
         .audit-empty { margin-left: -3.25rem; }
     }
 </style>
+<link rel="stylesheet" href="{% static 'css/audit-refresh.css' %}">
 {% endblock %}
 
 {% block content %}
 <main class="audit-v2">
-    <header class="audit-v2-header"><div><h1 class="audit-v2-title">Журнал аудита</h1><p class="audit-v2-subtitle">Неизменяемая история всех критичных действий в системе</p></div><form method="get"><label class="audit-date"><i class="fa-regular fa-calendar"></i><input type="date" name="date" value="{{ date_filter }}" onchange="this.form.submit()" aria-label="Дата событий"></label></form></header>
+    <header class="audit-v2-header"><div><h1 class="audit-v2-title">Журнал аудита</h1><p class="audit-v2-subtitle">Неизменяемая история всех критичных действий в системе</p></div><form method="get" class="audit-date-form">
+    {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+    {% if product_filter %}<input type="hidden" name="product" value="{{ product_filter }}">{% endif %}
+    {% if user_filter %}<input type="hidden" name="user_id" value="{{ user_filter }}">{% endif %}
+    {% if action_type %}<input type="hidden" name="action_type" value="{{ action_type }}">{% endif %}
+    {% if event_filter %}<input type="hidden" name="event" value="{{ event_filter }}">{% endif %}
+    <label class="audit-date"><i class="fa-regular fa-calendar"></i><input type="date" name="date" value="{{ date_filter }}" onchange="this.form.submit()" aria-label="Дата событий"></label></form></header>
 
     <section class="audit-filter-bar" aria-label="Фильтры аудита">
         <!-- Search & Filters Form -->
@@ -261,12 +254,12 @@
 
             <div class="audit-field-group">
                 <i class="fa-solid fa-magnifying-glass audit-field-icon"></i>
-                <input type="search" class="form-control" name="q" value="{{ search }}" placeholder="Событие или сотрудник">
+                <input type="search" class="form-control" name="q" aria-label="Событие или сотрудник" value="{{ search }}" placeholder="Событие или сотрудник">
             </div>
 
             <div class="audit-field-group">
                 <i class="fa-solid fa-barcode audit-field-icon"></i>
-                <input type="search" class="form-control" name="product" value="{{ product_filter }}" placeholder="Товар или № чека">
+                <input type="search" class="form-control" name="product" aria-label="Товар или номер чека" value="{{ product_filter }}" placeholder="Товар или № чека">
             </div>
 
             <div class="audit-select-wrap">
@@ -298,22 +291,22 @@
             <a href="{% url 'audit_log' %}{% if date_filter %}?date={{ date_filter }}{% endif %}" class="audit-tab {% if not action_type and not event_filter %}is-active{% endif %}">
                 Все
             </a>
-            <a href="?action_type=SALE{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab sale {% if action_type == 'SALE' %}is-active{% endif %}">
+            <a href="?action_type=SALE{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search|urlencode }}{% endif %}{% if product_filter %}&amp;product={{ product_filter|urlencode }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab sale {% if action_type == 'SALE' %}is-active{% endif %}">
                 <i class="fa-solid fa-money-bill-wave"></i>Продажи
             </a>
-            <a href="?action_type=REFUND{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab refund {% if action_type == 'REFUND' %}is-active{% endif %}">
+            <a href="?action_type=REFUND{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search|urlencode }}{% endif %}{% if product_filter %}&amp;product={{ product_filter|urlencode }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab refund {% if action_type == 'REFUND' %}is-active{% endif %}">
                 <i class="fa-solid fa-receipt"></i>Возвраты
             </a>
-            <a href="?action_type=STOCK_IN{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab in {% if action_type == 'STOCK_IN' %}is-active{% endif %}">
+            <a href="?action_type=STOCK_IN{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search|urlencode }}{% endif %}{% if product_filter %}&amp;product={{ product_filter|urlencode }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab in {% if action_type == 'STOCK_IN' %}is-active{% endif %}">
                 <i class="fa-solid fa-arrow-down"></i>Приход
             </a>
-            <a href="?action_type=STOCK_OUT{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab out {% if action_type == 'STOCK_OUT' %}is-active{% endif %}">
+            <a href="?action_type=STOCK_OUT{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search|urlencode }}{% endif %}{% if product_filter %}&amp;product={{ product_filter|urlencode }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab out {% if action_type == 'STOCK_OUT' %}is-active{% endif %}">
                 <i class="fa-solid fa-triangle-exclamation"></i>Списание
             </a>
-            <a href="?action_type=PRODUCT_UPDATE&amp;event=price{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab price {% if event_filter == 'price' %}is-active{% endif %}">
-                <i class="fa-solid fa-tenge-sign"></i>Цены
+            <a href="?action_type=PRODUCT_UPDATE&amp;event=price{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search|urlencode }}{% endif %}{% if product_filter %}&amp;product={{ product_filter|urlencode }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab price {% if event_filter == 'price' %}is-active{% endif %}">
+                <i class="fa-solid fa-tenge-sign"></i>Изменение цены
             </a>
-            <a href="?action_type=USER_ACTION{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search }}{% endif %}{% if product_filter %}&amp;product={{ product_filter }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab user {% if action_type == 'USER_ACTION' %}is-active{% endif %}">
+            <a href="?action_type=USER_ACTION{% if date_filter %}&amp;date={{ date_filter }}{% endif %}{% if search %}&amp;q={{ search|urlencode }}{% endif %}{% if product_filter %}&amp;product={{ product_filter|urlencode }}{% endif %}{% if user_filter %}&amp;user_id={{ user_filter }}{% endif %}" class="audit-tab user {% if action_type == 'USER_ACTION' %}is-active{% endif %}">
                 <i class="fa-solid fa-user-gear"></i>Персонал
             </a>
         </nav>
@@ -322,21 +315,22 @@
 
     <section class="audit-timeline" aria-label="События аудита">
         {% for log in logs %}
-        <article class="audit-event {% if log.action_type == 'SALE' %}sale{% elif log.action_type == 'REFUND' %}refund{% elif log.action_type == 'STOCK_IN' %}in{% elif log.action_type == 'STOCK_OUT' or log.action_type == 'STOCK_ADJUST' %}out{% else %}user{% endif %}">
-            <span class="audit-dot">{% if log.action_type == 'SALE' %}<i class="fa-solid fa-money-bill-wave"></i>{% elif log.action_type == 'REFUND' %}<i class="fa-solid fa-receipt"></i>{% elif log.action_type == 'STOCK_IN' %}<i class="fa-solid fa-arrow-down"></i>{% elif log.action_type == 'STOCK_OUT' or log.action_type == 'STOCK_ADJUST' %}<i class="fa-solid fa-triangle-exclamation"></i>{% elif log.action_type == 'PRODUCT_CREATE' or log.action_type == 'PRODUCT_UPDATE' %}<i class="fa-solid fa-box"></i>{% else %}<i class="fa-solid fa-user-gear"></i>{% endif %}</span>
+        <article class="audit-event {% if log.action_type == 'SALE' %}sale{% elif log.action_type == 'REFUND' %}refund{% elif log.action_type == 'STOCK_IN' %}in{% elif log.action_type == 'STOCK_OUT' or log.action_type == 'STOCK_ADJUST' %}out{% elif log.action_type == 'PRODUCT_UPDATE' or log.action_type == 'PRODUCT_CREATE' %}product{% else %}user{% endif %}">
+            <span class="audit-dot" aria-hidden="true">{% if log.action_type == 'SALE' %}<i class="fa-solid fa-money-bill-wave"></i>{% elif log.action_type == 'REFUND' %}<i class="fa-solid fa-receipt"></i>{% elif log.action_type == 'STOCK_IN' %}<i class="fa-solid fa-arrow-down"></i>{% elif log.action_type == 'STOCK_OUT' or log.action_type == 'STOCK_ADJUST' %}<i class="fa-solid fa-triangle-exclamation"></i>{% elif log.action_type == 'PRODUCT_CREATE' or log.action_type == 'PRODUCT_UPDATE' %}<i class="fa-solid fa-box"></i>{% else %}<i class="fa-solid fa-user-gear"></i>{% endif %}</span>
             <div class="audit-event-card">
                 <div>
-                    <div class="audit-event-description" title="{{ log.display_description }}">{{ log.display_description }}</div>
+                    <span class="audit-event-type">{{ log.get_action_type_display }}</span>
+                    <div class="audit-event-description">{{ log.display_description }}</div>
                     {% if log.metadata.changes %}
-                    <div class="audit-diff-card">
-                        <div class="audit-diff-title"><i class="fa-solid fa-code-compare"></i> Было → Стало:</div>
+                    <div class="audit-diff-card audit-changes">
+                        <div class="audit-diff-title">Было → стало</div>
                         <div class="audit-diff-list">
                             {% for ch in log.metadata.changes %}
                             <div class="audit-diff-row">
-                                <span class="audit-diff-label">{{ ch.label }}:</span>
-                                <span class="audit-diff-old">{{ ch.old }}</span>
-                                <span class="audit-diff-arrow">→</span>
-                                <span class="audit-diff-new">{{ ch.new }}</span>
+                                <span class="audit-diff-label">{{ ch.label }}</span>
+                                <span class="audit-diff-old"><small>Было</small>{{ ch.old }}</span>
+                                <span class="audit-diff-arrow" aria-hidden="true">→</span>
+                                <span class="audit-diff-new"><small>Стало</small>{{ ch.new }}</span>
                             </div>
                             {% endfor %}
                         </div>
@@ -381,7 +375,7 @@
                     <div class="audit-event-meta"><span><i class="fa-regular fa-user"></i> {% if log.user %}{{ log.user.get_full_name|default:log.user.username }}{% else %}Удалённый пользователь{% endif %}</span>{% if log.user %}<span>· {{ log.user.get_role_display }}</span>{% endif %}</div>
                     <details class="audit-event-more"><summary>Подробнее</summary><p>{{ log.display_description }}<br>IP: {{ log.ip_address|default:'не определён' }}</p></details>
                 </div>
-                <time class="audit-event-time">{{ log.created_at|date:'d.m · H:i' }}</time>
+                <time class="audit-event-time" datetime="{{ log.created_at|date:'c' }}">{{ log.created_at|date:'d.m · H:i' }}</time>
             </div>
         </article>
         {% empty %}<div class="audit-empty"><i class="fa-solid fa-shield-halved"></i><p>Записей не найдено</p><small>Измените период или параметры поиска.</small></div>{% endfor %}

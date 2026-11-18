@@ -1,0 +1,155 @@
+body:has(.receipts-v2, .cashier-receipts, .receipts-shell) {
+    --bg-main: #fafafa;
+    --card-bg: #fff;
+    --card-border: #e5e5e5;
+    --text-main: #171717;
+    --text-primary: #171717;
+    --text-muted: #737373;
+    --receipt-soft: #f5f5f5;
+    --receipt-primary: #171717;
+    --receipt-on-primary: #fff;
+    --receipt-blue: #0070f3;
+    --receipt-red: #b42318;
+    --receipt-green: #067554;
+    font-family: Geist, Inter, system-ui, -apple-system, sans-serif;
+}
+html[data-theme="dark"] body:has(.receipts-v2, .cashier-receipts, .receipts-shell) {
+    --bg-main: #0a0a0a;
+    --card-bg: #111;
+    --card-border: #303030;
+    --text-main: #ededed;
+    --text-primary: #ededed;
+    --text-muted: #a1a1a1;
+    --receipt-soft: #171717;
+    --receipt-primary: #ededed;
+    --receipt-on-primary: #171717;
+    --receipt-blue: #3291ff;
+    --receipt-red: #ff8588;
+    --receipt-green: #50e3c2;
+}
+body:has(.receipts-v2, .cashier-receipts) .header-nav {
+    min-height: 64px;
+    background: var(--card-bg);
+    border-bottom-color: var(--card-border);
+    box-shadow: none;
+}
+body:has(.receipts-v2, .cashier-receipts) :is(.brand-logo,.nav-link) { font-family: inherit; }
+:is(.receipts-v2,.cashier-receipts) { max-width: 1440px; color: var(--text-main); }
+:is(.receipts-v2-title,.cashier-receipts-title,.receipts-title h1) {
+    font: 600 clamp(1.55rem, 2.2vw, 2rem)/1.2 Geist, Inter, system-ui, sans-serif;
+    letter-spacing: -.045em;
+}
+:is(.receipt-stat,.cashier-stat,.receipts-table-card,.receipt-filter-bar,.receipt-card,.receipt-hero,.receipt-search,.receipt-advanced) {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    box-shadow: none;
+}
+body:has(.cashier-receipts) .cashier-stat.is-primary { background: var(--receipt-soft); border-color: var(--card-border); }
+body:has(.cashier-receipts) .cashier-stat.is-primary .cashier-stat-label,
+.receipts-shell :is(.receipt-hero-label,.receipt-metric span) { color: var(--text-muted); }
+body:has(.cashier-receipts) .cashier-stat.is-primary .cashier-stat-value,
+.receipts-shell .receipt-hero { color: var(--text-main); }
+:is(.receipt-stat-value,.cashier-stat-value,.receipt-hero-total,.receipt-metric strong) {
+    font-family: inherit;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+:is(.receipt-tab,.cashier-period,.receipt-filter-chip) { border-radius: 8px; font-weight: 500; }
+:is(.receipts-v2,.cashier-receipts,.receipts-shell) :is(.receipt-tab,.cashier-period,.receipt-filter-chip).is-active,
+:is(.receipts-v2,.cashier-receipts,.receipts-shell) .btn-primary,
+.receipts-shell .receipt-search button {
+    background: var(--receipt-primary);
+    color: var(--receipt-on-primary);
+    border-color: var(--receipt-primary);
+    box-shadow: none;
+}
+body:has(.receipts-v2,.cashier-receipts,.receipts-shell) :is(.receipt-date,.receipt-search-form .form-control,.receipt-search-form .btn.btn-secondary,.receipt-search-form select option,.receipt-advanced select) {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-main);
+    border-radius: 8px;
+}
+:is(.receipts-v2,.cashier-receipts,.receipts-shell) :is(a,button,input,select,summary):focus-visible {
+    outline: 2px solid var(--receipt-blue);
+    outline-offset: 2px;
+}
+.receipts-table th { background: var(--receipt-soft); font-weight: 550; }
+.receipts-table tbody tr:hover { background: var(--receipt-soft); }
+.receipt-number { font-family: inherit; font-weight: 600; }
+.receipts-table .receipt-total { text-decoration: none; }
+.receipt-refunded .receipt-amount { text-decoration: line-through; }
+:is(.receipt-amount,.receipt-total) { font-variant-numeric: tabular-nums; }
+.receipt-actions { flex-wrap: wrap; }
+.receipts-table .receipt-actions .receipt-action { width: 34px; height: 34px; }
+.receipt-details { background: var(--receipt-soft); border-radius: 8px; }
+.receipt-details-title { font-size: .82rem; font-weight: 600; }
+.receipt-detail-line { border-bottom: 1px solid var(--card-border); padding: .4rem 0; }
+.receipt-detail-line:last-child { border-bottom: 0; }
+.receipt-detail-line span { overflow-wrap: anywhere; }
+:is(.receipts-v2,.cashier-receipts,.receipts-shell) .receipt-status:is(.refund,.is-refunded) {
+    color: var(--receipt-red);
+    background: color-mix(in srgb, var(--receipt-red) 10%, var(--card-bg));
+}
+:is(.receipts-v2,.cashier-receipts,.receipts-shell) .receipt-status:is(.done,:not(.refund,.is-refunded,.is-other)) { color: var(--receipt-green); }
+.receipt-payment-parts {
+    margin-top: .45rem;
+    color: var(--text-muted);
+    font-size: .75rem;
+    font-weight: 400;
+    white-space: normal;
+}
+.receipt-payment-lines { display: grid; gap: .25rem; margin: 0; }
+.receipt-payment-lines > div { display: flex; gap: .4rem .75rem; justify-content: space-between; }
+.receipt-payment-lines dd { margin: 0; color: var(--text-main); white-space: nowrap; font-weight: 600; }
+.receipt-payment-note { margin: .3rem 0 0; overflow-wrap: anywhere; }
+.receipts-shell .receipt-hero::after { content: none; }
+.receipts-shell .receipt-metrics { position: static; flex-wrap: wrap; margin-top: .8rem; }
+.receipts-shell .receipt-metric { background: var(--receipt-soft); border-color: var(--card-border); }
+.receipts-shell .receipt-filter-row { flex-wrap: wrap; overflow: visible; }
+.receipts-shell .receipt-search input { font: inherit; }
+.receipts-shell .receipt-card { border-color: var(--card-border); box-shadow: none; }
+.receipts-shell .receipt-card.is-refunded { border-inline-start: 3px solid var(--receipt-red); }
+.receipts-shell .receipt-summary-body { grid-template-columns: minmax(0,1fr); }
+.receipts-shell .receipt-meta { flex-wrap: wrap; }
+.receipts-shell .receipt-payment { white-space: normal; }
+.receipts-shell .receipt-total-row { justify-content: flex-start; }
+.receipts-shell .receipt-expand > summary::after { content: 'Состав и действия ›'; display: block; margin-top: .6rem; font-size: .76rem; color: var(--receipt-blue); }
+.receipts-shell .receipt-expand[open] > summary::after { content: 'Скрыть детали'; }
+.receipts-shell .receipt-items { background: var(--receipt-soft); }
+.receipts-shell .receipt-item-line span { white-space: normal; overflow-wrap: anywhere; }
+.receipts-shell .receipt-status.is-refunded { white-space: normal; overflow-wrap: anywhere; }
+
+@media (max-width: 900px) {
+    .receipts-table-scroll { overflow: visible; }
+    .receipts-table, .receipts-table tbody { display: block; min-width: 0; }
+    .receipts-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .receipts-table .receipt-record {
+        display: grid;
+        grid-template-columns: minmax(0,1fr) auto;
+        gap: .65rem .75rem;
+        padding: .8rem;
+        border-bottom: 1px solid var(--card-border);
+    }
+    .receipts-table .receipt-record td { min-width: 0; padding: 0; border: 0; }
+    .receipts-table .receipt-record.receipt-refunded { box-shadow: inset 3px 0 var(--receipt-red); }
+    .receipts-table .receipt-total { grid-area: 1 / 2; white-space: normal; text-align: end; }
+    .receipts-table .receipt-id-cell { grid-area: 1 / 1; overflow-wrap: anywhere; }
+    .receipts-table :is(.receipt-cashier-cell,.receipt-action-cell) { grid-column: 1 / -1; }
+    .receipts-table .receipt-status-cell { text-align: end; }
+    .receipts-table .receipt-cashier { min-width: 0; }
+    .receipts-table .receipt-payment { white-space: normal; }
+    .receipts-table .receipt-actions { justify-content: flex-start; }
+    .receipts-table .receipt-actions .receipt-action { width: 44px; height: 44px; }
+    .receipts-table .receipt-details-row:not([hidden]),
+    .receipts-table .receipt-details-row:not([hidden]) > td,
+    .receipts-table tr:has(.receipt-empty),
+    .receipts-table td:has(.receipt-empty) { display: block; }
+    .receipts-table .receipt-details { grid-template-columns: minmax(0, 1fr); }
+    .receipts-table .receipt-payment-parts { text-align: start; }
+    .receipt-header-tools,.receipt-tabs,.cashier-periods,.receipt-pagination { flex-wrap: wrap; }
+    .receipt-search-form { flex-wrap: wrap; }
+    .receipt-search-form input[type="search"] { width: 100%; min-width: 0; }
+}

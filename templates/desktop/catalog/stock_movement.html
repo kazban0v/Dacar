@@ -1,4 +1,5 @@
 {% extends 'desktop/base.html' %}
+{% load static %}
 
 {% block title %}Движение товаров и Склад — DACAR{% endblock %}
 
@@ -15,7 +16,7 @@
 
     .stock-grid-layout {
         display: grid;
-        grid-template-columns: 360px 1fr;
+        grid-template-columns: minmax(17rem, 21rem) minmax(0, 1fr);
         gap: 1.25rem;
         align-items: start;
     }
@@ -113,7 +114,7 @@
 
     @media (max-width: 960px) {
         .stock-grid-layout {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
         }
 
         .mobile-add-btn {
@@ -139,37 +140,35 @@
             display: block;
         }
 
-        .stock-page-header h1 { font-size: 1.25rem !important; }
-    }
+        }
 
     @keyframes fadeInDown {
         from { opacity: 0; transform: translateY(-8px); }
         to   { opacity: 1; transform: translateY(0); }
     }
 </style>
+<link rel="stylesheet" href="{% static 'css/catalog-refresh.css' %}">
 {% endblock %}
 
 {% block content %}
+<section class="stock-movements-page" aria-labelledby="stockMovementsTitle">
 <div class="stock-page-header">
     <div>
-        <h1 style="font-size: 1.4rem; font-weight: 800; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 0.5rem;">
-            <i class="fa-solid fa-boxes-packing" style="color: var(--accent-cyan);"></i> Движение товаров
+        <h1 id="stockMovementsTitle">Движение товаров
         </h1>
         <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 3px;">Приход, списание, продажи и журнал остатков</p>
     </div>
-    <button type="button" class="btn btn-primary mobile-add-btn" id="toggleMovementFormBtn" onclick="toggleMovementForm()">
-        <i class="fa-solid fa-plus"></i> <span id="toggleMovementBtnText">Новая операция</span>
+    <button type="button" class="btn btn-primary mobile-add-btn" id="toggleMovementFormBtn" aria-controls="movementFormCard" aria-expanded="{% if selected_product_id or initial_movement_type %}true{% else %}false{% endif %}" onclick="toggleMovementForm()">
+        <i class="fa-solid fa-plus"></i> <span id="toggleMovementBtnText">{% if selected_product_id or initial_movement_type %}Скрыть форму{% else %}Новая операция{% endif %}</span>
     </button>
 </div>
 
 <div class="stock-grid-layout">
     <!-- FORM SIDEBAR -->
-    <div class="dacar-card movement-form-card" id="movementFormCard">
+    <div class="dacar-card movement-form-card{% if selected_product_id or initial_movement_type %} open{% endif %}" id="movementFormCard">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.45rem;">
-                <i class="fa-solid fa-file-pen" style="color: var(--accent-orange);"></i> Провести операцию
-            </h3>
-            <button type="button" class="btn btn-secondary mobile-add-btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="toggleMovementForm()">
+            <h2 class="movement-section-title">Провести операцию</h2>
+            <button type="button" class="btn btn-secondary mobile-add-btn" aria-label="Скрыть форму" style="padding: 4px 8px; font-size: 0.75rem;" onclick="toggleMovementForm()">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -178,7 +177,7 @@
             {% csrf_token %}
             <input type="hidden" name="client_sync_id" value="{{ stock_sync_id }}">
             <div style="margin-bottom: 0.75rem;">
-                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Выбор товара <span style="color: var(--accent-red);">*</span></label>
+                <label for="movementProductSearch" style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Выбор товара <span style="color: var(--accent-red);">*</span></label>
                 <input type="hidden" name="product_id" id="movementProductId" value="{{ selected_product_id }}" required>
                 <input type="search" id="movementProductSearch" class="form-control" style="font-size:.85rem;" placeholder="Название, SKU или штрихкод" autocomplete="off">
                 <div id="movementProductResults" style="display:none;position:relative;z-index:8;"></div>
@@ -186,7 +185,7 @@
             </div>
 
             <div style="margin-bottom: 0.75rem;">
-                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Тип операции <span style="color: var(--accent-red);">*</span></label>
+                <label for="movementTypeSelect" style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Тип операции <span style="color: var(--accent-red);">*</span></label>
                 <select name="movement_type" id="movementTypeSelect" class="form-control" required style="font-size: 0.85rem;">
                     {% for m_val, m_lbl in movement_types %}
                     {% if m_val != 'WRITE_OFF_REVERSAL' %}<option value="{{ m_val }}" {% if initial_movement_type == m_val %}selected{% endif %}>{{ m_lbl }}</option>{% endif %}
@@ -195,7 +194,7 @@
             </div>
 
             <div id="writeoffReasonGroup" class="writeoff-reason-box" style="display:none; margin-bottom: 0.75rem;">
-                <label style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--accent-red); margin-bottom: 0.25rem;">Причина списания <span style="color: var(--accent-red);">*</span></label>
+                <label for="writeoffReasonSelect" style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--accent-red); margin-bottom: 0.25rem;">Причина списания <span style="color: var(--accent-red);">*</span></label>
                 <select name="writeoff_reason" id="writeoffReasonSelect" class="form-control" style="font-size: 0.85rem;">
                     <option value="">-- Выберите причину --</option>
                     {% for reason_val, reason_label in writeoff_reasons %}
@@ -205,18 +204,18 @@
             </div>
 
             <div style="margin-bottom: 0.75rem;">
-                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Количество <span style="color: var(--accent-red);">*</span></label>
-                <input type="number" step="0.001" name="quantity" class="form-control" required placeholder="0.000">
+                <label for="movementQuantity" style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Количество <span style="color: var(--accent-red);">*</span></label>
+                <input type="number" step="0.001" id="movementQuantity" name="quantity" class="form-control" required placeholder="0.000">
             </div>
 
             <div style="margin-bottom: 0.75rem;">
-                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Себестоимость / Закупка (₸)</label>
-                <input type="number" step="0.01" name="cost_price" class="form-control" placeholder="Оставьте пустым для текущей">
+                <label for="movementCost" style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Себестоимость / Закупка (₸)</label>
+                <input type="number" step="0.01" id="movementCost" name="cost_price" class="form-control" placeholder="Оставьте пустым для текущей">
             </div>
 
             <div style="margin-bottom: 1.15rem;">
-                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Комментарий к накладной</label>
-                <input type="text" name="comment" class="form-control" placeholder="например: Поставка от Koch Chemie №42">
+                <label for="movementComment" style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Комментарий к накладной</label>
+                <input type="text" id="movementComment" name="comment" class="form-control" placeholder="например: Поставка от Koch Chemie №42">
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%; font-weight: 700; min-height: 42px;">
@@ -226,13 +225,14 @@
     </div>
 
     <!-- MOVEMENTS LOG TABLE -->
-    <div class="dacar-card">
-        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">
-            Журнал складских операций <span class="badge badge-cyan" style="font-size: 0.75rem; margin-left: 0.25rem;">{{ page_obj.paginator.count }}</span>
-        </h3>
+    <div class="dacar-card movement-log-card">
+        <div class="movement-log-header">
+            <h2 class="movement-section-title" id="movementLogTitle">Журнал складских операций</h2>
+            <span class="movement-count">{{ page_obj.paginator.count }} записей</span>
+        </div>
 
         <!-- DESKTOP TABLE VIEW (>= 768px) -->
-        <div class="table-responsive movements-table-wrapper">
+        <div class="table-responsive movements-table-wrapper" role="region" aria-labelledby="movementLogTitle" tabindex="0">
             <table class="dacar-table">
                 <thead>
                     <tr>
@@ -365,7 +365,7 @@
             {% endfor %}
         </div>
         {% if page_obj.has_other_pages %}
-        <nav aria-label="Страницы журнала" style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--card-border);">
+        <nav class="movement-pagination" aria-label="Страницы журнала">
             <span style="color:var(--text-muted);font-size:.78rem;">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} операций</span>
             <span style="display:flex;gap:.45rem;">
                 {% if page_obj.has_previous %}<a class="btn btn-secondary" href="?page={{ page_obj.previous_page_number }}{% if selected_product_id %}&product={{ selected_product_id }}{% endif %}{% if initial_movement_type %}&action={{ initial_movement_type }}{% endif %}">← Назад</a>{% endif %}
@@ -375,6 +375,8 @@
         {% endif %}
     </div>
 </div>
+
+</section>
 
 {% block extra_scripts %}
 <script>
@@ -429,6 +431,7 @@
 
         formCard.classList.toggle('open');
         const isOpen = formCard.classList.contains('open');
+        document.getElementById('toggleMovementFormBtn').setAttribute('aria-expanded', String(isOpen));
         if (btnText) {
             btnText.textContent = isOpen ? 'Скрыть форму' : 'Новая операция';
         }

@@ -1,4 +1,5 @@
 {% extends 'desktop/base.html' %}
+{% load static %}
 {% load dacar_format %}
 
 {% block title %}Склад и остатки — DACAR{% endblock %}
@@ -86,6 +87,7 @@
     @media (max-width:980px) { .stock-controls { align-items:stretch; flex-direction:column; } .stock-pills { justify-content:flex-end; } }
     @media (max-width:680px) { .stock-v2-header { flex-direction:column; } .stock-v2-add { width:100%; justify-content:center; } .stock-filter-form { flex-wrap:wrap; } .stock-filter-form input,.stock-filter-form select { width:100%; } .stock-filter-form .btn { flex:1; } .stock-category-row,.stock-pills { overflow-x:auto; justify-content:flex-start; padding-right:1.8rem; padding-bottom:.1rem; -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 2rem),transparent); mask-image:linear-gradient(to right,#000 calc(100% - 2rem),transparent); } .stock-table-scroll { max-height:none; } .stock-pagination { align-items:flex-start; flex-direction:column; } }
 </style>
+<link rel="stylesheet" href="{% static 'css/catalog-refresh.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -95,26 +97,19 @@
             <h1 class="stock-v2-title">Склад и остатки</h1>
             <p class="stock-v2-summary">{{ all_products_count }} товаров · {{ low_stock_count }} с низким остатком{% if user.is_admin_user %} · сумма склада {{ inventory_value|tenge }} ₸{% endif %}</p>
         </div>
-        {% if user.is_admin_user %}<div style="display:flex;gap:.5rem;flex-wrap:wrap;"><a href="{% url 'stock_movement' %}?action=OUT" class="btn btn-secondary stock-v2-add"><i class="fa-solid fa-arrow-up-from-bracket"></i> Списание и история</a><a href="{% url 'product_create' %}" class="btn btn-primary stock-v2-add"><i class="fa-solid fa-plus"></i> Добавить товар</a></div>{% endif %}
+        {% if user.is_admin_user %}<div class="stock-header-actions"><a href="{% url 'stock_movement' %}?action=OUT" class="btn btn-secondary stock-v2-add"><i class="fa-solid fa-arrow-up-from-bracket"></i> Списание и история</a><a href="{% url 'product_create' %}" class="btn btn-primary stock-v2-add"><i class="fa-solid fa-plus"></i> Добавить товар</a></div>{% endif %}
     </header>
-
-    <nav class="stock-category-row" aria-label="Категории товаров">
-        <a href="{% url 'product_list' %}" class="stock-category {% if not selected_category %}is-active{% endif %}"><span class="stock-category-icon"><i class="fa-solid fa-table-cells-large"></i></span>Все</a>
-        {% for cat in categories %}
-        <a href="?category={{ cat.id }}" class="stock-category {% if selected_category == cat.id|stringformat:'i' %}is-active{% endif %}"><span class="stock-category-icon"><i class="fa-solid {{ cat.name|category_icon:cat.icon }}"></i></span>{{ cat.name }}</a>
-        {% endfor %}
-    </nav>
 
     <section class="stock-controls" aria-label="Поиск и фильтры">
         <form method="get" class="stock-filter-form">
-            <input class="form-control" type="search" name="q" value="{{ search }}" placeholder="Поиск по товару, SKU или штрихкоду">
+            <input class="form-control" type="search" name="q" aria-label="Поиск товара" value="{{ search }}" placeholder="Поиск по товару, SKU или штрихкоду">
             {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
             {% if low_stock_filter %}<input type="hidden" name="low_stock" value="{{ low_stock_filter }}">{% endif %}
             {% if out_of_stock_filter %}<input type="hidden" name="out_of_stock" value="{{ out_of_stock_filter }}">{% endif %}
             {% if quality_filter %}<input type="hidden" name="quality" value="{{ quality_filter }}">{% endif %}
             <select class="form-control" name="brand" aria-label="Бренд"><option value="">Все бренды</option>{% for brand in brands %}<option value="{{ brand.id }}" {% if selected_brand == brand.id|stringformat:'i' %}selected{% endif %}>{{ brand.name }}</option>{% endfor %}</select>
             <button class="btn btn-secondary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Найти</button>
-            {% if search or selected_category or selected_brand or low_stock_filter or out_of_stock_filter or quality_filter %}<a class="btn btn-secondary" href="{% url 'product_list' %}" title="Сбросить фильтры"><i class="fa-solid fa-xmark"></i></a>{% endif %}
+            {% if search or selected_category or selected_brand or low_stock_filter or out_of_stock_filter or quality_filter %}<a class="btn btn-secondary" href="{% url 'product_list' %}" aria-label="Сбросить фильтры" title="Сбросить фильтры"><i class="fa-solid fa-xmark"></i></a>{% endif %}
         </form>
         <div class="stock-pills">
             <a href="{% url 'product_list' %}" class="stock-pill {% if not low_stock_filter and not out_of_stock_filter and not selected_category and not selected_brand and not search and not quality_filter %}is-active{% endif %}">Все</a>
@@ -125,6 +120,13 @@
             <a href="{% url 'product_list' %}" class="stock-pill">Активные</a>
         </div>
     </section>
+
+    <nav class="stock-category-row" aria-label="Категории товаров">
+        <a href="{% url 'product_list' %}" class="stock-category {% if not selected_category %}is-active{% endif %}"><span class="stock-category-icon"><i class="fa-solid fa-table-cells-large"></i></span>Все</a>
+        {% for cat in categories %}
+        <a href="?category={{ cat.id }}" class="stock-category {% if selected_category == cat.id|stringformat:'i' %}is-active{% endif %}"><span class="stock-category-icon"><i class="fa-solid {{ cat.name|category_icon:cat.icon }}"></i></span>{{ cat.name }}</a>
+        {% endfor %}
+    </nav>
 
     {% if user.is_admin_user %}
     <section class="catalog-quality" aria-label="Проверка каталога">
@@ -139,18 +141,18 @@
     {% endif %}
 
     <section class="stock-table-card">
-        <div class="stock-table-scroll"><table class="stock-table">
-            <thead><tr><th>Товар</th><th>Категория</th><th>Остаток</th>{% if user.is_admin_user %}<th>Закупка</th>{% endif %}<th>Розница</th>{% if user.is_admin_user %}<th>Маржа</th><th aria-label="Действия"></th>{% endif %}</tr></thead>
-            <tbody>
+        <div class="stock-table-scroll"><table class="stock-table" role="table" aria-label="Остатки товаров">
+            <thead role="rowgroup"><tr role="row"><th>Товар</th><th>Категория</th><th>Остаток</th>{% if user.is_admin_user %}<th>Закупка</th>{% endif %}<th>Розница</th>{% if user.is_admin_user %}<th>Маржа</th><th aria-label="Действия"></th>{% endif %}</tr></thead>
+            <tbody role="rowgroup">
                 {% for p in products %}
-                <tr class="{% if p.is_low_stock %}stock-is-low{% endif %}">
-                    <td><div class="stock-product">{% if p.image %}<button type="button" class="stock-product-photo" onclick="openStockImagePreview('{{ p.image.url }}', '{{ p.name|escapejs }}')" aria-label="Увеличить фото: {{ p.name }}"><img src="{{ p.image.url }}" alt="" loading="lazy"></button>{% else %}<span class="stock-product-icon"><i class="fa-solid {% if p.category %}{{ p.category.name|category_icon:p.category.icon }}{% else %}fa-tags{% endif %}"></i></span>{% endif %}<div><div class="stock-product-name" title="{{ p.name }}">{{ p.name }}</div><div class="stock-product-sku">{{ p.sku }}</div></div></div></td>
-                    <td class="stock-category-name">{{ p.category.name|default:'—' }}</td>
-                    <td class="stock-number {% if p.is_low_stock %}stock-low{% endif %}">{{ p.stock_qty|floatformat:0 }} {{ p.unit }}{% if p.is_low_stock %} <i class="fa-solid fa-triangle-exclamation" title="Низкий остаток"></i>{% endif %}</td>
-                    {% if user.is_admin_user %}<td class="stock-cost">{{ p.purchase_price|tenge }} ₸</td>{% endif %}
-                    <td class="stock-price">{{ p.retail_price|tenge }} ₸</td>
-                    {% if user.is_admin_user %}<td class="stock-margin">+{{ p.margin|tenge }} ₸</td>{% endif %}
-                    {% if user.is_admin_user %}<td><div class="stock-actions"><button class="stock-action stock-refill" type="button" onclick="openStockRefillModal('{{ p.id }}','{{ p.name|escapejs }}','{{ p.stock_qty|floatformat:0 }}')" title="Пополнить"><i class="fa-solid fa-plus"></i></button><a class="stock-action stock-writeoff" href="{% url 'stock_movement' %}?product={{ p.id }}&action=OUT" title="Списать"><i class="fa-solid fa-arrow-up-from-bracket"></i></a><a class="stock-action" href="{% url 'product_edit' p.id %}" title="Редактировать"><i class="fa-solid fa-pen"></i></a></div></td>{% endif %}
+                <tr role="row" class="stock-data-row {% if p.is_low_stock %}stock-is-low{% endif %}">
+                    <td role="cell" class="stock-item-cell"><div class="stock-product">{% if p.image %}<button type="button" class="stock-product-photo" onclick="openStockImagePreview('{{ p.image.url }}', '{{ p.name|escapejs }}')" aria-label="Увеличить фото: {{ p.name }}"><img src="{{ p.image.url }}" alt="" loading="lazy"></button>{% else %}<span class="stock-product-icon"><i class="fa-solid {% if p.category %}{{ p.category.name|category_icon:p.category.icon }}{% else %}fa-tags{% endif %}"></i></span>{% endif %}<div><div class="stock-product-name" title="{{ p.name }}">{{ p.name }}</div><div class="stock-product-sku">{{ p.sku }}</div></div></div></td>
+                    <td role="cell" data-label="Категория" class="stock-category-name">{{ p.category.name|default:'—' }}</td>
+                    <td role="cell" data-label="Остаток" class="stock-number {% if p.is_low_stock %}stock-low{% endif %}">{{ p.stock_qty|floatformat:0 }} {{ p.unit }}{% if p.is_low_stock %} <i class="fa-solid fa-triangle-exclamation" title="Низкий остаток"></i>{% endif %}</td>
+                    {% if user.is_admin_user %}<td role="cell" data-label="Закупка" class="stock-cost">{{ p.purchase_price|tenge }} ₸</td>{% endif %}
+                    <td role="cell" data-label="Розница" class="stock-price">{{ p.retail_price|tenge }} ₸</td>
+                    {% if user.is_admin_user %}<td role="cell" data-label="Маржа" class="stock-margin">+{{ p.margin|tenge }} ₸</td>{% endif %}
+                    {% if user.is_admin_user %}<td role="cell" class="stock-action-cell"><div class="stock-actions"><button class="stock-action stock-refill" type="button" onclick="openStockRefillModal('{{ p.id }}','{{ p.name|escapejs }}','{{ p.stock_qty|floatformat:0 }}')" aria-label="Пополнить" title="Пополнить"><i class="fa-solid fa-plus"></i></button><a class="stock-action stock-writeoff" href="{% url 'stock_movement' %}?product={{ p.id }}&action=OUT" aria-label="Списать" title="Списать"><i class="fa-solid fa-arrow-up-from-bracket"></i></a><a class="stock-action" href="{% url 'product_edit' p.id %}" aria-label="Редактировать" title="Редактировать"><i class="fa-solid fa-pen"></i></a></div></td>{% endif %}
                 </tr>
                 {% empty %}
                 <tr><td colspan="{% if user.is_admin_user %}7{% else %}4{% endif %}"><div class="stock-empty"><i class="fa-solid fa-box-open"></i><p>Товары не найдены</p><small>Попробуйте изменить поиск или фильтр.</small></div></td></tr>
@@ -159,7 +161,6 @@
         </table></div>
         {% if page_obj.has_other_pages %}<div class="stock-pagination"><span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }} · всего {{ page_obj.paginator.count }}</span><div class="stock-pages">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&{{ pagination_query }}">‹</a>{% endif %}{% for n in page_obj.paginator.page_range %}{% if n == page_obj.number %}<span>{{ n }}</span>{% elif n > page_obj.number|add:'-3' and n < page_obj.number|add:'3' %}<a href="?page={{ n }}&{{ pagination_query }}">{{ n }}</a>{% endif %}{% endfor %}{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&{{ pagination_query }}">›</a>{% endif %}</div></div>{% endif %}
     </section>
-    {% if user.is_admin_user %}<p class="stock-hint">Наведите на строку — появятся быстрые действия: пополнить или отредактировать товар.</p>{% endif %}
 </main>
 
 <div id="stockImagePreview" class="stock-image-preview" role="dialog" aria-modal="true" aria-label="Фото товара" onclick="if(event.target === this) closeStockImagePreview()">

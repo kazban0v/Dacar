@@ -431,6 +431,49 @@
         .notification-panel-footer:hover { background: rgba(2,132,199,.06); }
         html[data-theme="dark"] .notification-panel { box-shadow: 0 24px 60px rgba(0,0,0,.48); }
 
+        /* Match the dashboard header on the redesigned workspace pages. */
+        html[data-theme="dark"] body:has(.stock-v2, .stock-movements-page, .product-form-shell, .receipts-v2, .cashier-receipts, .audit-v2, .staff-v2) .header-nav {
+            --header-bg: #111;
+            --header-control-bg: #171717;
+            --header-hover-bg: #202020;
+            --header-line: #303030;
+            --header-muted: #a1a1a1;
+            --header-ink: #ededed;
+            --header-accent: #58a6ff;
+            background: var(--header-bg);
+            color-scheme: dark;
+            :is(.desktop-quick-search, .desktop-quick-search kbd, .desktop-search-result-icon) {
+                background: var(--header-control-bg);
+                border-color: var(--header-line);
+                color: var(--header-muted);
+            }
+            .desktop-quick-search:focus-within {
+                border-color: var(--header-accent);
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--header-accent) 18%, transparent);
+            }
+            .desktop-quick-search input { color: var(--header-ink); }
+            .desktop-quick-search input::placeholder { color: var(--header-muted); opacity: 1; }
+            .desktop-search-result-icon { color: var(--header-accent); }
+            :is(.desktop-search-results, .notification-panel) {
+                background: var(--header-bg);
+                border-color: var(--header-line);
+                color: var(--header-ink);
+            }
+            :is(.desktop-search-result:hover, .notification-item-link:hover, .notification-panel-footer:hover) {
+                background: var(--header-hover-bg);
+            }
+            .notification-panel-title { font: 600 .9375rem Geist, Inter, system-ui, sans-serif; }
+            .notification-count { background: #b42318; }
+            .notification-item.is-unread { background: var(--header-control-bg); }
+            .notification-item.is-unread::before { background: var(--header-accent); }
+            :is(.notification-toolbar button:not(:disabled), .notification-panel-footer) { color: var(--header-accent); }
+            :is(.notification-item-meta, .notification-dismiss:not(:hover), .notification-empty i, .notification-loading i) { color: var(--header-muted); }
+            :is(.desktop-header-icon, .notification-action-btn, .notification-toolbar button):focus-visible {
+                outline: 2px solid var(--header-accent);
+                outline-offset: 2px;
+            }
+        }
+
         .desktop-logout-btn {
             display: inline-flex;
             height: 35px;
@@ -493,122 +536,167 @@
             box-shadow: 0 0 6px var(--accent-green);
         }
 
-        /* Hamburger button (hidden on desktop) */
-        .hamburger-btn {
-            display: none;
-            background: none;
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius-md);
-            padding: 8px 10px;
-            cursor: pointer;
-            color: var(--text-main);
-            font-size: 1rem;
+        /* Shared mobile navigation for browser views. */
+        .hamburger-btn,
+        .drawer-close-btn {
+            width: 44px;
+            height: 44px;
+            flex: 0 0 44px;
             align-items: center;
             justify-content: center;
-            min-width: 42px;
-            min-height: 42px;
-            -webkit-tap-highlight-color: transparent;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-main);
+            cursor: pointer;
+            font-size: 1rem;
         }
 
-        /* ===== MOBILE NAVIGATION DRAWER ===== */
-        .mobile-nav-overlay {
-            display: none;
+        .hamburger-btn { display: none; }
+        .drawer-close-btn { display: inline-flex; }
+
+        .mobile-nav-overlay,
+        .mobile-nav-drawer {
             position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 200;
-            opacity: 0;
-            transition: opacity 0.25s ease;
+            pointer-events: none;
         }
 
-        .mobile-nav-overlay.open {
-            opacity: 1;
+        .mobile-nav-overlay {
+            inset: 0;
+            z-index: 1100;
+            background: rgba(0, 0, 0, .55);
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity .2s ease, visibility 0s .2s;
         }
 
         .mobile-nav-drawer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 280px;
-            max-width: 86vw;
-            background: var(--card-bg);
-            z-index: 201;
-            transform: translateX(-100%);
-            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            --drawer-bg: #fff;
+            --drawer-ink: #171717;
+            --drawer-muted: #737373;
+            --drawer-line: #e5e5e5;
+            --drawer-soft: #f5f5f5;
+            --drawer-selected: #171717;
+            --drawer-on-selected: #fff;
+            --drawer-focus: #0070f3;
+            z-index: 1101;
+            inset: 0 auto 0 0;
+            width: min(330px, 90vw);
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-top: var(--safe-top);
-            padding-left: var(--safe-left);
-            padding-bottom: calc(1.5rem + var(--safe-bottom));
-            box-shadow: var(--shadow-lg);
+            overscroll-behavior: contain;
+            padding: var(--safe-top) 0 var(--safe-bottom) var(--safe-left);
+            border-inline-end: 1px solid var(--drawer-line);
+            background: var(--drawer-bg);
+            color: var(--drawer-ink);
+            font-family: Geist, Inter, system-ui, sans-serif;
+            transform: translateX(-100%);
+            transition: transform .24s ease;
         }
 
-        .mobile-nav-drawer.open {
-            transform: translateX(0);
+        html[data-theme="dark"] .mobile-nav-drawer {
+            --drawer-bg: #111;
+            --drawer-ink: #ededed;
+            --drawer-muted: #a1a1a1;
+            --drawer-line: #303030;
+            --drawer-soft: #1b1b1b;
+            --drawer-selected: #ededed;
+            --drawer-on-selected: #171717;
+            --drawer-focus: #58a6ff;
         }
+
+        .mobile-nav-overlay.open, .mobile-nav-drawer.open {
+            visibility: visible;
+            pointer-events: auto;
+            transition-delay: 0s;
+        }
+        .mobile-nav-overlay.open { opacity: 1; }
+        .mobile-nav-drawer.open { transform: translateX(0); }
 
         .drawer-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid var(--card-border);
+            gap: .6rem;
+            padding: .85rem 1rem;
+            border-bottom: 1px solid var(--drawer-line);
         }
 
-        .drawer-close-btn {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: var(--radius-md);
-            min-width: 40px;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .drawer-header .brand-logo {
+            min-width: 0;
+            flex-shrink: 1;
+            gap: .4rem;
+            font: 650 clamp(.9rem, 4vw, 1.15rem)/1.2 Geist, Inter, system-ui, sans-serif;
+            letter-spacing: -.035em;
+            color: var(--drawer-ink);
+        }
+
+        .drawer-close-btn,
+        .drawer-footer-action {
+            border: 1px solid var(--drawer-line);
+            background: var(--drawer-bg);
+            color: var(--drawer-ink);
         }
 
         .drawer-nav {
             display: flex;
             flex-direction: column;
-            padding: 0.75rem;
-            gap: 2px;
+            gap: .25rem;
+            margin: 0;
+            padding: .75rem;
             list-style: none;
         }
 
-        .drawer-nav-link {
-            color: var(--text-main);
-            text-decoration: none;
-            padding: 13px 1rem;
-            border-radius: var(--radius-md);
-            font-size: 1rem;
-            font-weight: 500;
+        .drawer-nav-link,
+        .drawer-footer-action {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            transition: background 0.15s;
-            -webkit-tap-highlight-color: transparent;
+            gap: .7rem;
+            min-height: 44px;
+            padding: .55rem .7rem;
+            border-radius: 8px;
+            color: var(--drawer-ink);
+            font: 500 .875rem/1.35 Geist, Inter, system-ui, sans-serif;
+            text-decoration: none;
         }
 
+        .drawer-nav-link i,
+        .drawer-footer-action i { width: 1rem; flex: 0 0 1rem; text-align: center; color: var(--drawer-muted); }
         .drawer-nav-link:hover,
-        .drawer-nav-link.active {
-            background: rgba(0, 0, 0, 0.05);
-        }
-
-        .drawer-nav-link.pos-btn {
-            background: linear-gradient(135deg, #0EA5E9, #0284C7);
-            color: #FFF;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
+        .drawer-footer-action:hover,
+        .drawer-close-btn:hover { background: var(--drawer-soft); }
+        .drawer-nav-link[aria-current="page"] { background: var(--drawer-selected); color: var(--drawer-on-selected); }
+        .drawer-nav-link[aria-current="page"] i { color: inherit; }
 
         .drawer-user-section {
-            border-top: 1px solid var(--card-border);
-            padding: 1rem 1.25rem;
-            margin-top: 0.5rem;
+            display: grid;
+            gap: .5rem;
+            margin-top: auto;
+            padding: .9rem 1rem;
+            border-top: 1px solid var(--drawer-line);
+        }
+
+        .drawer-account { padding: .15rem .15rem .45rem; overflow-wrap: anywhere; }
+        .drawer-account-name { font-size: .9rem; font-weight: 600; }
+        .drawer-account-role { margin-top: .15rem; color: var(--drawer-muted); font-size: .75rem; }
+        .drawer-footer-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+        .drawer-footer-action {
+            gap: .38rem;
+            min-height: 44px;
+            padding: .4rem .6rem;
+            border-color: transparent;
+            font-size: .8rem;
+            cursor: pointer;
+        }
+        .drawer-theme-sun,
+        html[data-theme="dark"] .drawer-theme-moon { display: none; }
+        html[data-theme="dark"] .drawer-theme-sun { display: inline-block; }
+
+        .mobile-nav-drawer :is(a, button):focus-visible { outline: 2px solid var(--drawer-focus); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) {
+            .mobile-nav-drawer, .mobile-nav-overlay { transition: none; }
         }
 
         /* ===== MAIN CONTENT ===== */
@@ -1243,7 +1331,7 @@
         }
 
         @media (max-width: 359px) {
-            .brand-logo span:not(.brand-badge) {
+            .header-nav .brand-logo span:not(.brand-badge) {
                 display: none;
             }
         }
@@ -1257,56 +1345,50 @@
     <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileNav()"></div>
 
     <!-- Mobile Drawer -->
-    <nav class="mobile-nav-drawer" id="mobileNavDrawer" aria-label="Основное меню">
+    <nav class="mobile-nav-drawer" id="mobileNavDrawer" aria-label="Основное меню" inert>
         <div class="drawer-header">
-            <a href="{% url 'dashboard' %}" class="brand-logo" onclick="closeMobileNav()">
-                <i class="fa-solid fa-car-side" style="color: var(--accent-cyan);"></i>
-                <i class="fa-solid fa-gauge-high"
-                    style="color: var(--accent-cyan); margin-left: -5px; font-size: 0.8em;"></i>
-                <span>DACAR <span style="color: var(--accent-orange); font-weight: 300;">MARKET</span></span>
+            <a href="{% if user.is_admin_user %}{% url 'dashboard' %}{% else %}{% url 'pos' %}{% endif %}" class="brand-logo">
+                <i class="fa-solid fa-car-side" style="color: var(--accent-cyan);" aria-hidden="true"></i>
+                <span>DACAR <span style="color: var(--accent-orange); font-weight: 400;">MARKET</span></span>
             </a>
-            <button class="drawer-close-btn" onclick="closeMobileNav()" aria-label="Закрыть меню">
-                <i class="fa-solid fa-xmark"></i>
+            <button type="button" class="drawer-close-btn" onclick="closeMobileNav()" aria-label="Закрыть меню">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
         </div>
 
         <ul class="drawer-nav">
-            <li><a href="{% url 'pos' %}" class="drawer-nav-link pos-btn" onclick="closeMobileNav()"><i
-                        class="fa-solid fa-cash-register"></i> Касса (POS)</a></li>
+            <li><a href="{% url 'pos' %}" class="drawer-nav-link" {% if request.resolver_match.url_name == 'pos' or request.resolver_match.url_name == 'm_pos' %}aria-current="page"{% endif %}>
+                <i class="fa-solid fa-cash-register" aria-hidden="true"></i> Касса</a></li>
             {% if user.is_admin_user %}
-            <li><a href="{% url 'dashboard' %}"
-                    class="drawer-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-                    onclick="closeMobileNav()"><i class="fa-solid fa-chart-line"></i> Дашборд</a></li>
-            <li><a href="{% url 'product_list' %}"
-                    class="drawer-nav-link {% if 'catalog' in request.path %}active{% endif %}"
-                    onclick="closeMobileNav()"><i class="fa-solid fa-boxes-stacked"></i> Каталог и Склад</a></li>
-            <li><a href="{% url 'sales_orders_list' %}"
-                    class="drawer-nav-link {% if 'orders' in request.path %}active{% endif %}"
-                    onclick="closeMobileNav()"><i class="fa-solid fa-receipt"></i> Все чеки</a></li>
-            <li><a href="{% url 'audit_log' %}"
-                    class="drawer-nav-link {% if 'audit-log' in request.path %}active{% endif %}"
-                    onclick="closeMobileNav()"><i class="fa-solid fa-shield-halved"></i> Журнал аудита</a></li>
-            <li><a href="{% url 'users_list' %}"
-                    class="drawer-nav-link {% if 'staff' in request.path %}active{% endif %}"
-                    onclick="closeMobileNav()"><i class="fa-solid fa-users-gear"></i> Персонал</a></li>
-            {% else %}
-            <li><a href="{% url 'sales_orders_list' %}"
-                    class="drawer-nav-link {% if 'orders' in request.path %}active{% endif %}"
-                    onclick="closeMobileNav()"><i class="fa-solid fa-receipt"></i> Моя история продаж</a></li>
+            <li><a href="{% url 'dashboard' %}" class="drawer-nav-link" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>
+                <i class="fa-solid fa-chart-line" aria-hidden="true"></i> Дашборд</a></li>
+            <li><a href="{% url 'product_list' %}" class="drawer-nav-link" {% if 'catalog' in request.path %}aria-current="page"{% endif %}>
+                <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Склад</a></li>
+            {% endif %}
+            <li><a href="{% url 'sales_orders_list' %}" class="drawer-nav-link" {% if 'orders' in request.path %}aria-current="page"{% endif %}>
+                <i class="fa-solid fa-receipt" aria-hidden="true"></i> {% if user.is_admin_user %}Чеки{% else %}Мои чеки{% endif %}</a></li>
+            {% if user.is_admin_user %}
+            <li><a href="{% url 'audit_log' %}" class="drawer-nav-link" {% if 'audit-log' in request.path %}aria-current="page"{% endif %}>
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Аудит</a></li>
+            <li><a href="{% url 'users_list' %}" class="drawer-nav-link" {% if 'staff' in request.path %}aria-current="page"{% endif %}>
+                <i class="fa-solid fa-users-gear" aria-hidden="true"></i> Персонал</a></li>
             {% endif %}
         </ul>
 
         <div class="drawer-user-section">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
-                <div class="status-dot"></div>
-                <div>
-                    <div style="font-weight: 600;">{{ user.first_name|default:user.username }}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ user.get_role_display }}</div>
-                </div>
+            <div class="drawer-account">
+                <div class="drawer-account-name">{{ user.first_name|default:user.username }}</div>
+                <div class="drawer-account-role">{{ user.get_role_display }}</div>
             </div>
-            <a href="{% url 'logout' %}" class="btn btn-secondary" style="width: 100%;">
-                <i class="fa-solid fa-right-from-bracket"></i> Выйти из системы
-            </a>
+            <div class="drawer-footer-actions">
+                <button type="button" class="drawer-footer-action" onclick="toggleDesktopTheme()" aria-label="Сменить тему">
+                    <i class="fa-solid fa-moon drawer-theme-moon" aria-hidden="true"></i>
+                    <i class="fa-solid fa-sun drawer-theme-sun" aria-hidden="true"></i> Тема
+                </button>
+                <a href="{% url 'logout' %}" class="drawer-footer-action">
+                    <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Выйти
+                </a>
+            </div>
         </div>
     </nav>
 
@@ -1376,7 +1458,7 @@
                 <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
                 <span>Выйти</span>
             </a>
-            <button class="hamburger-btn" onclick="openMobileNav()" aria-label="Открыть меню" aria-expanded="false"
+            <button type="button" class="hamburger-btn" aria-controls="mobileNavDrawer" onclick="openMobileNav()" aria-label="Открыть меню" aria-expanded="false"
                 id="hamburgerBtn">
                 <i class="fa-solid fa-bars"></i>
             </button>
@@ -1490,28 +1572,38 @@
         });
 
         function openMobileNav() {
-            const overlay = document.getElementById('mobileNavOverlay');
             const drawer = document.getElementById('mobileNavDrawer');
-            const btn = document.getElementById('hamburgerBtn');
-            overlay.style.display = 'block';
+            const overlay = document.getElementById('mobileNavOverlay');
+            const button = document.getElementById('hamburgerBtn');
+            if (!drawer || drawer.classList.contains('open')) return;
+            drawer.inert = false;
+            drawer.classList.add('open');
+            overlay.classList.add('open');
             document.body.style.overflow = 'hidden';
+            button.setAttribute('aria-expanded', 'true');
             requestAnimationFrame(() => {
-                overlay.classList.add('open');
-                drawer.classList.add('open');
+                if (drawer.classList.contains('open')) drawer.querySelector('.drawer-close-btn').focus();
             });
-            if (btn) btn.setAttribute('aria-expanded', 'true');
         }
 
-        function closeMobileNav() {
-            const overlay = document.getElementById('mobileNavOverlay');
+        function closeMobileNav(restoreFocus = true) {
             const drawer = document.getElementById('mobileNavDrawer');
-            const btn = document.getElementById('hamburgerBtn');
-            overlay.classList.remove('open');
+            if (!drawer || !drawer.classList.contains('open')) return;
+            const button = document.getElementById('hamburgerBtn');
+            button.setAttribute('aria-expanded', 'false');
+            if (restoreFocus) button.focus();
+            drawer.inert = true;
             drawer.classList.remove('open');
+            document.getElementById('mobileNavOverlay').classList.remove('open');
             document.body.style.overflow = '';
-            if (btn) btn.setAttribute('aria-expanded', 'false');
-            setTimeout(() => { overlay.style.display = 'none'; }, 280);
         }
+
+        matchMedia('(min-width: 961px)').addEventListener('change', event => {
+            if (event.matches) closeMobileNav(false);
+        });
+        document.getElementById('mobileNavDrawer')?.addEventListener('click', event => {
+            if (event.target.closest('a[href]')) closeMobileNav(false);
+        });
 
         function toggleDesktopTheme() {
             const root = document.documentElement;
@@ -1701,6 +1793,21 @@
         });
 
         document.addEventListener('keydown', (e) => {
+            const drawer = document.querySelector('.mobile-nav-drawer.open');
+            if (drawer && e.key === 'Tab') {
+                const controls = drawer.querySelectorAll('a[href], button');
+                const first = controls[0];
+                const last = controls[controls.length - 1];
+                if (e.shiftKey && (document.activeElement === first || !drawer.contains(document.activeElement))) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && (document.activeElement === last || !drawer.contains(document.activeElement))) {
+                    e.preventDefault();
+                    first.focus();
+                }
+                return;
+            }
+            if (drawer && e.key !== 'Escape') return;
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
                 const quickSearch = document.getElementById('desktopQuickSearchInput');
                 if (quickSearch) {

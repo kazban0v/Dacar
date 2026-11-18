@@ -1,11 +1,24 @@
 {% load dacar_format %}
 {% if order.payment_method == 'MIXED' or order.payment_method == 'GIFT' or order.surcharge_amount %}
-<div style="font-size:.78rem;line-height:1.5;margin-top:6px">
-{% if order.surcharge_amount %}<div>Наценка Kaspi 15%: {{ order.surcharge_amount|tenge }} ₸</div>{% endif %}
-{% if order.payment_method == 'MIXED' or order.payment_method == 'GIFT' %}
-{% for payment in order.payments.all %}<div>{{ payment.get_method_display }}: {{ payment.amount|tenge }} ₸</div>
-{% empty %}<div>Разбивка старого чека не сохранена</div>{% endfor %}
-{% for event in order.gift_events.all %}{% if event.kind == 'REDEEM' %}<div>Карта ••••{{ event.card.code_last4 }} · остаток {{ event.balance_after|tenge }} ₸</div>{% endif %}{% endfor %}
-{% endif %}
+<div class="receipt-payment-parts">
+    {% if order.payment_method == 'MIXED' or order.payment_method == 'GIFT' %}
+    {% with payments=order.payments.all %}
+    {% if payments %}
+    <dl class="receipt-payment-lines" aria-label="Разбивка оплаты">
+        {% for payment in payments %}
+        <div><dt>{{ payment.get_method_display }}</dt><dd>{{ payment.amount|tenge }} ₸</dd></div>
+        {% endfor %}
+    </dl>
+    {% else %}
+    <p class="receipt-payment-note">Разбивка старого чека не сохранена</p>
+    {% endif %}
+    {% endwith %}
+    {% for event in order.gift_events.all %}{% if event.kind == 'REDEEM' %}
+    <p class="receipt-payment-note">Карта ••••{{ event.card.code_last4 }} · остаток {{ event.balance_after|tenge }} ₸</p>
+    {% endif %}{% endfor %}
+    {% endif %}
+    {% if order.surcharge_amount %}
+    <p class="receipt-payment-note">Наценка Kaspi 15% · {{ order.surcharge_amount|tenge }} ₸</p>
+    {% endif %}
 </div>
 {% endif %}

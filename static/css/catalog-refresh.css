@@ -1,0 +1,243 @@
+/* Warehouse screens use the same neutral surfaces and type as analytics. */
+body:has(.stock-v2, .product-form-shell, .warehouse-header, .stock-movements-page) {
+    --bg-main: #fafafa;
+    --card-bg: #fff;
+    --card-border: #e5e5e5;
+    --text-main: #171717;
+    --text-muted: #737373;
+    --input-bg: #fff;
+    --stock-soft: #f5f5f5;
+    --stock-primary: #171717;
+    --stock-on-primary: #fff;
+    --stock-accent: #0070f3;
+    --stock-low: #995100;
+    font-family: Geist, Inter, system-ui, -apple-system, sans-serif;
+}
+html[data-theme="dark"] body:has(.stock-v2, .product-form-shell, .warehouse-header, .stock-movements-page) {
+    --bg-main: #0a0a0a;
+    --card-bg: #111;
+    --card-border: #303030;
+    --text-main: #ededed;
+    --text-muted: #a1a1a1;
+    --input-bg: #171717;
+    --stock-soft: #171717;
+    --stock-primary: #ededed;
+    --stock-on-primary: #171717;
+    --stock-accent: #3291ff;
+    --stock-low: #f5a623;
+}
+body:has(.stock-v2, .product-form-shell, .warehouse-header, .stock-movements-page) .header-nav {
+    min-height: 64px;
+    background: var(--card-bg);
+    border-bottom-color: var(--card-border);
+    box-shadow: none;
+}
+body:has(.stock-v2, .product-form-shell, .stock-movements-page) :is(.brand-logo, .nav-link) { font-family: inherit; }
+.stock-v2 { max-width: 1440px; min-width: 0; }
+.stock-v2-header { align-items: center; margin: .35rem 0 1.15rem; }
+.stock-header-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.stock-v2-title,
+.stock-movements-page h1,
+.product-form-shell .form-page-header h1,
+.product-form-shell .product-form-title h1,
+.warehouse-header .warehouse-title-text h1 {
+    margin: 0;
+    color: var(--text-main);
+    font: 600 clamp(1.55rem, 2.2vw, 2rem)/1.2 Geist, Inter, system-ui, sans-serif;
+    letter-spacing: -.045em;
+}
+.stock-v2-summary { margin-top: .4rem; font-size: .875rem; font-weight: 400; }
+.stock-v2-add { font-weight: 550; }
+.stock-v2 :is(.stock-category-row, .stock-pills) { gap: .4rem; }
+.stock-v2 .stock-category {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    flex: 0 0 auto;
+    min-height: 38px;
+    padding: .25rem .65rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: .78rem;
+    font-weight: 500;
+}
+.stock-v2 .stock-category-icon {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    border: 0;
+    color: inherit;
+    font-size: .8rem;
+    transform: none;
+    box-shadow: none;
+}
+.stock-v2 :is(.stock-category, .stock-pill):hover { border-color: var(--stock-accent); }
+.stock-v2 :is(.stock-category, .stock-pill).is-active,
+.catalog-page :is(.warehouse-category-link, .warehouse-filter-pill).is-active {
+    background: var(--stock-primary);
+    border-color: var(--stock-primary);
+    color: var(--stock-on-primary);
+}
+.stock-v2 :is(.stock-controls, .stock-table-card, .catalog-quality),
+.product-form-shell :is(.dacar-card, .product-form-section),
+.catalog-page :is(.warehouse-filter-card, .warehouse-product-card) {
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    background: var(--card-bg);
+    box-shadow: none;
+}
+.stock-v2 .stock-controls { align-items: stretch; flex-direction: column; padding: .75rem; }
+.stock-v2 .stock-pills { flex-wrap: wrap; justify-content: flex-start; }
+.stock-v2 :is(.stock-pill, .catalog-quality-link) { border-radius: 7px; font-weight: 500; }
+.stock-v2 .catalog-quality { background: var(--stock-soft); }
+.stock-v2 .catalog-quality-link:is(:hover,.is-active) { color: var(--stock-accent); border-color: var(--stock-accent); }
+.stock-v2 .stock-table th { background: var(--stock-soft); font-weight: 550; }
+.stock-v2 .stock-table tbody tr:hover { background: var(--stock-soft); }
+.stock-v2 .stock-product-name { font-size: .875rem; font-weight: 600; }
+.stock-v2 :is(.stock-number,.stock-price,.stock-cost,.stock-margin) { font-variant-numeric: tabular-nums; font-weight: 550; }
+.stock-v2 .stock-low { color: var(--stock-low); }
+.stock-v2 .stock-actions { opacity: 1; transform: none; }
+.stock-v2 .stock-action { width: 34px; height: 34px; }
+.catalog-page .warehouse-filter-pill { border-radius: 8px; font-weight: 500; }
+.product-form-shell .product-form-section { padding: .85rem; }
+.stock-v2 .stock-pages span { color: var(--stock-on-primary); border-color: var(--stock-primary); background: var(--stock-primary); }
+
+body:has(.stock-v2, .product-form-shell, .warehouse-header, .stock-movements-page) :is(.stock-v2, .product-form-shell, .stock-movements-page, .warehouse-filter-card, .modal-refill-box) .form-control {
+    min-width: 0;
+    min-height: 42px;
+    border-color: var(--card-border);
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text-main);
+    font-family: inherit;
+}
+body:has(.stock-v2, .product-form-shell, .warehouse-header, .stock-movements-page) :is(.stock-v2, .product-form-shell, .stock-movements-page) .form-control::placeholder { color: var(--text-muted); }
+body:has(.stock-v2, .product-form-shell, .warehouse-header, .stock-movements-page) :is(.stock-v2, .product-form-shell, .stock-movements-page, .warehouse-filter-card) .form-control:focus {
+    border-color: var(--stock-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--stock-accent) 16%, transparent);
+}
+body:has(.stock-v2, .product-form-shell, .warehouse-header, .stock-movements-page) :is(.stock-v2, .product-form-shell, .stock-movements-page, .warehouse-header, .modal-refill-box) .btn-secondary {
+    color: var(--text-main);
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    box-shadow: none;
+}
+body:has(.stock-v2, .product-form-shell, .warehouse-header, .stock-movements-page) :is(.stock-v2, .product-form-shell, .stock-movements-page, .warehouse-header, .modal-refill-box) .btn-primary {
+    color: var(--stock-on-primary);
+    background: var(--stock-primary);
+    border-color: var(--stock-primary);
+    box-shadow: none;
+}
+.stock-v2 :is(a,button):focus-visible,
+.product-form-shell :is(a,button):focus-visible { outline: 2px solid var(--stock-accent); outline-offset: 2px; }
+
+@media (max-width: 900px) {
+    .stock-v2-header { align-items: stretch; flex-direction: column; }
+    .stock-v2 .stock-header-actions > a { flex: 1 1 auto; width: auto; justify-content: center; }
+    .stock-v2 .stock-category-row { max-width: 100%; mask-image: none; -webkit-mask-image: none; }
+    .stock-v2 .stock-filter-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: .5rem;
+    }
+    .stock-v2 .stock-filter-form input { grid-column: 1 / -1; }
+    .stock-v2 .stock-filter-form :is(input, select) { width: 100%; }
+    .stock-v2 .stock-pills { overflow: visible; padding: 0; mask-image: none; -webkit-mask-image: none; white-space: normal; }
+    .stock-v2 :is(.stock-pill,.stock-category) { min-height: 40px; align-content: center; }
+    .stock-v2 .stock-table-scroll { max-height: none; overflow: visible; }
+    .stock-v2 :is(.stock-table,.stock-table tbody) { display: block; min-width: 0; }
+    .stock-v2 .stock-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .stock-v2 .stock-data-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .65rem .85rem;
+        padding: .85rem;
+        border-bottom: 1px solid var(--card-border);
+    }
+    .stock-v2 .stock-data-row:last-child { border-bottom: 0; }
+    .stock-v2 .stock-table .stock-data-row td { padding: 0; border: 0; }
+    .stock-v2 .stock-data-row.stock-is-low { box-shadow: inset 3px 0 var(--stock-low); }
+    .stock-v2 .stock-data-row :is(.stock-item-cell,.stock-category-name,.stock-action-cell) { grid-column: 1 / -1; }
+    .stock-v2 .stock-number { grid-area: 2 / 1; }
+    .stock-v2 .stock-price { grid-area: 2 / 2; }
+    .stock-v2 .stock-table [data-label]::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: .15rem;
+        font-size: .72rem;
+        font-weight: 400;
+        line-height: 1.3;
+        color: var(--text-muted);
+    }
+    .stock-v2 .stock-product { min-width: 0; }
+    .stock-v2 .stock-product-name { max-width: none; white-space: normal; overflow-wrap: anywhere; }
+    .stock-v2 .stock-actions { justify-content: flex-start; }
+    .stock-v2 .stock-action { width: 44px; height: 44px; }
+    .stock-v2 .stock-table tr:has(.stock-empty),
+    .stock-v2 .stock-table td:has(.stock-empty) { display: block; padding: 0; }
+    .product-form-shell .product-form-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Movement form and journal share the catalog palette and controls. */
+.stock-movements-page { max-width: 1440px; margin-inline: auto; color: var(--text-main); }
+.stock-movements-page .stock-page-header { align-items: center; margin: .35rem 0 1.15rem; }
+.stock-movements-page .stock-page-header p { margin: .4rem 0 0; }
+.stock-movements-page .stock-grid-layout { gap: 1rem; }
+.stock-movements-page .dacar-card {
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    background: var(--card-bg);
+    box-shadow: none;
+    padding: 1rem;
+}
+.stock-movements-page .movement-form-card { scroll-margin-top: calc(var(--header-h) + var(--safe-top) + .75rem); }
+.stock-movements-page .movement-section-title { margin: 0; font: 600 1rem/1.35 Geist, Inter, system-ui, sans-serif; }
+.stock-movements-page .movement-log-header { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .8rem; }
+.stock-movements-page .movement-count {
+    padding: .2rem .5rem;
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    background: var(--stock-soft);
+    font-size: .75rem;
+}
+.stock-movements-page .movements-table-wrapper {
+    --table-header-bg: var(--stock-soft);
+    overflow: auto;
+    max-height: min(68dvh, 660px);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+}
+.stock-movements-page .dacar-table { border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+.stock-movements-page .dacar-table th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: var(--table-header-bg);
+}
+.stock-movements-page .dacar-table :is(th,td):first-child { min-width: 155px; width: 155px; max-width: 155px; }
+.stock-movements-page .dacar-table tbody tr:hover td { background: var(--stock-soft); }
+.stock-movements-page .movement-mobile-card { border-radius: 8px; box-shadow: none; overflow-wrap: anywhere; }
+.stock-movements-page .movement-card-header { align-items: flex-start; flex-wrap: wrap; }
+.stock-movements-page .movement-card-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.stock-movements-page .movement-card-comment { background: var(--stock-soft); }
+.stock-movements-page .movement-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .65rem;
+    margin-top: .85rem;
+    padding-top: .85rem;
+    border-top: 1px solid var(--card-border);
+}
+.stock-movements-page :is(a, button, .movements-table-wrapper):focus-visible {
+    outline: 2px solid var(--stock-accent);
+    outline-offset: 2px;
+}
+@media (max-width: 768px) {
+    .stock-movements-page .stock-page-header > .mobile-add-btn { min-height: 44px; }
+    .stock-movements-page .dacar-card { padding: .75rem; }
+}

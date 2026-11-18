@@ -1,4 +1,5 @@
 {% extends 'desktop/base.html' %}
+{% load static %}
 
 {% block title %}{% if product %}Редактировать {{ product.name }}{% else %}Добавить новый товар{% endif %} — DACAR{% endblock %}
 
@@ -84,6 +85,7 @@
         .product-form-grid .full-width { grid-column: 1; }
     }
 </style>
+<link rel="stylesheet" href="{% static 'css/catalog-refresh.css' %}">
 {% endblock %}
 
 {% block content %}

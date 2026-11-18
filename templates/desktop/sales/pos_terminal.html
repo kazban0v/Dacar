@@ -1,5 +1,5 @@
 {% extends 'desktop/base.html' %}
-{% load dacar_format %}
+{% load static l10n dacar_format %}
 
 {% block title %}DACAR Кассовый Терминал (POS){% endblock %}
 
@@ -3544,6 +3544,7 @@
         color: #E2E8F0;
     }
 </style>
+<link rel="stylesheet" href="{% static 'css/pos-terminal-refresh.css' %}">
 {% endblock %}
 {% block content %}
 <!-- Mobile Tab Switcher (visible on tablet/mobile) -->
@@ -3652,8 +3653,7 @@
                     <div class="product-card-info">
                         <div class="product-title">{{ p.name }}</div>
                         <div class="product-category-label">{{ p.category.name|default:"—" }}</div>
-                        <span class="product-mobile-stock">Ост: {{ p.stock_qty|floatformat:0 }} {{ p.unit }} · {{
-                            p.retail_price|tenge }} ₸</span>
+                        <span class="product-mobile-stock">Ост: {{ p.stock_qty|floatformat:0 }} {{ p.unit }} · {{ p.retail_price|tenge }} ₸</span>
                     </div>
                     <div class="product-meta-cell">{{ p.sku|default:"—" }}</div>
                     <div class="product-meta-cell">{{ p.barcode|default:"—" }}</div>
@@ -3807,18 +3807,23 @@
                             <button class="pay-method-btn" data-method="CARD"
                                 onclick="setPaymentMethod('CARD', this)"><i class="fa-solid fa-credit-card"></i>
                                 Карта</button>
-                            <button class="pay-method-btn" data-method="TRANSFER"
-                                onclick="setPaymentMethod('TRANSFER', this)"><i class="fa-solid fa-qrcode"></i> Kaspi
-                                QR</button>
-                            <button class="pay-method-btn" data-method="KASPI_RED"
-                                onclick="setPaymentMethod('KASPI_RED', this)">Kaspi Red <small>+15%</small></button>
-                            <button class="pay-method-btn" data-method="KASPI_INSTALLMENT"
-                                onclick="setPaymentMethod('KASPI_INSTALLMENT', this)">Kaspi Рассрочка <small>+15%</small></button>
+                            <button type="button" class="pay-method-btn pay-method-group-btn" id="kaspiPaymentToggle"
+                                aria-expanded="false" aria-controls="kaspiPaymentOptions" onclick="toggleKaspiPaymentOptions()">
+                                Kaspi <i class="fa-solid fa-chevron-down pay-method-chevron" aria-hidden="true"></i>
+                            </button>
+                            <button class="pay-method-btn" data-method="GIFT"
+                                onclick="setPaymentMethod('GIFT', this)">Сертификат</button>
                             <button class="pay-method-btn" data-method="MIXED"
                                 onclick="setPaymentMethod('MIXED', this)">Смешанная</button>
-                            <button class="pay-method-btn" data-method="GIFT" style="grid-column: span 3;"
-                                onclick="setPaymentMethod('GIFT', this)"><i class="fa-solid fa-gift"></i>
-                                Сертификат</button>
+                        </div>
+                        <div class="kaspi-payment-options" id="kaspiPaymentOptions" role="group"
+                            aria-label="Выберите способ оплаты Kaspi" hidden>
+                            <button class="pay-method-btn kaspi-submethod" data-method="TRANSFER"
+                                onclick="setPaymentMethod('TRANSFER', this)">Kaspi QR</button>
+                            <button class="pay-method-btn kaspi-submethod" data-method="KASPI_RED"
+                                onclick="setPaymentMethod('KASPI_RED', this)">Kaspi Red <small>+15%</small></button>
+                            <button class="pay-method-btn kaspi-submethod" data-method="KASPI_INSTALLMENT"
+                                onclick="setPaymentMethod('KASPI_INSTALLMENT', this)">Kaspi Рассрочка <small>+15%</small></button>
                         </div>
                     </div>
 
@@ -4829,7 +4834,7 @@
         document.getElementById('productDetailsTitle').textContent = name;
         document.getElementById('productDetailsMeta').textContent =
             `${el.dataset.categoryName || 'Без категории'} · ${el.dataset.sku || 'Без артикула'} · ${el.dataset.barcode || 'Без штрихкода'}`;
-        document.getElementById('productDetailsStock').textContent = `${Number(el.dataset.stock || 0).toLocaleString('ru-RU', { maximumFractionDigits: 3 })} ${el.dataset.unit || 'шт'}`;
+        document.getElementById('productDetailsStock').textContent = `${formatQty(el.dataset.stock)} ${el.dataset.unit || 'шт'}`;
         document.getElementById('productDetailsPurchase').textContent = `${formatMoney(parseFloat(el.dataset.purchasePrice || 0))} ₸`;
         document.getElementById('productDetailsRetail').textContent = `${formatMoney(parseFloat(el.dataset.price || 0))} ₸`;
 
@@ -5544,29 +5549,35 @@
         }
     });
 
+    function showKaspiPaymentOptions(open) {
+        const toggle = document.getElementById('kaspiPaymentToggle');
+        document.getElementById('kaspiPaymentOptions').hidden = !open;
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.classList.toggle('is-expanded', open);
+    }
+
+    function toggleKaspiPaymentOptions() {
+        showKaspiPaymentOptions(document.getElementById('kaspiPaymentOptions').hidden);
+    }
+
     function setPaymentMethod(method, btn) {
         selectedPaymentMethod = method;
-        document.querySelectorAll('.pay-method-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.pay-method-btn').forEach(button => button.classList.remove('active'));
         if (btn) btn.classList.add('active');
+
+        const isKaspi = ['TRANSFER', 'KASPI_RED', 'KASPI_INSTALLMENT'].includes(method);
+        const isCash = method === 'CASH';
+        document.getElementById('kaspiPaymentToggle').classList.toggle('active', isKaspi);
+        showKaspiPaymentOptions(isKaspi);
+        document.getElementById('cashDetailsRow').hidden = !isCash;
+        document.getElementById('quickCashContainer').hidden = !isCash;
         document.getElementById('mixedPayments').hidden = method !== 'MIXED';
         document.getElementById('giftPayBox').hidden = method !== 'GIFT';
+
         if (method !== 'GIFT' && method !== 'MIXED' && giftCard) resetGiftCard();
         updateCartTotals();
+        if (!isCash) paidAmountInput.value = getFinalTotal();
         updateMixedBalance();
-
-        const cashRow = document.getElementById('cashDetailsRow');
-        const quickCash = document.getElementById('quickCashContainer');
-
-        if (method === 'CASH') {
-            cashRow.style.display = 'flex';
-            quickCash.style.display = 'flex';
-        } else {
-            cashRow.style.display = 'none';
-            quickCash.style.display = 'none';
-            // Auto fill exact paid for card/transfer
-            const finalTotal = getFinalTotal();
-            paidAmountInput.value = finalTotal;
-        }
     }
 
     function getBaseTotal() {
@@ -5807,7 +5818,7 @@
     window.setInterval(updatePosClock, 30000);
 
     // ===== CASH SHIFT & RETURN MANAGEMENT =====
-    let currentShiftId = {% if current_shift %}{ { current_shift.id } } {% else %} null{% endif %};
+    let currentShiftId = {% if current_shift %}{{ current_shift.id|unlocalize }} {% else %} null{% endif %};
     let currentShiftData = null;
 
     function updateShiftWidgetUI(shift) {

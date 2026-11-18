@@ -1,0 +1,153 @@
+body:has(.staff-v2, .staff-redesign) {
+    --bg-main: #fafafa;
+    --card-bg: #fff;
+    --card-border: #e5e5e5;
+    --text-main: #171717;
+    --text-primary: #171717;
+    --text-muted: #737373;
+    --staff-soft: #f5f5f5;
+    --staff-primary: #171717;
+    --staff-on-primary: #fff;
+    --staff-blue: #0065d7;
+    --staff-green: #067554;
+    --staff-red: #b42318;
+    font-family: Geist, Inter, system-ui, -apple-system, sans-serif;
+}
+html[data-theme="dark"] body:has(.staff-v2, .staff-redesign) {
+    --bg-main: #0a0a0a;
+    --card-bg: #111;
+    --card-border: #303030;
+    --text-main: #ededed;
+    --text-primary: #ededed;
+    --text-muted: #a1a1a1;
+    --staff-soft: #171717;
+    --staff-primary: #ededed;
+    --staff-on-primary: #171717;
+    --staff-blue: #58a6ff;
+    --staff-green: #50e3c2;
+    --staff-red: #ff8588;
+}
+body:has(.staff-v2) .header-nav {
+    min-height: 64px;
+    background: var(--card-bg);
+    border-bottom-color: var(--card-border);
+    box-shadow: none;
+}
+body:has(.staff-v2) :is(.brand-logo,.nav-link) { font-family: inherit; }
+.staff-v2 { max-width: 1440px; color: var(--text-main); }
+:is(.staff-v2-title,.staff-redesign-title h1) {
+    font: 600 clamp(1.55rem, 2.2vw, 2rem)/1.2 Geist, Inter, system-ui, sans-serif;
+    letter-spacing: -.045em;
+}
+.staff-v2-subtitle { margin-top: .4rem; font-size: .875rem; font-weight: 400; }
+:is(.staff-stat,.staff-filter-bar,.staff-table-card,.staff-v2-card,.staff-add-sheet,.staff-modal) {
+    border-color: var(--card-border);
+    border-radius: 12px;
+    background: var(--card-bg);
+    box-shadow: none;
+}
+:is(.staff-v2,.staff-redesign) :is(.staff-pill,.staff-role-chip) { border-radius: 8px; font: 500 .78rem Geist, Inter, system-ui, sans-serif; }
+:is(.staff-v2,.staff-redesign) :is(.staff-pill.is-active,.staff-role-chip.active,.btn-primary),
+#staffModal .btn-primary {
+    background: var(--staff-primary);
+    color: var(--staff-on-primary);
+    border-color: var(--staff-primary);
+    box-shadow: none;
+}
+body:has(.staff-v2,.staff-redesign) :is(.staff-search input,.staff-modal .form-control,.staff-modal select option,.staff-add-sheet .form-control) {
+    color: var(--text-main);
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    font-family: inherit;
+}
+body:has(.staff-v2,.staff-redesign) .staff-search input::placeholder { color: var(--text-muted); }
+.staff-v2 .staff-stat-value { font-family: inherit; font-weight: 600; }
+.staff-v2 .staff-table th { background: var(--staff-soft); font-weight: 550; }
+.staff-v2 .staff-table-scroll { overflow: visible; }
+.staff-v2 .staff-table-card { overflow: visible; }
+.staff-v2 .staff-table .staff-row.is-inactive,
+.staff-redesign .staff-v3-card-body.is-inactive { opacity: 1; }
+.staff-status-cell form { display: flex; align-items: center; gap: .5rem; }
+.staff-account-status {
+    display: inline-block;
+    width: fit-content;
+    padding: .2rem .4rem;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--staff-red) 9%, var(--card-bg));
+    color: var(--staff-red);
+    font-size: .72rem;
+    font-weight: 550;
+}
+.staff-account-status.is-active {
+    background: color-mix(in srgb, var(--staff-green) 9%, var(--card-bg));
+    color: var(--staff-green);
+}
+.staff-v2 .staff-menu summary { width: 36px; height: 36px; }
+.staff-v2 .staff-menu-panel { top: calc(100% + .3rem); }
+.staff-v2 .staff-menu-panel button { min-height: 38px; }
+.staff-v2 .staff-switch input:focus-visible + span,
+:is(.staff-v2,.staff-redesign,.staff-modal,.staff-action-sheet) :is(button,summary,input,select):focus-visible {
+    outline: 2px solid var(--staff-blue);
+    outline-offset: 2px;
+}
+.staff-no-results { padding: .85rem; color: var(--text-muted); text-align: center; }
+.staff-redesign .staff-v2-name { font-family: inherit; font-weight: 600; }
+.staff-redesign .staff-v3-name-row { flex-wrap: wrap; }
+.staff-redesign .staff-v3-person { min-width: 0; overflow-wrap: anywhere; }
+.staff-redesign .staff-v3-card-body {
+    grid-template-columns: 40px minmax(0, 1fr) 44px 44px;
+    gap: .5rem;
+}
+.staff-redesign .staff-v2-avatar { grid-column: 1; width: 40px; height: 40px; }
+.staff-redesign .staff-sparkline { grid-area: 2 / 2; }
+.staff-redesign :is(.staff-toggle-form,.staff-v3-card-body > .staff-toggle) { grid-area: 1 / 3; }
+.staff-redesign .staff-more-button {
+    grid-area: 1 / 4;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    background: var(--staff-soft);
+}
+.staff-redesign .staff-role-row { flex-wrap: wrap; overflow: visible; }
+.staff-redesign .staff-account-status { margin-top: .3rem; }
+
+@media (min-width: 961px) and (max-width: 1120px) {
+    body:has(.staff-v2) .header-nav { gap: .45rem; padding-inline: .75rem; }
+    body:has(.staff-v2) .header-nav .nav-link { padding-inline: .35rem; }
+    body:has(.staff-v2) .header-nav .desktop-quick-search { width: 128px; }
+}
+
+@media (max-width: 1024px) {
+    .staff-v2 .staff-filter-bar { align-items: stretch; flex-direction: column; }
+    .staff-v2 .staff-search input { width: 100%; min-width: 0; }
+    .staff-v2 .staff-pills { flex-wrap: wrap; overflow: visible; }
+    .staff-v2 .staff-table, .staff-v2 .staff-table tbody { display: block; min-width: 0; }
+    .staff-v2 .staff-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .staff-v2 .staff-row:not([hidden]) {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .7rem .75rem;
+        padding: .9rem;
+        border-bottom: 1px solid var(--card-border);
+    }
+    .staff-v2 .staff-row:last-child { border-bottom: 0; }
+    .staff-v2 .staff-row td { min-width: 0; max-width: none; padding: 0; border: 0; white-space: normal; overflow-wrap: anywhere; }
+    .staff-v2 .staff-row :is(.staff-person-cell,.staff-activity,.staff-status-cell) { grid-column: 1 / -1; }
+    .staff-v2 .staff-row .staff-actions-cell:has(.staff-menu) { grid-column: 1 / -1; }
+    .staff-v2 .staff-row .staff-actions-cell:not(:has(.staff-menu)) { display: none; }
+    .staff-v2 .staff-person { min-width: 0; }
+    .staff-v2 .staff-person-name { max-width: none; white-space: normal; }
+    .staff-v2 [data-label]::before {
+        display: block;
+        margin-bottom: .2rem;
+        content: attr(data-label);
+        color: var(--text-muted);
+        font-size: .72rem;
+        font-weight: 400;
+    }
+    .staff-v2 .staff-actions { justify-content: flex-start; }
+    .staff-v2 .staff-menu summary { width: 44px; height: 44px; }
+    .staff-v2 .staff-menu-panel { left: 0; right: auto; }
+    .staff-v2 :is(tr,td):has(.staff-empty) { display: block; }
+}
